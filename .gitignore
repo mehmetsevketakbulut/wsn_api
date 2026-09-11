@@ -1,0 +1,15 @@
+# Windows exe (sadece lokal geliştirme için)
+*.exe
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Test dosyaları
+test_*.py
+
+# OS
+.DS_Store
+Thumbs.db
