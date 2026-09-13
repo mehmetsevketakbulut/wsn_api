@@ -5,30 +5,28 @@ import time
 import os
 import zipfile
 import tempfile
-import json
 
 app = Flask(__name__)
-
-# Tüm origin'lerden gelen isteklere izin ver (Vercel frontend → Render backend)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # --- FAIRY-STOCKFISH MOTOR KURULUMU ---
 if os.name == 'nt':
     # Windows (lokal geliştirme)
-    exe_yolu = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fairy-stockfish-largeboard_x86-64-bmi2.exe")
+    exe_yolu = os.path.join(BASE_DIR, "fairy-stockfish-largeboard_x86-64-bmi2.exe")
 else:
-    # Linux (Render sunucusu) - /tmp/ klasöründe çalıştır
+    # Linux (Vercel Serverless & Render) - /tmp/ geçici bellekte çalıştır
     exe_yolu = "/tmp/fairy-stockfish-largeboard_x86-64"
-
     if not os.path.exists(exe_yolu):
-        with zipfile.ZipFile("motor.zip", 'r') as zip_ref:
-            zip_ref.extractall("/tmp/")
-        os.chmod(exe_yolu, 0o755)
+        zip_path = os.path.join(BASE_DIR, "motor.zip")
+        if os.path.exists(zip_path):
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall("/tmp/")
+            os.chmod(exe_yolu, 0o755)
 
-# Geçici variants.ini dosyaları için dizin
-VARIANTS_DIR = tempfile.mkdtemp(prefix="wsn_variants_")
-# Varsayılan variants.ini dosyasını kopyala
-DEFAULT_VARIANTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "variants.ini")
+VARIANTS_DIR = tempfile.gettempdir()
+DEFAULT_VARIANTS_PATH = os.path.join(BASE_DIR, "variants.ini")
 
 @app.route('/')
 def index():
@@ -36,6 +34,7 @@ def index():
         "proje": "TÜBİTAK 1001 - WSN Otonom Karar API",
         "durum": "Sistem Aktif",
         "motor": "Fairy-Stockfish Largeboard",
+        "platform": "Vercel / Render",
         "api_endpoints": {
             "karar": "/api/karar",
             "health": "/api/health"
@@ -44,7 +43,6 @@ def index():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    """Sunucu uyanık mı kontrolü (Render cold-start bypass)"""
     motor_mevcut = os.path.exists(exe_yolu)
     return jsonify({
         "durum": "aktif",
@@ -56,10 +54,9 @@ def health():
 def karar_al():
     baslangic = time.time()
 
-    # --- Parametreleri al (GET veya POST) ---
     if request.method == 'POST':
         if request.is_json:
-            veri = request.get_json()
+            veri = request.get_json() or {}
         else:
             veri = request.form.to_dict()
     else:
@@ -71,17 +68,14 @@ def karar_al():
     variants_ini_icerik = veri.get('variants_ini', '')
 
     try:
-        # --- Variants.ini dosyasını hazırla ---
         kullanilan_variants_path = DEFAULT_VARIANTS_PATH
 
         if variants_ini_icerik:
-            # Kullanıcının yüklediği variants.ini'yi geçici dosyaya yaz
-            gecici_ini = os.path.join(VARIANTS_DIR, f"variants_{int(time.time())}.ini")
+            gecici_ini = os.path.join(VARIANTS_DIR, f"variants_{int(time.time()*1000)}.ini")
             with open(gecici_ini, 'w', encoding='utf-8') as f:
                 f.write(variants_ini_icerik)
             kullanilan_variants_path = gecici_ini
 
-            # Eğer varyant adı gönderilmemişse, ini'den çıkar
             if not varyant_adi:
                 for satir in variants_ini_icerik.split('\n'):
                     satir = satir.strip()
@@ -89,7 +83,6 @@ def karar_al():
                         varyant_adi = satir.split('[')[1].split(':')[0].strip()
                         break
 
-        # --- Motoru başlat ---
         motor = subprocess.Popen(
             exe_yolu,
             universal_newlines=True,
@@ -98,37 +91,31 @@ def karar_al():
             stderr=subprocess.PIPE
         )
 
-        # UCI Handshake
         motor.stdin.write("uci\n")
         motor.stdin.flush()
 
-        # uciok'u bekle
         while True:
             satir = motor.stdout.readline().strip()
             if satir == "uciok":
                 break
 
-        # Variants.ini dosyasını yükle
-        variants_abs_path = os.path.abspath(kullanilan_variants_path)
-        motor.stdin.write(f"setoption name VariantPath value {variants_abs_path}\n")
+        if os.path.exists(kullanilan_variants_path):
+            variants_abs_path = os.path.abspath(kullanilan_variants_path)
+            motor.stdin.write(f"setoption name VariantPath value {variants_abs_path}\n")
 
-        # Varyant seçimi
         if varyant_adi:
             motor.stdin.write(f"setoption name UCI_Variant value {varyant_adi}\n")
 
         motor.stdin.write("isready\n")
         motor.stdin.flush()
 
-        # readyok'u bekle
         while True:
             satir = motor.stdout.readline().strip()
             if satir == "readyok":
                 break
 
-        # Yeni oyun
         motor.stdin.write("ucinewgame\n")
 
-        # Pozisyon ayarla
         if fen:
             if hamle_gecmisi:
                 motor.stdin.write(f"position fen {fen} moves {hamle_gecmisi}\n")
@@ -139,8 +126,7 @@ def karar_al():
         else:
             motor.stdin.write("position startpos\n")
 
-        # Arama başlat
-        motor.stdin.write("go depth 10\n")
+        motor.stdin.write("go depth 8\n")
         motor.stdin.flush()
 
         bestmove = None
@@ -164,8 +150,7 @@ def karar_al():
         motor.terminate()
         gecen_sure = round((time.time() - baslangic) * 1000, 2)
 
-        # Geçici dosyayı temizle
-        if variants_ini_icerik and os.path.exists(gecici_ini):
+        if variants_ini_icerik and 'gecici_ini' in locals() and os.path.exists(gecici_ini):
             try:
                 os.remove(gecici_ini)
             except OSError:
