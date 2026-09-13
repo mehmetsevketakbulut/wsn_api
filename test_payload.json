@@ -1,0 +1,33 @@
+﻿{
+    "fen":  "10/1d1j2j1d1/2s4s2/3r2r3/10/10/3R2R3/2S4S2/1D1J2J1D1/10[SSSRRRDDD] w - - 0 1",
+    "variants_ini":  {
+                         "value":  "[wsn_gelismis_ag:chess]\r\n# 1. Makro Ã–lÃ§eklendirme ve KapalÄ± Devre Topoloji\r\nmaxRank = 10\r\nmaxFile = 10\r\ncylinder = true\r\n\r\n# 2. Dinamik DÃ¼ÄŸÃ¼m Enjeksiyonu (CanlÄ± AÄŸa DonanÄ±m Ekleme)\r\ndrop = true\r\n\r\n# 3. Seri Veri AktarÄ±mÄ± (Burst Transmission Testi)\r\n# Not: Stres testi iÃ§in aktif edilmek istenirse baÅŸÄ±ndaki \u0027#\u0027 kaldÄ±rÄ±lÄ±r.\r\n# moveCount = 2\r\n\r\n# Standart KurallarÄ±n Ä°ptali\r\npawn = -\r\nknight = -\r\nbishop = -\r\nrook = -\r\nqueen = -\r\n\r\n# 4. DonanÄ±m ve Sinyal Karakteristikleri (Betza VektÃ¶rleri)\r\ncustomPiece1 = s:K   # UÃ§ SensÃ¶r: Ã‡ok yÃ¶nlÃ¼, 1 birim iletim sÄ±nÄ±rÄ±.\r\ncustomPiece2 = r:W3  # YÃ¶nlendirici: DoÄŸrusal hatta maksimum 3 sekme (hop) menzili.\r\ncustomPiece3 = d:DA  # AÄŸ GeÃ§idi: DoÄŸrudan engel aÅŸan (Line-of-Sight atlayan) rÃ¶le dÃ¼ÄŸÃ¼mÃ¼.\r\ncustomPiece4 = j:I   # Sinyal Bozucu (Jammer): Ã‡evresindeki veri paketlerini bloke eden kara delik dÃ¼ÄŸÃ¼mÃ¼.\r\n\r\n# 5. Merkezi Toplama NoktasÄ± (Sink Node / Hedef BÃ¶lge)\r\npromotionPieceTypes = srd\r\npromotionRegionWhite = e5,e6,f5,f6\r\npromotionRegionBlack = e5,e6,f5,f6\r\n\r\n# 6. BaÅŸlangÄ±Ã§ Topolojisi ve Yedek DÃ¼ÄŸÃ¼m Havuzu\r\nstartFen = 10/1d1j2j1d1/2s4s2/3r2r3/10/10/3R2R3/2S4S2/1D1J2J1D1/10[SSSRRRDDD] w - - 0 1",
+                         "PSPath":  "C:\\Users\\msı\\Desktop\\wsn_api\\variants.ini",
+                         "PSParentPath":  "C:\\Users\\msı\\Desktop\\wsn_api",
+                         "PSChildName":  "variants.ini",
+                         "PSDrive":  {
+                                         "CurrentLocation":  "Users\\msı\\Desktop\\wsn_api",
+                                         "Name":  "C",
+                                         "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                         "Root":  "C:\\",
+                                         "Description":  "Windows",
+                                         "MaximumSize":  null,
+                                         "Credential":  "System.Management.Automation.PSCredential",
+                                         "DisplayRoot":  null
+                                     },
+                         "PSProvider":  {
+                                            "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                            "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                            "Name":  "FileSystem",
+                                            "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                            "ModuleName":  "Microsoft.PowerShell.Core",
+                                            "Module":  null,
+                                            "Description":  "",
+                                            "Capabilities":  52,
+                                            "Home":  "C:\\Users\\msı",
+                                            "Drives":  "C"
+                                        },
+                         "ReadCount":  1
+                     },
+    "varyant_adi":  "wsn_gelismis_ag"
+}
