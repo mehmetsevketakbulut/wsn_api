@@ -52,5 +52,8 @@
   "btn_next_move": "En İyi Sonraki Hamle",
   "btn_full_solution": "Tüm Çözümü Göster",
   "select_variant": "Varyant Seç:",
-  "full_solution_label": "Tam Çözüm (PV)"
+  "full_solution_label": "Tam Çözüm (PV)",
+  "opt_upload": "-- Dosya Yüklenebilir --",
+  "opt_classic": "Klasik Satranç",
+  "opt_nizami": "Nizami'nin Oyunu (Şatranç)"
 }

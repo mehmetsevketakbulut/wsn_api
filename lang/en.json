@@ -52,5 +52,8 @@
   "btn_next_move": "Best Next Move",
   "btn_full_solution": "Full Solution",
   "select_variant": "Select Variant:",
-  "full_solution_label": "Full Solution (PV)"
+  "full_solution_label": "Full Solution (PV)",
+  "opt_upload": "-- File Upload Ready --",
+  "opt_classic": "Standard Chess",
+  "opt_nizami": "Nizami's Game (Shatranj)"
 }
