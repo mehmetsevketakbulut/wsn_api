@@ -312,6 +312,29 @@
         }
         .btn-report:hover { background: linear-gradient(135deg, #ab47bc, #8e24aa); transform: translateY(-1px); }
         .btn-report.visible { display: block; }
+
+        /* --- NAVIGATION BUTTONS --- */
+        .nav-btn {
+            flex: 1;
+            background: #00d2ff;
+            color: #0a0a1a;
+            font-size: 10px;
+            padding: 5px 6px;
+            margin: 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: #00b8e6; transform: translateY(-1px); }
+        .nav-btn:disabled {
+            background: #007a99;
+            color: #0a0a1a;
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <body>
@@ -378,9 +401,9 @@
 
             <!-- Oyun Geçmişi Navigasyon -->
             <div id="game-nav" style="display: none; gap: 4px; margin-top: 8px;">
-                <button class="btn" style="flex:1; background:#444; font-size:10px; padding:5px 6px; margin:0;" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
-                <button class="btn" style="flex:1; background:#444; font-size:10px; padding:5px 6px; margin:0;" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
-                <button class="btn" style="flex:1; background:#444; font-size:10px; padding:5px 6px; margin:0;" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
+                <button class="nav-btn" id="btn-basa-don" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
+                <button class="nav-btn" id="btn-geri" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
+                <button class="nav-btn" id="btn-ileri" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
             </div>
         </div>
 
@@ -389,7 +412,7 @@
             <h2 data-i18n="panel2_title">2. Karar Motoru Çıktısı</h2>
 
             <div class="veri-kutusu">
-                <div class="label" data-i18n="bestmove_label">API'den Gelen Rota (Bestmove)</div>
+                <div class="label" data-i18n="bestmove_label">Route from API (Bestmove)</div>
                 <div class="deger" id="bestmove" data-i18n="waiting">Bekleniyor...</div>
             </div>
             
@@ -425,8 +448,10 @@
 
             <button class="btn" id="btn-oto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="otonomSimulasyonToggle()" data-i18n="btn_auto_sim">▶ Otonom Simülasyon (Canlı Demo)</button>
 
-            <button class="btn-report" id="btn-rapor" onclick="raporIndir()" data-i18n="btn_download_report">📄 Otonom Karar Raporunu İndir (.json)</button>
-            <button class="btn-report" id="btn-rapor-pdf" onclick="pdfRaporIndir()" style="background-color: #f44336; margin-top: 10px; display: none;" data-i18n="btn_pdf">📄 PDF İndir</button>
+            <div id="report-buttons" style="display: none; gap: 8px; margin-top: 10px;">
+                <button class="btn-report visible" id="btn-rapor" onclick="raporIndir()" style="flex:1; display:block;" data-i18n="btn_download_report">📄 Download Report (JSON)</button>
+                <button class="btn-report visible" id="btn-rapor-pdf" onclick="pdfRaporIndir()" style="flex:1; display:block; background: linear-gradient(135deg, #f44336, #d32f2f);" data-i18n="btn_pdf">📄 Download Report (PDF)</button>
+            </div>
         </div>
 
         <!-- ======================== PANEL 3: FİLTRE ======================== -->
@@ -656,6 +681,15 @@ let fenGecmisi = [];
 let hamleGecmisiListesi = [];
 let gecmisIndeks = -1;
 
+function navButonlariGuncelle() {
+    const btnBasaDon = document.getElementById("btn-basa-don");
+    const btnGeri = document.getElementById("btn-geri");
+    const btnIleri = document.getElementById("btn-ileri");
+    if (btnBasaDon) btnBasaDon.disabled = (gecmisIndeks <= 0);
+    if (btnGeri) btnGeri.disabled = (gecmisIndeks <= 0);
+    if (btnIleri) btnIleri.disabled = (gecmisIndeks >= fenGecmisi.length - 1);
+}
+
 function gecmiseHamleEkle(yeniFen, hamleStr) {
     if (gecmisIndeks < fenGecmisi.length - 1) {
         fenGecmisi = fenGecmisi.slice(0, gecmisIndeks + 1);
@@ -665,6 +699,7 @@ function gecmiseHamleEkle(yeniFen, hamleStr) {
     hamleGecmisiListesi.push(hamleStr);
     gecmisIndeks++;
     document.getElementById("game-nav").style.display = "flex";
+    navButonlariGuncelle();
 }
 
 function navigasyonYukle(indeks) {
@@ -682,6 +717,7 @@ function navigasyonYukle(indeks) {
 
     document.getElementById("fen-metni").textContent = aktifFen;
     fenCiz(aktifFen, gridSatir, gridSutun);
+    navButonlariGuncelle();
     
     // Sıra beyazdaysa yasal hamleleri yenile
     if (siraKimde === 'w') {
@@ -1010,7 +1046,7 @@ function varyantUygula(icerik) {
         gecmisIndeks = 0;
         const nav = document.getElementById("game-nav");
         if(nav) nav.style.display = "flex";
-
+        navButonlariGuncelle();
         document.getElementById("fen-metni").innerText = aktifFen;
         document.getElementById("fen-metni").removeAttribute("data-i18n");
         fenCiz(aktifFen, gridSatir, gridSutun);
@@ -1178,12 +1214,8 @@ async function veriCek(type = 'next') {
                     filtre_esik: parseInt(document.getElementById("cp-esik").value),
                     filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
                 };
-                document.getElementById("btn-rapor").classList.add("visible");
-                const pdfBtn = document.getElementById("btn-rapor-pdf");
-                if(pdfBtn) {
-                    pdfBtn.style.display = "block";
-                    pdfBtn.classList.add("visible");
-                }
+                const reportBtns = document.getElementById("report-buttons");
+                if(reportBtns) reportBtns.style.display = "flex";
             }
 
             basarili = true;
@@ -1546,13 +1578,8 @@ async function otonomSimulasyonDongusu() {
             filtre_esik: parseInt(document.getElementById("cp-esik").value),
             filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
         };
-        const btnRapor = document.getElementById("btn-rapor");
-        if (btnRapor) btnRapor.classList.add("visible");
-        const pdfBtn = document.getElementById("btn-rapor-pdf");
-        if (pdfBtn) {
-            pdfBtn.style.display = "block";
-            pdfBtn.classList.add("visible");
-        }
+        const reportBtns = document.getElementById("report-buttons");
+        if (reportBtns) reportBtns.style.display = "flex";
 
         const oynandi = beyazHamlesiniTahtadaOyna(data.bestmove);
         if (!oynandi) {
@@ -1682,11 +1709,20 @@ function pdfRaporIndir() {
     function addLine(label, value, x, yPos, maxW) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
-        doc.text(label + ":", x, yPos);
+        const labelStr = label + " : ";
+        const labelWidth = doc.getTextWidth(labelStr);
+        doc.text(labelStr, x, yPos);
         doc.setFont("helvetica", "normal");
-        const valLines = doc.splitTextToSize(String(value), maxW);
-        doc.text(valLines, x, yPos + 5);
-        return yPos + 5 + (valLines.length * 4.5);
+        const valMaxW = maxW - labelWidth;
+        if (valMaxW > 15) {
+            const valLines = doc.splitTextToSize(String(value), valMaxW);
+            doc.text(valLines, x + labelWidth, yPos);
+            return yPos + Math.max(1, valLines.length) * 4.5 + 1;
+        } else {
+            const valLines = doc.splitTextToSize(String(value), maxW);
+            doc.text(valLines, x, yPos + 4.5);
+            return yPos + 4.5 + (valLines.length * 4.5) + 1;
+        }
     }
 
     // ======== LEFT COLUMN (x=18, width=82) ========
@@ -1701,8 +1737,8 @@ function pdfRaporIndir() {
     yL = addLine(isTR ? "Derinlik (Depth)" : "Search Depth", String(sonRaporVerisi.derinlik), 18, yL, 78);
     yL = addLine(isTR ? "Varyant" : "Variant", sonRaporVerisi.varyant, 18, yL, 78);
     yL = addLine(isTR ? "Grid Boyutu" : "Grid Size", v ? `${v.maxRank}x${v.maxFile}` : "8x8", 18, yL, 78);
-    yL = addLine(isTR ? "Topoloji" : "Topology", (v && v.cylinder) ? "Closed (Cylinder)" : "Open (Flat)", 18, yL, 78);
-    yL = addLine("Drop", (v && v.drop) ? "Enabled" : "Disabled", 18, yL, 78);
+    yL = addLine(isTR ? "Topoloji" : "Topology", (v && v.cylinder) ? (isTR ? "Kapalı Devre (Silindirik)" : "Closed (Cylinder)") : (isTR ? "Açık" : "Open (Flat)"), 18, yL, 78);
+    yL = addLine(isTR ? "Düğüm Enjeksiyonu" : "Node Injection (Drop)", (v && v.drop) ? (isTR ? "Aktif" : "Enabled") : (isTR ? "Pasif" : "Disabled"), 18, yL, 78);
     
     yL += 8;
     yL = addSection(isTR ? "Filtre Karari" : "Filter Decision", 18, yL);
@@ -1724,9 +1760,9 @@ function pdfRaporIndir() {
 
     yR = addLine("FEN", sonRaporVerisi.fen, 112, yR, 75);
     yR = addLine(isTR ? "Hamleler" : "Moves", hamleGecmisiListesi.join(", ") || "-", 112, yR, 75);
-    yR = addLine("Bestmove", sonRaporVerisi.bestmove, 112, yR, 75);
+    yR = addLine(isTR ? "En İyi Rota" : "Best Route", sonRaporVerisi.bestmove, 112, yR, 75);
     yR = addLine(isTR ? "Tam Cozum (PV)" : "Full Solution (PV)", sonRaporVerisi.full_solution || "-", 112, yR, 75);
-    yR = addLine("CP Score", String(sonRaporVerisi.cp_skoru), 112, yR, 75);
+    yR = addLine(isTR ? "CP Skoru" : "CP Score", String(sonRaporVerisi.cp_skoru), 112, yR, 75);
     yR = addLine(isTR ? "Gecikme" : "Latency", `${sonRaporVerisi.gecikme_ms} ms`, 112, yR, 75);
 
     doc.save(`wsn_decision_report_${dateStr}.pdf`);
