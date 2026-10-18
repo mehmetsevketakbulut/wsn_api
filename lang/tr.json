@@ -5,7 +5,7 @@
   "detected_fen": "Algılanan FEN:",
   "fen_none": "Yok",
   "panel2_title": "2. Karar Motoru Çıktısı",
-  "bestmove_label": "API'den Gelen Rota (En İyi Rota)",
+  "bestmove_label": "API'den Gelen En İyi Rota",
   "cp_label": "Ham CP (Santipawn) Skoru",
   "waiting": "Bekleniyor...",
   "trigger_engine": "Motoru Tetikle",
@@ -52,7 +52,7 @@
   "btn_next_move": "En İyi Sonraki Hamle",
   "btn_full_solution": "Tüm Çözümü Göster",
   "select_variant": "Varyant Seç:",
-  "full_solution_label": "Tam Çözüm (PV)",
+  "full_solution_label": "Tam Çözüm Yolu (PV)",
   "opt_upload": "-- Dosya Yüklenebilir --",
   "opt_classic": "Klasik Satranç",
   "opt_nizami": "Nizami'nin Oyunu (Şatranç)",
@@ -94,7 +94,7 @@
   "btn_forward": "İleri ▶",
   "btn_pdf": "📄 Raporu İndir (PDF)",
   "moves": "Oynanan Hamleler",
-  "engine_depth": "Arama Derinliği (Depth):",
+  "engine_depth": "Arama Derinliği:",
   "btn_auto_sim": "▶ Otonom Simülasyon (Canlı Demo)",
   "btn_stop_sim": "⏹ Simülasyonu Durdur"
 }
