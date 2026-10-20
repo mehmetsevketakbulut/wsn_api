@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="scen_page_title">WSN Senaryo & FEN Yönetimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cascadia+Code&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0b18;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: #121528;
+            border-radius: 12px;
+            border: 1px solid #ffffff15;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            margin-bottom: 24px;
+        }
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00d2ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary {
+            background: linear-gradient(135deg, #1976D2, #0D47A1);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #00c853, #64dd17);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 200, 83, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            color: #fff;
+        }
+        .btn-secondary {
+            background: #23273a;
+            color: #ccc;
+            border: 1px solid #ffffff18;
+        }
+        .lang-btn {
+            background: transparent;
+            color: #00d2ff;
+            border: 1px solid #00d2ff55;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .lang-btn:hover { background: #00d2ff22; }
+
+        /* --- CONTAINER & GRID --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .grid-container { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: #121528;
+            border: 1px solid #ffffff15;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .panel h2 {
+            font-size: 16px;
+            color: #00d2ff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-desc {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        /* --- FILE DROP AREA --- */
+        .drop-area {
+            border: 2px dashed #00d2ff44;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            background: rgba(0, 210, 255, 0.02);
+        }
+        .drop-area:hover { border-color: #00d2ff; background: rgba(0, 210, 255, 0.06); }
+        .drop-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* --- FORMS --- */
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            background: #0a0b18;
+            color: #fff;
+            border: 1px solid #ffffff20;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .form-control:focus { outline: none; border-color: #00d2ff; }
+        textarea.form-control { font-family: 'Cascadia Code', monospace; resize: vertical; }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* --- SCENARIO CARDS --- */
+        .scen-card {
+            background: #0a0b18;
+            border: 1px solid #ffffff15;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .scen-card:hover { border-color: #00d2ff55; transform: translateY(-1px); }
+        .scen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .scen-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #00d2ff22;
+            color: #00d2ff;
+            border: 1px solid #00d2ff44;
+            margin-left: 6px;
+        }
+        .scen-fen {
+            font-family: 'Cascadia Code', monospace;
+            font-size: 11px;
+            color: #ffeb3b;
+            background: #0004;
+            padding: 6px 8px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        .scen-notes {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .scen-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #ffffff0d;
+            padding-top: 8px;
+        }
+        .scen-date {
+            font-size: 11px;
+            color: #555;
+        }
+        .scen-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* --- TOAST --- */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #00c853;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- === HEADER === -->
+    <div class="header">
+        <div class="header-title">
+            <span>🛰️</span>
+            <span data-i18n="scen_head_title">WSN Senaryo & FEN Yönetim Paneli</span>
+        </div>
+        <div class="header-actions">
+            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">EN</button>
+            <a href="index.html" class="btn btn-primary" data-i18n="btn_back_to_board">
+                ⬅ Ana Tahtaya Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- === GRID CONTAINER === -->
+    <div class="grid-container">
+
+        <!-- ================= PANEL 1: YENİ SENARYO EKLE ================= -->
+        <div class="panel">
+            <h2>➕ <span data-i18n="add_scen_title">Yeni Senaryo / FEN Ekle & Kaydet</span></h2>
+            <p class="panel-desc" data-i18n="add_scen_desc">Dosyadan (.ini / .fen) yükleyebilir veya doğrudan FEN metni yapıştırarak kaydedebilirsiniz.</p>
+
+            <!-- File Drop Area -->
+            <div class="drop-area" id="file-drop-area">
+                <div style="font-size: 26px; margin-bottom: 4px;">📁</div>
+                <div style="font-size: 13px; font-weight: 600; color: #00d2ff;" data-i18n="drop_file_text">Dosyadan Otomatik Yükle (.ini / .fen / .txt)</div>
+                <div style="font-size: 11px; color: #777;" data-i18n="drop_file_subtext">Dosyayı buraya sürükleyin veya tıklayıp seçin</div>
+                <input type="file" id="file-input" accept=".ini,.fen,.txt">
+            </div>
+
+            <!-- Manual Form -->
+            <div class="form-group">
+                <label data-i18n="lbl_scen_name">Senaryo / Ağ Adı:</label>
+                <input type="text" id="scen-name" class="form-control" placeholder="Örn: Sensör Darboğazı 1">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="lbl_fen">FEN Dizilimi (Start FEN):</label>
+                <textarea id="scen-fen" class="form-control" rows="3" placeholder="Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
+            </div>
+
+            <div class="row-2">
+                <div class="form-group">
+                    <label data-i18n="lbl_variant_type">Varyant Türü:</label>
+                    <select id="scen-variant" class="form-control" onchange="varyantDegisti()">
+                        <option value="chess">Klasik Satranç (chess)</option>
+                        <option value="nizami">Nizami'nin Oyunu (shatranj)</option>
+                        <option value="capablanca">Capablanca Satrancı (10x8)</option>
+                        <option value="crazyhouse">Crazyhouse (Düğüm Enjeksiyonu)</option>
+                        <option value="xiangqi">Xiangqi (Çin Satrancı 10x9)</option>
+                        <option value="custom">Özel Topoloji (Custom)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lbl_grid_dim">Izgara Boyutu (Satır x Sütun):</label>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <input type="number" id="scen-rank" class="form-control" min="4" max="16" value="8" style="text-align:center;">
+                        <span style="color:#777;">×</span>
+                        <input type="number" id="scen-file" class="form-control" min="4" max="16" value="8" style="text-align:center;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="lbl_notes">Açıklama / Notlar (Opsiyonel):</label>
+                <input type="text" id="scen-notes" class="form-control" placeholder="Örn: 2 sensör izole durumda, yüksek öncelikli yönlendirme">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button class="btn btn-success" style="flex: 2;" onclick="senaryoKaydet()" data-i18n="btn_save_scen">
+                    💾 Senaryoyu Kaydet
+                </button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="formTemizle()" data-i18n="btn_clear_form">
+                    🧹 Temizle
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= PANEL 2: KAYITLI SENARYOLAR ================= -->
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <h2>📂 <span data-i18n="saved_pool_title">Kayıtlı Senaryolar & FEN Havuzu</span> (<span id="scen-count">0</span>)</h2>
+            </div>
+            <p class="panel-desc" data-i18n="saved_pool_desc">Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde listelenir.</p>
+
+            <div class="form-group">
+                <input type="text" id="search-input" class="form-control" oninput="senaryolariListele()" placeholder="🔍 Senaryo ara...">
+            </div>
+
+            <div id="scenarios-list" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
+                <!-- Dinamik liste buraya yüklenir -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
+    <script>
+        // Dil ve Metin Tanımları
+        let mevcutDil = localStorage.getItem("wsn_dil") || "en";
+        const I18N = {
+            tr: {
+                scen_page_title: "WSN Senaryo & FEN Yönetimi",
+                scen_head_title: "WSN Senaryo & FEN Yönetim Paneli",
+                btn_back_to_board: "⬅ Ana Tahtaya Dön",
+                add_scen_title: "Yeni Senaryo / FEN Ekle & Kaydet",
+                add_scen_desc: "Dosyadan (.ini / .fen) yükleyebilir veya doğrudan FEN metni yapıştırarak kaydedebilirsiniz.",
+                drop_file_text: "Dosyadan Otomatik Yükle (.ini / .fen / .txt)",
+                drop_file_subtext: "Dosyayı buraya sürükleyin veya tıklayıp seçin",
+                lbl_scen_name: "Senaryo / Ağ Adı:",
+                lbl_fen: "FEN Dizilimi (Start FEN):",
+                lbl_variant_type: "Varyant Türü:",
+                lbl_grid_dim: "Izgara Boyutu (Satır × Sütun):",
+                lbl_notes: "Açıklama / Notlar (Opsiyonel):",
+                btn_save_scen: "💾 Senaryoyu Kaydet",
+                btn_clear_form: "🧹 Temizle",
+                saved_pool_title: "Kayıtlı Senaryolar & FEN Havuzu",
+                saved_pool_desc: "Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde doğrudan listelenir.",
+                search_placeholder: "🔍 Senaryo ara...",
+                toast_saved: "✓ Senaryo başarıyla kaydedildi!",
+                toast_deleted: "✓ Senaryo silindi.",
+                confirm_delete: "Bu senaryoyu silmek istediğinize emin misiniz?",
+                btn_play_on_board: "▶ Tahtada Başlat",
+                btn_copy_fen: "📋 Kopyala",
+                copied_fen: "Kopyalandı!",
+                empty_pool: "Henüz kayıtlı özel senaryo bulunmuyor. Soldaki panelden yeni bir senaryo ekleyebilirsiniz."
+            },
+            en: {
+                scen_page_title: "WSN Scenario & FEN Management",
+                scen_head_title: "WSN Scenario & FEN Management Panel",
+                btn_back_to_board: "⬅ Back to Main Board",
+                add_scen_title: "Add & Save Scenario / FEN",
+                add_scen_desc: "Upload from file (.ini / .fen) or paste a FEN string directly to save in your scenario pool.",
+                drop_file_text: "Auto-load from file (.ini / .fen / .txt)",
+                drop_file_subtext: "Drag and drop file here, or click to browse",
+                lbl_scen_name: "Scenario / Network Name:",
+                lbl_fen: "FEN Layout (Start FEN):",
+                lbl_variant_type: "Variant Type:",
+                lbl_grid_dim: "Grid Size (Rank × File):",
+                lbl_notes: "Description / Notes (Optional):",
+                btn_save_scen: "💾 Save Scenario",
+                btn_clear_form: "🧹 Clear",
+                saved_pool_title: "Saved Scenarios & FEN Pool",
+                saved_pool_desc: "Saved scenarios will immediately appear in the variant dropdown on the main board.",
+                search_placeholder: "🔍 Search scenarios...",
+                toast_saved: "✓ Scenario successfully saved!",
+                toast_deleted: "✓ Scenario deleted.",
+                confirm_delete: "Are you sure you want to delete this scenario?",
+                btn_play_on_board: "▶ Launch on Board",
+                btn_copy_fen: "📋 Copy",
+                copied_fen: "Copied!",
+                empty_pool: "No custom scenarios saved yet. Use the panel on the left to add one."
+            }
+        };
+
+        function t(k) {
+            return (I18N[mevcutDil] && I18N[mevcutDil][k]) || k;
+        }
+
+        function dilUygula() {
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const k = el.getAttribute("data-i18n");
+                if (I18N[mevcutDil][k]) {
+                    el.textContent = I18N[mevcutDil][k];
+                }
+            });
+            document.getElementById("lang-btn").textContent = mevcutDil === "tr" ? "EN" : "TR";
+            document.getElementById("search-input").placeholder = t("search_placeholder");
+            senaryolariListele();
+        }
+
+        function dilDegistir() {
+            mevcutDil = mevcutDil === "tr" ? "en" : "tr";
+            localStorage.setItem("wsn_dil", mevcutDil);
+            dilUygula();
+        }
+
+        // Pre-seed demo scenarios if localStorage is empty
+        function varsayilanSenaryolariYukle() {
+            let saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "null");
+            if (!saved || saved.length === 0) {
+                saved = [
+                    {
+                        id: "custom_seed_1",
+                        ad: "Kritik Ağ Düğümü (Oyun Sonu Testi)",
+                        fen: "8/8/4k3/8/8/3K4/4P3/8 w - - 0 1",
+                        varyant: "chess",
+                        maxRank: 8,
+                        maxFile: 8,
+                        notlar: "Tek piyon geçişli kritik düğüm optimizasyon testi.",
+                        tarih: new Date().toLocaleDateString()
+                    },
+                    {
+                        id: "custom_seed_2",
+                        ad: "Genişletilmiş Ağ Topolojisi (Capablanca)",
+                        fen: "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1",
+                        varyant: "capablanca",
+                        maxRank: 8,
+                        maxFile: 10,
+                        notlar: "10x8 genişletilmiş düğüm dağılımı (Archbishop & Chancellor düğümleri).",
+                        tarih: new Date().toLocaleDateString()
+                    }
+                ];
+                localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+            }
+        }
+
+        function varyantDegisti() {
+            const val = document.getElementById("scen-variant").value;
+            const rank = document.getElementById("scen-rank");
+            const file = document.getElementById("scen-file");
+            if (val === "capablanca") {
+                rank.value = 8;
+                file.value = 10;
+            } else if (val === "xiangqi") {
+                rank.value = 10;
+                file.value = 9;
+            } else {
+                rank.value = 8;
+                file.value = 8;
+            }
+        }
+
+        // File upload parsing
+        document.getElementById("file-input").addEventListener("change", function(e) {
+            const dosya = e.target.files[0];
+            if (!dosya) return;
+
+            const okuyucu = new FileReader();
+            okuyucu.onload = function(evt) {
+                const text = evt.target.result;
+                if (dosya.name.endsWith(".ini") || text.includes("[")) {
+                    // INI dosyasını ayrıştır
+                    const nameMatch = text.match(/\[(.*?)(?::|\])/);
+                    if (nameMatch) document.getElementById("scen-name").value = nameMatch[1].trim();
+                    
+                    const fenMatch = text.match(/startFen\s*=\s*([^\r\n]+)/);
+                    if (fenMatch) document.getElementById("scen-fen").value = fenMatch[1].trim();
+
+                    const rankMatch = text.match(/maxRank\s*=\s*(\d+)/);
+                    if (rankMatch) document.getElementById("scen-rank").value = rankMatch[1].trim();
+
+                    const fileMatch = text.match(/maxFile\s*=\s*(\d+)/);
+                    if (fileMatch) document.getElementById("scen-file").value = fileMatch[1].trim();
+                } else {
+                    // Düz FEN metni
+                    document.getElementById("scen-name").value = dosya.name.replace(/\.[^/.]+$/, "");
+                    document.getElementById("scen-fen").value = text.trim();
+                }
+                showToast(t("toast_saved"));
+            };
+            okuyucu.readAsText(dosya);
+        });
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 3000);
+        }
+
+        function formTemizle() {
+            document.getElementById("scen-name").value = "";
+            document.getElementById("scen-fen").value = "";
+            document.getElementById("scen-notes").value = "";
+            document.getElementById("scen-variant").value = "chess";
+            document.getElementById("scen-rank").value = "8";
+            document.getElementById("scen-file").value = "8";
+        }
+
+        function senaryoKaydet() {
+            const ad = document.getElementById("scen-name").value.trim();
+            const fen = document.getElementById("scen-fen").value.trim();
+            const varyant = document.getElementById("scen-variant").value;
+            const rank = parseInt(document.getElementById("scen-rank").value) || 8;
+            const file = parseInt(document.getElementById("scen-file").value) || 8;
+            const notlar = document.getElementById("scen-notes").value.trim();
+
+            if (!ad) {
+                alert(mevcutDil === "tr" ? "Lütfen senaryoya bir ad verin." : "Please provide a scenario name.");
+                return;
+            }
+            if (!fen) {
+                alert(mevcutDil === "tr" ? "Lütfen bir FEN dizilimi girin." : "Please provide a valid FEN string.");
+                return;
+            }
+
+            const yeniSenaryo = {
+                id: "custom_" + Date.now(),
+                ad: ad,
+                fen: fen,
+                varyant: varyant,
+                maxRank: rank,
+                maxFile: file,
+                notlar: notlar,
+                tarih: new Date().toLocaleDateString()
+            };
+
+            const saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
+            saved.unshift(yeniSenaryo);
+            localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+
+            showToast(t("toast_saved"));
+            formTemizle();
+            senaryolariListele();
+        }
+
+        function senaryoSil(id) {
+            if (!confirm(t("confirm_delete"))) return;
+            let saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
+            saved = saved.filter(s => s.id !== id);
+            localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+            showToast(t("toast_deleted"));
+            senaryolariListele();
+        }
+
+        function tahtadaBaslat(id) {
+            localStorage.setItem("wsn_active_scenario", id);
+            window.location.href = "index.html";
+        }
+
+        function fenKopyala(fen, btn) {
+            navigator.clipboard.writeText(fen).then(() => {
+                const old = btn.textContent;
+                btn.textContent = t("copied_fen");
+                setTimeout(() => { btn.textContent = old; }, 1500);
+            });
+        }
+
+        function senaryolariListele() {
+            const container = document.getElementById("scenarios-list");
+            const filter = (document.getElementById("search-input").value || "").toLowerCase();
+            const saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
+            
+            document.getElementById("scen-count").textContent = saved.length;
+
+            const filtered = saved.filter(s => 
+                s.ad.toLowerCase().includes(filter) || 
+                (s.fen && s.fen.toLowerCase().includes(filter)) ||
+                (s.notlar && s.notlar.toLowerCase().includes(filter))
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 40px 10px; color: #666; font-size: 13px;">${t("empty_pool")}</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(s => `
+                <div class="scen-card">
+                    <div class="scen-header">
+                        <div class="scen-title">
+                            ${s.ad}
+                            <span class="badge">${s.maxRank}×${s.maxFile}</span>
+                            <span class="badge" style="background:#ff980022; color:#ff9800; border-color:#ff980044;">${s.varyant}</span>
+                        </div>
+                    </div>
+                    <div class="scen-fen">${s.fen}</div>
+                    ${s.notlar ? `<div class="scen-notes">💬 ${s.notlar}</div>` : ''}
+                    <div class="scen-footer">
+                        <div class="scen-date">📅 ${s.tarih || "-"}</div>
+                        <div class="scen-actions">
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="fenKopyala('${s.fen}', this)">${t("btn_copy_fen")}</button>
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="senaryoSil('${s.id}')">🗑️</button>
+                            <button class="btn btn-success" style="padding: 5px 12px; font-size: 11px;" onclick="tahtadaBaslat('${s.id}')">${t("btn_play_on_board")}</button>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // Başlangıç
+        varsayilanSenaryolariYukle();
+        dilUygula();
+    </script>
+</body>
+</html>

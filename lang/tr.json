@@ -1,7 +1,7 @@
 {
   "page_title": "WSN Otonom Karar & Filtreleme Paneli",
   "panel1_title": "1. WSN Topoloji Görselleştirici",
-  "panel1_desc": "variants.ini yükle, startFen dizilimi ekrana yansısın.",
+  "panel1_desc": "Varyant veya kayıtlı FEN senaryolarını seçin, topoloji ekrana yansısın.",
   "detected_fen": "Algılanan FEN:",
   "fen_none": "Yok",
   "panel2_title": "2. Karar Motoru Çıktısı",
@@ -96,5 +96,7 @@
   "moves": "Oynanan Hamleler",
   "engine_depth": "Arama Derinliği:",
   "btn_auto_sim": "▶ Otonom Simülasyon (Canlı Demo)",
-  "btn_stop_sim": "⏹ Simülasyonu Durdur"
+  "btn_stop_sim": "⏹ Simülasyonu Durdur",
+  "manage_scenarios_btn": "⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)",
+  "opt_custom_scenarios": "📂 Kayıtlı Senaryolar / FEN"
 }

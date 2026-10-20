@@ -1,7 +1,7 @@
 {
   "page_title": "WSN Autonomous Decision & Filtering Panel",
   "panel1_title": "1. WSN Topology Visualizer",
-  "panel1_desc": "Upload variants.ini to display the startFen layout.",
+  "panel1_desc": "Select variant or custom FEN scenarios to visualize topology.",
   "detected_fen": "Detected FEN:",
   "fen_none": "None",
   "panel2_title": "2. Decision Engine Output",
@@ -96,5 +96,7 @@
   "moves": "Played Moves",
   "engine_depth": "Search Depth:",
   "btn_auto_sim": "▶ Autonomous Simulation (Live Demo)",
-  "btn_stop_sim": "⏹ Stop Simulation"
+  "btn_stop_sim": "⏹ Stop Simulation",
+  "manage_scenarios_btn": "⚙️ FEN & Scenario Management (Add / Save / Delete)",
+  "opt_custom_scenarios": "📂 Saved Scenarios / FEN"
 }
