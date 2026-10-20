@@ -98,5 +98,6 @@
   "btn_auto_sim": "▶ Autonomous Simulation (Live Demo)",
   "btn_stop_sim": "⏹ Stop Simulation",
   "manage_scenarios_btn": "⚙️ FEN & Scenario Management (Add / Save / Delete)",
-  "opt_custom_scenarios": "📂 Saved Scenarios / FEN"
+  "opt_custom_scenarios": "📂 Saved Scenarios / FEN",
+  "btn_flip": "🔄 Flip"
 }

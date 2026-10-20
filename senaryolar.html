@@ -120,26 +120,6 @@
             margin-bottom: 16px;
         }
 
-        /* --- FILE DROP AREA --- */
-        .drop-area {
-            border: 2px dashed #00d2ff44;
-            border-radius: 10px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            margin-bottom: 16px;
-            transition: all 0.2s;
-            background: rgba(0, 210, 255, 0.02);
-        }
-        .drop-area:hover { border-color: #00d2ff; background: rgba(0, 210, 255, 0.06); }
-        .drop-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
         /* --- FORMS --- */
         .form-group {
             margin-bottom: 12px;
@@ -274,15 +254,7 @@
         <!-- ================= PANEL 1: ADD NEW SCENARIO ================= -->
         <div class="panel">
             <h2>➕ <span data-i18n="add_scen_title">Add & Save Scenario / FEN</span></h2>
-            <p class="panel-desc" data-i18n="add_scen_desc">Upload from file (.ini / .fen) or paste a FEN string directly to save in your scenario pool.</p>
-
-            <!-- File Drop Area -->
-            <div class="drop-area" id="file-drop-area">
-                <div style="font-size: 26px; margin-bottom: 4px;">📁</div>
-                <div style="font-size: 13px; font-weight: 600; color: #00d2ff;" data-i18n="drop_file_text">Auto-load from file (.ini / .fen / .txt)</div>
-                <div style="font-size: 11px; color: #777;" data-i18n="drop_file_subtext">Drag and drop file here, or click to browse</div>
-                <input type="file" id="file-input" accept=".ini,.fen,.txt">
-            </div>
+            <p class="panel-desc" data-i18n="add_scen_desc">Copy and paste your FEN string directly below to save it into your scenario pool.</p>
 
             <!-- Manual Form -->
             <div class="form-group">
@@ -291,7 +263,10 @@
             </div>
 
             <div class="form-group">
-                <label data-i18n="lbl_fen">FEN Layout (Start FEN):</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="margin-bottom: 0;" data-i18n="lbl_fen">FEN Layout (Copy-Paste):</label>
+                    <button type="button" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;" onclick="panodanYapistir()" data-i18n="btn_paste_fen">📋 Paste from Clipboard</button>
+                </div>
                 <textarea id="scen-fen" class="form-control" rows="3" placeholder="e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
             </div>
 
@@ -361,12 +336,12 @@
                 scen_head_title: "WSN Senaryo & FEN Yönetim Paneli",
                 btn_back_to_board: "⬅ Ana Tahtaya Dön",
                 add_scen_title: "Yeni Senaryo / FEN Ekle & Kaydet",
-                add_scen_desc: "Dosyadan (.ini / .fen) yükleyebilir veya doğrudan FEN metni yapıştırarak kaydedebilirsiniz.",
-                drop_file_text: "Dosyadan Otomatik Yükle (.ini / .fen / .txt)",
-                drop_file_subtext: "Dosyayı buraya sürükleyin veya tıklayıp seçin",
+                add_scen_desc: "FEN dizilimini doğrudan kopyala-yapıştır (copy-paste) yaparak senaryo havuzuna kaydedebilirsiniz.",
                 lbl_scen_name: "Senaryo / Ağ Adı:",
                 ph_scen_name: "Örn: Sensör Darboğazı 1",
-                lbl_fen: "FEN Dizilimi (Start FEN):",
+                lbl_fen: "FEN Dizilimi (Copy-Paste):",
+                btn_paste_fen: "📋 Panodan Yapıştır",
+                toast_pasted: "✓ FEN panodan yapıştırıldı!",
                 ph_fen: "Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 lbl_variant_type: "Varyant Türü:",
                 opt_v_chess: "Klasik Satranç (chess)",
@@ -399,12 +374,12 @@
                 scen_head_title: "WSN Scenario & FEN Management Panel",
                 btn_back_to_board: "⬅ Back to Main Board",
                 add_scen_title: "Add & Save Scenario / FEN",
-                add_scen_desc: "Upload from file (.ini / .fen) or paste a FEN string directly to save in your scenario pool.",
-                drop_file_text: "Auto-load from file (.ini / .fen / .txt)",
-                drop_file_subtext: "Drag and drop file here, or click to browse",
+                add_scen_desc: "Copy and paste your FEN string directly below to save it into your scenario pool.",
                 lbl_scen_name: "Scenario / Network Name:",
                 ph_scen_name: "e.g., Sensor Bottleneck 1",
-                lbl_fen: "FEN Layout (Start FEN):",
+                lbl_fen: "FEN Layout (Copy-Paste):",
+                btn_paste_fen: "📋 Paste from Clipboard",
+                toast_pasted: "✓ FEN pasted from clipboard!",
                 ph_fen: "e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 lbl_variant_type: "Variant Type:",
                 opt_v_chess: "Standard Chess (chess)",
@@ -532,33 +507,17 @@
             }
         }
 
-        document.getElementById("file-input").addEventListener("change", function(e) {
-            const dosya = e.target.files[0];
-            if (!dosya) return;
-
-            const okuyucu = new FileReader();
-            okuyucu.onload = function(evt) {
-                const text = evt.target.result;
-                if (dosya.name.endsWith(".ini") || text.includes("[")) {
-                    const nameMatch = text.match(/\[(.*?)(?::|\])/);
-                    if (nameMatch) document.getElementById("scen-name").value = nameMatch[1].trim();
-                    
-                    const fenMatch = text.match(/startFen\s*=\s*([^\r\n]+)/);
-                    if (fenMatch) document.getElementById("scen-fen").value = fenMatch[1].trim();
-
-                    const rankMatch = text.match(/maxRank\s*=\s*(\d+)/);
-                    if (rankMatch) document.getElementById("scen-rank").value = rankMatch[1].trim();
-
-                    const fileMatch = text.match(/maxFile\s*=\s*(\d+)/);
-                    if (fileMatch) document.getElementById("scen-file").value = fileMatch[1].trim();
-                } else {
-                    document.getElementById("scen-name").value = dosya.name.replace(/\.[^/.]+$/, "");
+        async function panodanYapistir() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim()) {
                     document.getElementById("scen-fen").value = text.trim();
+                    showToast(t("toast_pasted"));
                 }
-                showToast(t("toast_file_loaded"));
-            };
-            okuyucu.readAsText(dosya);
-        });
+            } catch (err) {
+                document.getElementById("scen-fen").focus();
+            }
+        }
 
         function showToast(msg) {
             const toast = document.getElementById("toast");
@@ -695,6 +654,14 @@
         // Initialize
         varsayilanSenaryolariYukle();
         dilUygula();
+        window.addEventListener("storage", (e) => {
+            if (e.key === "wsn_dil" && e.newValue && e.newValue !== mevcutDil) {
+                mevcutDil = e.newValue;
+                dilUygula();
+            } else if (e.key === "wsn_saved_scenarios") {
+                senaryolariListele();
+            }
+        });
     </script>
 </body>
 </html>

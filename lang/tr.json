@@ -98,5 +98,6 @@
   "btn_auto_sim": "▶ Otonom Simülasyon (Canlı Demo)",
   "btn_stop_sim": "⏹ Simülasyonu Durdur",
   "manage_scenarios_btn": "⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)",
-  "opt_custom_scenarios": "📂 Kayıtlı Senaryolar / FEN"
+  "opt_custom_scenarios": "📂 Kayıtlı Senaryolar / FEN",
+  "btn_flip": "🔄 Ters Çevir"
 }

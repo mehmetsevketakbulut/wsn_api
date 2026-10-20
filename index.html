@@ -355,6 +355,15 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(67, 160, 71, 0.6);
         }
+        #btn-ters-cevir {
+            background: linear-gradient(135deg, #8e24aa, #ab47bc);
+            box-shadow: 0 2px 8px rgba(142, 36, 170, 0.4);
+        }
+        #btn-ters-cevir:hover:not(:disabled) {
+            background: linear-gradient(135deg, #9c27b0, #ba68c8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(142, 36, 170, 0.6);
+        }
         .nav-btn:disabled {
             background: #232733 !important;
             color: #5c6275 !important;
@@ -396,7 +405,7 @@
                     <option value="crazyhouse" data-i18n="opt_crazyhouse">Crazyhouse (Node Injection)</option>
                     <option value="xiangqi" data-i18n="opt_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
                 </select>
-                <a href="senaryolar.html" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
+                <a href="senaryolar.html" target="_blank" rel="noopener noreferrer" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
                     ⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)
                 </a>
             </div>
@@ -425,10 +434,11 @@
             <div id="wsn-grid"></div>
 
             <!-- Oyun Geçmişi Navigasyon -->
-            <div id="game-nav" style="display: none; gap: 4px; margin-top: 8px;">
+            <div id="game-nav" style="display: flex; gap: 4px; margin-top: 8px;">
                 <button class="nav-btn" id="btn-basa-don" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
                 <button class="nav-btn" id="btn-geri" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
                 <button class="nav-btn" id="btn-ileri" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
+                <button class="nav-btn" id="btn-ters-cevir" onclick="tahtayiTersCevir()" data-i18n="btn_flip">🔄 Ters Çevir</button>
             </div>
         </div>
 
@@ -789,8 +799,62 @@ function ileriAl() {
 }
 
 // =========================================================================
-// TAHTA ÇİZİMİ (DİNAMİK GRID)
+// TAHTA ÇİZİMİ (DİNAMİK GRID) & TERS ÇEVİRME (FLIP BOARD)
 // =========================================================================
+let tahtaTersMi = false;
+
+function tahtayiTersCevir() {
+    tahtaTersMi = !tahtaTersMi;
+    tahtaYonuUygula();
+    hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Ters Çevir]" : "[Flip]");
+    if (sonRaporVerisi) {
+        sonRaporVerisi.fen = aktifFen;
+        sonRaporVerisi.tarih_obj = new Date();
+    }
+}
+
+function tahtaYonuUygula() {
+    const grid = document.getElementById("wsn-grid");
+    if (!grid) return;
+    const kareler = Array.from(grid.querySelectorAll(".kare"));
+    if (kareler.length === 0) return;
+
+    const satir = gridSatir || 8;
+    const sutun = gridSutun || 8;
+    const harfler = "abcdefghijklmnopqrstuvwxyz";
+
+    // Kareleri normal (0..N-1) veya ters (N-1..0) sıraya göre yeniden diz
+    kareler.sort((a, b) => {
+        const [, sa, sta] = a.id.split('-').map(Number);
+        const [, sb, stb] = b.id.split('-').map(Number);
+        const idxA = sa * sutun + sta;
+        const idxB = sb * sutun + stb;
+        return tahtaTersMi ? (idxB - idxA) : (idxA - idxB);
+    });
+
+    kareler.forEach(kare => {
+        grid.appendChild(kare);
+        kare.querySelectorAll(".coord-rank, .coord-file").forEach(el => el.remove());
+
+        const [, s, st] = kare.id.split('-').map(Number);
+        const solSutunMu = tahtaTersMi ? (st === sutun - 1) : (st === 0);
+        const altSatirMi = tahtaTersMi ? (s === 0) : (s === satir - 1);
+
+        if (solSutunMu) {
+            const spanR = document.createElement("span");
+            spanR.className = "coord-rank";
+            spanR.innerText = (satir - s);
+            kare.appendChild(spanR);
+        }
+        if (altSatirMi) {
+            const spanF = document.createElement("span");
+            spanF.className = "coord-file";
+            spanF.innerText = harfler[st];
+            kare.appendChild(spanF);
+        }
+    });
+}
+
 function tahtaOlustur(satir = 8, sutun = 8) {
     const grid = document.getElementById("wsn-grid");
     grid.innerHTML = "";
@@ -825,6 +889,10 @@ function tahtaOlustur(satir = 8, sutun = 8) {
             acikKare = !acikKare;
         }
         if (sutun % 2 === 0) acikKare = !acikKare;
+    }
+
+    if (tahtaTersMi) {
+        tahtaYonuUygula();
     }
 }
 
@@ -1897,6 +1965,23 @@ function pdfRaporIndir() {
     }
 
     healthCheck();
+
+    // Diğer sekmedeki (senaryolar.html) değişiklikleri canlı yakala
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'wsn_saved_scenarios') {
+            kayitliSenaryolariDropdownaYukle();
+        } else if (e.key === 'wsn_active_scenario' && e.newValue) {
+            kayitliSenaryolariDropdownaYukle();
+            const select = document.getElementById('variant-dropdown');
+            if (select) {
+                select.value = e.newValue;
+                varyantDropdownDegisti();
+            }
+            localStorage.removeItem('wsn_active_scenario');
+        } else if (e.key === 'wsn_dil' && e.newValue && e.newValue !== mevcutDil) {
+            dilYukle(e.newValue);
+        }
+    });
 })();
 </script>
 
