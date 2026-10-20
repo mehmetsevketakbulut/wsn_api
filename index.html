@@ -545,10 +545,9 @@ function dilUygula() {
         btnSim.textContent = (typeof simAktif !== 'undefined' && simAktif) ? t("btn_stop_sim") : t("btn_auto_sim");
     }
 
-    // Kayıtlı senaryolar optgroup başlığını güncelle
-    const optGroup = document.getElementById('optgroup-custom-scenarios');
-    if (optGroup) {
-        optGroup.label = t('opt_custom_scenarios');
+    // Kayıtlı senaryolar listesini aktif dile göre yenile
+    if (typeof kayitliSenaryolariDropdownaYukle === 'function') {
+        kayitliSenaryolariDropdownaYukle();
     }
 
     // Aktif varyant varsa paneli yeniden çiz (badge + tablo dinamik t() çağrıları)
@@ -1152,22 +1151,27 @@ function kayitliSenaryolariDropdownaYukle() {
     const select = document.getElementById('variant-dropdown');
     if (!select) return;
 
+    const currentVal = select.value;
     const existingGroup = document.getElementById('optgroup-custom-scenarios');
     if (existingGroup) existingGroup.remove();
 
-    const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
+    let saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
     if (saved.length > 0) {
         const optgroup = document.createElement('optgroup');
         optgroup.id = 'optgroup-custom-scenarios';
         optgroup.label = t('opt_custom_scenarios');
 
         saved.forEach(scen => {
+            if (scen.id === 'custom_seed_1' && !scen.ad_en) scen.ad_en = 'Critical Node Analysis (Endgame Test)';
+            if (scen.id === 'custom_seed_2' && !scen.ad_en) scen.ad_en = 'Extended Network Topology (Capablanca)';
             const opt = document.createElement('option');
             opt.value = scen.id;
-            opt.textContent = `${scen.ad} (${scen.maxRank || 8}x${scen.maxFile || 8})`;
+            const title = (mevcutDil === 'tr') ? (scen.ad_tr || scen.ad) : (scen.ad_en || scen.ad);
+            opt.textContent = `${title} (${scen.maxRank || 8}x${scen.maxFile || 8})`;
             optgroup.appendChild(opt);
         });
         select.appendChild(optgroup);
+        if (currentVal) select.value = currentVal;
     }
 }
 

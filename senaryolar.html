@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="scen_page_title">WSN Senaryo & FEN Yönetimi</title>
+    <title data-i18n="scen_page_title">WSN Scenario & FEN Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cascadia+Code&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -258,12 +258,12 @@
     <div class="header">
         <div class="header-title">
             <span>🛰️</span>
-            <span data-i18n="scen_head_title">WSN Senaryo & FEN Yönetim Paneli</span>
+            <span data-i18n="scen_head_title">WSN Scenario & FEN Management Panel</span>
         </div>
         <div class="header-actions">
-            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">EN</button>
+            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">TR</button>
             <a href="index.html" class="btn btn-primary" data-i18n="btn_back_to_board">
-                ⬅ Ana Tahtaya Dön
+                ⬅ Back to Main Board
             </a>
         </div>
     </div>
@@ -271,44 +271,44 @@
     <!-- === GRID CONTAINER === -->
     <div class="grid-container">
 
-        <!-- ================= PANEL 1: YENİ SENARYO EKLE ================= -->
+        <!-- ================= PANEL 1: ADD NEW SCENARIO ================= -->
         <div class="panel">
-            <h2>➕ <span data-i18n="add_scen_title">Yeni Senaryo / FEN Ekle & Kaydet</span></h2>
-            <p class="panel-desc" data-i18n="add_scen_desc">Dosyadan (.ini / .fen) yükleyebilir veya doğrudan FEN metni yapıştırarak kaydedebilirsiniz.</p>
+            <h2>➕ <span data-i18n="add_scen_title">Add & Save Scenario / FEN</span></h2>
+            <p class="panel-desc" data-i18n="add_scen_desc">Upload from file (.ini / .fen) or paste a FEN string directly to save in your scenario pool.</p>
 
             <!-- File Drop Area -->
             <div class="drop-area" id="file-drop-area">
                 <div style="font-size: 26px; margin-bottom: 4px;">📁</div>
-                <div style="font-size: 13px; font-weight: 600; color: #00d2ff;" data-i18n="drop_file_text">Dosyadan Otomatik Yükle (.ini / .fen / .txt)</div>
-                <div style="font-size: 11px; color: #777;" data-i18n="drop_file_subtext">Dosyayı buraya sürükleyin veya tıklayıp seçin</div>
+                <div style="font-size: 13px; font-weight: 600; color: #00d2ff;" data-i18n="drop_file_text">Auto-load from file (.ini / .fen / .txt)</div>
+                <div style="font-size: 11px; color: #777;" data-i18n="drop_file_subtext">Drag and drop file here, or click to browse</div>
                 <input type="file" id="file-input" accept=".ini,.fen,.txt">
             </div>
 
             <!-- Manual Form -->
             <div class="form-group">
-                <label data-i18n="lbl_scen_name">Senaryo / Ağ Adı:</label>
-                <input type="text" id="scen-name" class="form-control" placeholder="Örn: Sensör Darboğazı 1">
+                <label data-i18n="lbl_scen_name">Scenario / Network Name:</label>
+                <input type="text" id="scen-name" class="form-control" placeholder="e.g., Sensor Bottleneck 1">
             </div>
 
             <div class="form-group">
-                <label data-i18n="lbl_fen">FEN Dizilimi (Start FEN):</label>
-                <textarea id="scen-fen" class="form-control" rows="3" placeholder="Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
+                <label data-i18n="lbl_fen">FEN Layout (Start FEN):</label>
+                <textarea id="scen-fen" class="form-control" rows="3" placeholder="e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
             </div>
 
             <div class="row-2">
                 <div class="form-group">
-                    <label data-i18n="lbl_variant_type">Varyant Türü:</label>
+                    <label data-i18n="lbl_variant_type">Variant Type:</label>
                     <select id="scen-variant" class="form-control" onchange="varyantDegisti()">
-                        <option value="chess">Klasik Satranç (chess)</option>
-                        <option value="nizami">Nizami'nin Oyunu (shatranj)</option>
-                        <option value="capablanca">Capablanca Satrancı (10x8)</option>
-                        <option value="crazyhouse">Crazyhouse (Düğüm Enjeksiyonu)</option>
-                        <option value="xiangqi">Xiangqi (Çin Satrancı 10x9)</option>
-                        <option value="custom">Özel Topoloji (Custom)</option>
+                        <option value="chess" data-i18n="opt_v_chess">Standard Chess (chess)</option>
+                        <option value="nizami" data-i18n="opt_v_nizami">Nizami's Game (shatranj)</option>
+                        <option value="capablanca" data-i18n="opt_v_capablanca">Capablanca Chess (10x8)</option>
+                        <option value="crazyhouse" data-i18n="opt_v_crazyhouse">Crazyhouse (Node Injection)</option>
+                        <option value="xiangqi" data-i18n="opt_v_xiangqi">Xiangqi (Chinese Chess 10x9)</option>
+                        <option value="custom" data-i18n="opt_v_custom">Custom Topology (Custom)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label data-i18n="lbl_grid_dim">Izgara Boyutu (Satır x Sütun):</label>
+                    <label data-i18n="lbl_grid_dim">Grid Size (Rank × File):</label>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <input type="number" id="scen-rank" class="form-control" min="4" max="16" value="8" style="text-align:center;">
                         <span style="color:#777;">×</span>
@@ -318,33 +318,33 @@
             </div>
 
             <div class="form-group">
-                <label data-i18n="lbl_notes">Açıklama / Notlar (Opsiyonel):</label>
-                <input type="text" id="scen-notes" class="form-control" placeholder="Örn: 2 sensör izole durumda, yüksek öncelikli yönlendirme">
+                <label data-i18n="lbl_notes">Description / Notes (Optional):</label>
+                <input type="text" id="scen-notes" class="form-control" placeholder="e.g., 2 isolated sensor nodes, high-priority routing">
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 16px;">
                 <button class="btn btn-success" style="flex: 2;" onclick="senaryoKaydet()" data-i18n="btn_save_scen">
-                    💾 Senaryoyu Kaydet
+                    💾 Save Scenario
                 </button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="formTemizle()" data-i18n="btn_clear_form">
-                    🧹 Temizle
+                    🧹 Clear
                 </button>
             </div>
         </div>
 
-        <!-- ================= PANEL 2: KAYITLI SENARYOLAR ================= -->
+        <!-- ================= PANEL 2: SAVED SCENARIOS ================= -->
         <div class="panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <h2>📂 <span data-i18n="saved_pool_title">Kayıtlı Senaryolar & FEN Havuzu</span> (<span id="scen-count">0</span>)</h2>
+                <h2>📂 <span data-i18n="saved_pool_title">Saved Scenarios & FEN Pool</span> (<span id="scen-count">0</span>)</h2>
             </div>
-            <p class="panel-desc" data-i18n="saved_pool_desc">Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde listelenir.</p>
+            <p class="panel-desc" data-i18n="saved_pool_desc">Saved scenarios will immediately appear in the variant dropdown on the main board.</p>
 
             <div class="form-group">
-                <input type="text" id="search-input" class="form-control" oninput="senaryolariListele()" placeholder="🔍 Senaryo ara...">
+                <input type="text" id="search-input" class="form-control" oninput="senaryolariListele()" placeholder="🔍 Search scenarios...">
             </div>
 
             <div id="scenarios-list" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
-                <!-- Dinamik liste buraya yüklenir -->
+                <!-- Dynamic list loaded here -->
             </div>
         </div>
 
@@ -354,7 +354,6 @@
     <div id="toast"></div>
 
     <script>
-        // Dil ve Metin Tanımları
         let mevcutDil = localStorage.getItem("wsn_dil") || "en";
         const I18N = {
             tr: {
@@ -366,22 +365,34 @@
                 drop_file_text: "Dosyadan Otomatik Yükle (.ini / .fen / .txt)",
                 drop_file_subtext: "Dosyayı buraya sürükleyin veya tıklayıp seçin",
                 lbl_scen_name: "Senaryo / Ağ Adı:",
+                ph_scen_name: "Örn: Sensör Darboğazı 1",
                 lbl_fen: "FEN Dizilimi (Start FEN):",
+                ph_fen: "Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 lbl_variant_type: "Varyant Türü:",
+                opt_v_chess: "Klasik Satranç (chess)",
+                opt_v_nizami: "Nizami'nin Oyunu (shatranj)",
+                opt_v_capablanca: "Capablanca Satrancı (10x8)",
+                opt_v_crazyhouse: "Crazyhouse (Düğüm Enjeksiyonu)",
+                opt_v_xiangqi: "Xiangqi (Çin Satrancı 10x9)",
+                opt_v_custom: "Özel Topoloji (Custom)",
                 lbl_grid_dim: "Izgara Boyutu (Satır × Sütun):",
                 lbl_notes: "Açıklama / Notlar (Opsiyonel):",
+                ph_notes: "Örn: 2 sensör izole durumda, yüksek öncelikli yönlendirme",
                 btn_save_scen: "💾 Senaryoyu Kaydet",
                 btn_clear_form: "🧹 Temizle",
                 saved_pool_title: "Kayıtlı Senaryolar & FEN Havuzu",
                 saved_pool_desc: "Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde doğrudan listelenir.",
                 search_placeholder: "🔍 Senaryo ara...",
                 toast_saved: "✓ Senaryo başarıyla kaydedildi!",
+                toast_file_loaded: "✓ Dosya bilgileri forma aktarıldı!",
                 toast_deleted: "✓ Senaryo silindi.",
                 confirm_delete: "Bu senaryoyu silmek istediğinize emin misiniz?",
                 btn_play_on_board: "▶ Tahtada Başlat",
                 btn_copy_fen: "📋 Kopyala",
                 copied_fen: "Kopyalandı!",
-                empty_pool: "Henüz kayıtlı özel senaryo bulunmuyor. Soldaki panelden yeni bir senaryo ekleyebilirsiniz."
+                empty_pool: "Henüz kayıtlı özel senaryo bulunmuyor. Soldaki panelden yeni bir senaryo ekleyebilirsiniz.",
+                err_no_name: "Lütfen senaryoya bir ad verin.",
+                err_no_fen: "Lütfen geçerli bir FEN dizilimi girin."
             },
             en: {
                 scen_page_title: "WSN Scenario & FEN Management",
@@ -392,22 +403,34 @@
                 drop_file_text: "Auto-load from file (.ini / .fen / .txt)",
                 drop_file_subtext: "Drag and drop file here, or click to browse",
                 lbl_scen_name: "Scenario / Network Name:",
+                ph_scen_name: "e.g., Sensor Bottleneck 1",
                 lbl_fen: "FEN Layout (Start FEN):",
+                ph_fen: "e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 lbl_variant_type: "Variant Type:",
+                opt_v_chess: "Standard Chess (chess)",
+                opt_v_nizami: "Nizami's Game (shatranj)",
+                opt_v_capablanca: "Capablanca Chess (10x8)",
+                opt_v_crazyhouse: "Crazyhouse (Node Injection)",
+                opt_v_xiangqi: "Xiangqi (Chinese Chess 10x9)",
+                opt_v_custom: "Custom Topology (Custom)",
                 lbl_grid_dim: "Grid Size (Rank × File):",
                 lbl_notes: "Description / Notes (Optional):",
+                ph_notes: "e.g., 2 isolated sensor nodes, high-priority routing",
                 btn_save_scen: "💾 Save Scenario",
                 btn_clear_form: "🧹 Clear",
                 saved_pool_title: "Saved Scenarios & FEN Pool",
                 saved_pool_desc: "Saved scenarios will immediately appear in the variant dropdown on the main board.",
                 search_placeholder: "🔍 Search scenarios...",
                 toast_saved: "✓ Scenario successfully saved!",
+                toast_file_loaded: "✓ File loaded into form!",
                 toast_deleted: "✓ Scenario deleted.",
                 confirm_delete: "Are you sure you want to delete this scenario?",
                 btn_play_on_board: "▶ Launch on Board",
                 btn_copy_fen: "📋 Copy",
                 copied_fen: "Copied!",
-                empty_pool: "No custom scenarios saved yet. Use the panel on the left to add one."
+                empty_pool: "No custom scenarios saved yet. Use the panel on the left to add one.",
+                err_no_name: "Please provide a scenario name.",
+                err_no_fen: "Please provide a valid FEN string."
             }
         };
 
@@ -416,13 +439,21 @@
         }
 
         function dilUygula() {
+            document.documentElement.lang = mevcutDil;
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const k = el.getAttribute("data-i18n");
-                if (I18N[mevcutDil][k]) {
-                    el.textContent = I18N[mevcutDil][k];
+                if (I18N[mevcutDil] && I18N[mevcutDil][k]) {
+                    if (el.tagName === "TITLE") {
+                        document.title = I18N[mevcutDil][k];
+                    } else {
+                        el.textContent = I18N[mevcutDil][k];
+                    }
                 }
             });
             document.getElementById("lang-btn").textContent = mevcutDil === "tr" ? "EN" : "TR";
+            document.getElementById("scen-name").placeholder = t("ph_scen_name");
+            document.getElementById("scen-fen").placeholder = t("ph_fen");
+            document.getElementById("scen-notes").placeholder = t("ph_notes");
             document.getElementById("search-input").placeholder = t("search_placeholder");
             senaryolariListele();
         }
@@ -433,33 +464,55 @@
             dilUygula();
         }
 
-        // Pre-seed demo scenarios if localStorage is empty
+        const SEED_SCENARIOS = [
+            {
+                id: "custom_seed_1",
+                ad: "Critical Node Analysis (Endgame Test)",
+                ad_tr: "Kritik Ağ Düğümü (Oyun Sonu Testi)",
+                ad_en: "Critical Node Analysis (Endgame Test)",
+                fen: "8/8/4k3/8/8/3K4/4P3/8 w - - 0 1",
+                varyant: "chess",
+                maxRank: 8,
+                maxFile: 8,
+                notlar: "Single-relay bottleneck optimization test.",
+                notlar_tr: "Tek piyon geçişli kritik düğüm optimizasyon testi.",
+                notlar_en: "Single-relay bottleneck optimization test.",
+                tarih: "2026-10-20"
+            },
+            {
+                id: "custom_seed_2",
+                ad: "Extended Network Topology (Capablanca)",
+                ad_tr: "Genişletilmiş Ağ Topolojisi (Capablanca)",
+                ad_en: "Extended Network Topology (Capablanca)",
+                fen: "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1",
+                varyant: "capablanca",
+                maxRank: 8,
+                maxFile: 10,
+                notlar: "10x8 extended node layout (Archbishop & Chancellor nodes).",
+                notlar_tr: "10x8 genişletilmiş düğüm dağılımı (Archbishop & Chancellor düğümleri).",
+                notlar_en: "10x8 extended node layout (Archbishop & Chancellor nodes).",
+                tarih: "2026-10-20"
+            }
+        ];
+
         function varsayilanSenaryolariYukle() {
             let saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "null");
             if (!saved || saved.length === 0) {
-                saved = [
-                    {
-                        id: "custom_seed_1",
-                        ad: "Kritik Ağ Düğümü (Oyun Sonu Testi)",
-                        fen: "8/8/4k3/8/8/3K4/4P3/8 w - - 0 1",
-                        varyant: "chess",
-                        maxRank: 8,
-                        maxFile: 8,
-                        notlar: "Tek piyon geçişli kritik düğüm optimizasyon testi.",
-                        tarih: new Date().toLocaleDateString()
-                    },
-                    {
-                        id: "custom_seed_2",
-                        ad: "Genişletilmiş Ağ Topolojisi (Capablanca)",
-                        fen: "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1",
-                        varyant: "capablanca",
-                        maxRank: 8,
-                        maxFile: 10,
-                        notlar: "10x8 genişletilmiş düğüm dağılımı (Archbishop & Chancellor düğümleri).",
-                        tarih: new Date().toLocaleDateString()
+                localStorage.setItem("wsn_saved_scenarios", JSON.stringify(SEED_SCENARIOS));
+            } else {
+                // Upgrade any older seed entries so they have bilingual fields
+                let changed = false;
+                saved = saved.map(item => {
+                    const seedMatch = SEED_SCENARIOS.find(s => s.id === item.id);
+                    if (seedMatch && (!item.ad_en || !item.notlar_en)) {
+                        changed = true;
+                        return { ...item, ...seedMatch };
                     }
-                ];
-                localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+                    return item;
+                });
+                if (changed) {
+                    localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+                }
             }
         }
 
@@ -479,7 +532,6 @@
             }
         }
 
-        // File upload parsing
         document.getElementById("file-input").addEventListener("change", function(e) {
             const dosya = e.target.files[0];
             if (!dosya) return;
@@ -488,7 +540,6 @@
             okuyucu.onload = function(evt) {
                 const text = evt.target.result;
                 if (dosya.name.endsWith(".ini") || text.includes("[")) {
-                    // INI dosyasını ayrıştır
                     const nameMatch = text.match(/\[(.*?)(?::|\])/);
                     if (nameMatch) document.getElementById("scen-name").value = nameMatch[1].trim();
                     
@@ -501,11 +552,10 @@
                     const fileMatch = text.match(/maxFile\s*=\s*(\d+)/);
                     if (fileMatch) document.getElementById("scen-file").value = fileMatch[1].trim();
                 } else {
-                    // Düz FEN metni
                     document.getElementById("scen-name").value = dosya.name.replace(/\.[^/.]+$/, "");
                     document.getElementById("scen-fen").value = text.trim();
                 }
-                showToast(t("toast_saved"));
+                showToast(t("toast_file_loaded"));
             };
             okuyucu.readAsText(dosya);
         });
@@ -535,22 +585,26 @@
             const notlar = document.getElementById("scen-notes").value.trim();
 
             if (!ad) {
-                alert(mevcutDil === "tr" ? "Lütfen senaryoya bir ad verin." : "Please provide a scenario name.");
+                alert(t("err_no_name"));
                 return;
             }
             if (!fen) {
-                alert(mevcutDil === "tr" ? "Lütfen bir FEN dizilimi girin." : "Please provide a valid FEN string.");
+                alert(t("err_no_fen"));
                 return;
             }
 
             const yeniSenaryo = {
                 id: "custom_" + Date.now(),
                 ad: ad,
+                ad_tr: ad,
+                ad_en: ad,
                 fen: fen,
                 varyant: varyant,
                 maxRank: rank,
                 maxFile: file,
                 notlar: notlar,
+                notlar_tr: notlar,
+                notlar_en: notlar,
                 tarih: new Date().toLocaleDateString()
             };
 
@@ -585,6 +639,14 @@
             });
         }
 
+        function getScenTitle(s) {
+            return mevcutDil === "tr" ? (s.ad_tr || s.ad) : (s.ad_en || s.ad);
+        }
+
+        function getScenNotes(s) {
+            return mevcutDil === "tr" ? (s.notlar_tr !== undefined ? s.notlar_tr : s.notlar) : (s.notlar_en !== undefined ? s.notlar_en : s.notlar);
+        }
+
         function senaryolariListele() {
             const container = document.getElementById("scenarios-list");
             const filter = (document.getElementById("search-input").value || "").toLowerCase();
@@ -592,28 +654,32 @@
             
             document.getElementById("scen-count").textContent = saved.length;
 
-            const filtered = saved.filter(s => 
-                s.ad.toLowerCase().includes(filter) || 
-                (s.fen && s.fen.toLowerCase().includes(filter)) ||
-                (s.notlar && s.notlar.toLowerCase().includes(filter))
-            );
+            const filtered = saved.filter(s => {
+                const title = getScenTitle(s).toLowerCase();
+                const notes = (getScenNotes(s) || "").toLowerCase();
+                const fen = (s.fen || "").toLowerCase();
+                return title.includes(filter) || fen.includes(filter) || notes.includes(filter);
+            });
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding: 40px 10px; color: #666; font-size: 13px;">${t("empty_pool")}</div>`;
                 return;
             }
 
-            container.innerHTML = filtered.map(s => `
+            container.innerHTML = filtered.map(s => {
+                const title = getScenTitle(s);
+                const notes = getScenNotes(s);
+                return `
                 <div class="scen-card">
                     <div class="scen-header">
                         <div class="scen-title">
-                            ${s.ad}
+                            ${title}
                             <span class="badge">${s.maxRank}×${s.maxFile}</span>
                             <span class="badge" style="background:#ff980022; color:#ff9800; border-color:#ff980044;">${s.varyant}</span>
                         </div>
                     </div>
                     <div class="scen-fen">${s.fen}</div>
-                    ${s.notlar ? `<div class="scen-notes">💬 ${s.notlar}</div>` : ''}
+                    ${notes ? `<div class="scen-notes">💬 ${notes}</div>` : ''}
                     <div class="scen-footer">
                         <div class="scen-date">📅 ${s.tarih || "-"}</div>
                         <div class="scen-actions">
@@ -623,10 +689,10 @@
                         </div>
                     </div>
                 </div>
-            `).join("");
+            `}).join("");
         }
 
-        // Başlangıç
+        // Initialize
         varsayilanSenaryolariYukle();
         dilUygula();
     </script>
