@@ -1,1900 +1,3799 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="page_title">WSN Otonom Karar & Filtreleme Paneli</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0a0a1a;
-            color: #e0e0e0;
-            min-height: 100vh;
-        }
-
-        /* --- HEADER --- */
-        .header {
-            background: linear-gradient(135deg, #1a1a3e, #0d0d2b);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #00d2ff33;
-        }
-        .header h1 {
-            font-size: 18px;
-            color: #00d2ff;
-            letter-spacing: 1px;
-        }
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .lang-btn {
-            background: transparent;
-            border: 2px solid #00d2ff;
-            color: #00d2ff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-        .lang-btn:hover { background: #00d2ff22; }
-        .health-dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-            background: #666;
-            transition: background 0.3s;
-        }
-        .health-dot.ok { background: #4CAF50; box-shadow: 0 0 8px #4CAF5088; }
-        .health-dot.fail { background: #f44336; box-shadow: 0 0 8px #f4433688; }
-        .health-dot.checking { background: #ff9800; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        .health-label {
-            font-size: 12px;
-            color: #888;
-        }
-
-        /* --- LAYOUT --- */
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        @media (max-width: 1000px) {
-            .container { grid-template-columns: 1fr; }
-        }
-
-        /* --- PANELS --- */
-        .panel {
-            background: linear-gradient(180deg, #1a1a3e, #12122a);
-            padding: 24px;
-            border-radius: 14px;
-            border: 1px solid #ffffff0a;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        }
-        .panel h2 {
-            color: #00d2ff;
-            margin-bottom: 4px;
-            font-size: 17px;
-            border-bottom: 1px solid #ffffff10;
-            padding-bottom: 10px;
-        }
-        .panel-desc {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 16px;
-        }
-
-        /* --- VERI KUTUSU --- */
-        .veri-kutusu {
-            background: #0d0d25;
-            margin: 10px 0;
-            padding: 14px;
-            border-radius: 10px;
-            border-left: 4px solid #00d2ff;
-        }
-        .veri-kutusu .label { font-size: 12px; color: #888; margin-bottom: 4px; }
-        .veri-kutusu .deger {
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            word-wrap: break-word;
-        }
-
-        /* --- BUTTONS --- */
-        .btn {
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            width: 100%;
-            margin-top: 12px;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: #00d2ff; color: #0a0a1a; }
-        .btn-primary:hover { background: #00b8e6; transform: translateY(-1px); }
-        .btn-primary:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; }
-        .btn-accent { background: #ff4081; color: white; }
-        .btn-accent:hover { background: #e63973; transform: translateY(-1px); }
-
-        /* --- FILE UPLOAD --- */
-        .file-upload-area {
-            border: 2px dashed #00d2ff44;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            margin-bottom: 12px;
-        }
-        .file-upload-area:hover { border-color: #00d2ff; background: #00d2ff08; }
-        .file-upload-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .file-upload-area .upload-icon { font-size: 28px; margin-bottom: 6px; }
-        .file-upload-area .upload-text { font-size: 13px; color: #888; }
-
-        /* --- BADGE --- */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .badge-success { background: #4CAF5033; color: #4CAF50; border: 1px solid #4CAF5044; }
-        .badge-warning { background: #ff980033; color: #ff9800; border: 1px solid #ff980044; }
-        .badge-info { background: #00d2ff22; color: #00d2ff; border: 1px solid #00d2ff33; }
-
-        /* --- VARIANT PARAMS TABLE --- */
-        .param-table {
-            width: 100%;
-            font-size: 13px;
-            margin-top: 10px;
-        }
-        .param-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #ffffff08;
-        }
-        .param-table td:first-child { color: #888; width: 45%; }
-        .param-table td:last-child { color: #fff; font-weight: 500; }
-
-        /* --- WSN GRID --- */
-        #wsn-grid {
-            display: grid;
-            gap: 2px;
-            margin-top: 14px;
-            justify-content: center;
-            background: #0005;
-            padding: 6px;
-            border-radius: 8px;
-        }
-        .kare {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #121212;
-            min-width: 0;
-            aspect-ratio: 1;
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-        }
-        .kare.acik { background-color: #cfd8dc; }
-        .kare.koyu { background-color: #78909c; }
-        .kare.secili {
-            background-color: #2196F3 !important;
-            box-shadow: inset 0 0 10px #ffffffaa;
-            border-radius: 4px;
-        }
-        
-        /* Satranç Koordinatları (a-b-c, 1-2-3) */
-        .coord-rank {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 9px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-        .coord-file {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 9px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-        .kare.acik .coord-rank, .kare.acik .coord-file { color: #78909c; }
-        .kare.koyu .coord-rank, .kare.koyu .coord-file { color: #cfd8dc; }
-
-        .tas-val {
-            font-size: 2.2em; /* Taşları büyüt */
-            line-height: 1;
-        }
-
-        .tas-W { color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2; }
-        .tas-B { color: #1a1a1a; text-shadow: 1px 1px 2px #ffffff88; z-index: 2; }
-
-        /* --- INPUT --- */
-        input[type="number"] {
-            background: #0d0d25;
-            color: #fff;
-            border: 1px solid #ffffff20;
-            padding: 10px 14px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 14px;
-            margin-top: 6px;
-        }
-        input[type="number"]:focus { outline: none; border-color: #00d2ff; }
-
-        /* --- SPINNER --- */
-        .spinner {
-            display: inline-block;
-            width: 16px; height: 16px;
-            border: 2px solid #ffffff44;
-            border-top-color: #00d2ff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- FEN TEXT --- */
-        .fen-text {
-            color: #ffeb3b;
-            font-family: 'Cascadia Code', 'Fira Code', monospace;
-            font-size: 12px;
-            word-wrap: break-word;
-            line-height: 1.6;
-        }
-
-        /* --- ROTA VURGULAMA (BESTMOVE HIGHLIGHT) --- */
-        .kare.rota-kalkis {
-            background: #4CAF50 !important;
-            box-shadow: 0 0 12px #4CAF50aa, inset 0 0 6px #ffffff44;
-            animation: rotaPulse 1.2s ease-in-out infinite;
-            border-radius: 4px;
-        }
-        .kare.rota-varis {
-            background: #FFD700 !important;
-            box-shadow: 0 0 14px #FFD700aa, inset 0 0 6px #ffffff44;
-            animation: rotaPulse 1.2s ease-in-out infinite 0.3s;
-            border-radius: 4px;
-        }
-        @keyframes rotaPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-        .rota-ok {
-            font-size: 10px;
-            color: #4CAF50;
-            margin-top: 6px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* --- RAPOR BUTONU --- */
-        .btn-report {
-            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            width: 100%;
-            margin-top: 10px;
-            transition: all 0.2s;
-            display: none;
-        }
-        .btn-report:hover { background: linear-gradient(135deg, #ab47bc, #8e24aa); transform: translateY(-1px); }
-        .btn-report.visible { display: block; }
-
-        /* --- NAVIGATION BUTTONS --- */
-        .nav-btn {
-            flex: 1;
-            color: #ffffff;
-            font-size: 11px;
-            padding: 7px 8px;
-            margin: 0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            letter-spacing: 0.3px;
-            transition: all 0.2s ease;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-        }
-        #btn-basa-don {
-            background: linear-gradient(135deg, #ff6d00, #ff9100);
-            box-shadow: 0 2px 8px rgba(255, 109, 0, 0.4);
-        }
-        #btn-basa-don:hover:not(:disabled) {
-            background: linear-gradient(135deg, #ff7d1a, #ffa726);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(255, 109, 0, 0.6);
-        }
-        #btn-geri {
-            background: linear-gradient(135deg, #1976d2, #2196f3);
-            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
-        }
-        #btn-geri:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2185d0, #42a5f5);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.6);
-        }
-        #btn-ileri {
-            background: linear-gradient(135deg, #2e7d32, #43a047);
-            box-shadow: 0 2px 8px rgba(67, 160, 71, 0.4);
-        }
-        #btn-ileri:hover:not(:disabled) {
-            background: linear-gradient(135deg, #388e3c, #4caf50);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.6);
-        }
-        .nav-btn:disabled {
-            background: #232733 !important;
-            color: #5c6275 !important;
-            border: 1px solid #323747 !important;
-            box-shadow: none !important;
-            text-shadow: none !important;
-            opacity: 0.4 !important;
-            cursor: not-allowed !important;
-            transform: none !important;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- === HEADER === -->
-    <div class="header">
-        <h1 data-i18n="header_title">🛰️ WSN Otonom Karar Sistemi</h1>
-        <div class="header-controls">
-            <div class="health-dot checking" id="health-dot" title=""></div>
-            <span class="health-label" id="health-label" data-i18n="health_checking">Sunucu kontrol ediliyor...</span>
-            <button class="btn btn-primary" id="btn-tetikle" onclick="veriCek()" data-i18n="trigger_engine" style="padding: 4px 10px; margin-right: 10px; font-size: 12px; height: 30px;">Motoru Tetikle</button>
-            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">EN</button>
-        </div>
-    </div>
-
-    <div class="container">
-
-        <!-- ======================== PANEL 1: TOPOLOJİ ======================== -->
-        <div class="panel">
-            <h2 data-i18n="panel1_title">1. WSN Topoloji Görselleştirici</h2>
-            <p class="panel-desc" data-i18n="panel1_desc">Varyant veya kayıtlı FEN senaryolarını seçin, topoloji ekrana yansısın.</p>
-
-            <div style="margin-top: 10px; margin-bottom: 12px;">
-                <label style="font-size: 13px; color: #ccc;" data-i18n="select_variant">Varyant Seç:</label>
-                <select id="variant-dropdown" onchange="varyantDropdownDegisti()" style="width: 100%; background: #0d0d25; color: #fff; border: 1px solid #ffffff20; padding: 8px; border-radius: 6px; margin-top: 4px;">
-                                        <option value="klasik" data-i18n="opt_classic">Standard Chess</option>
-                    <option value="nizami" data-i18n="opt_nizami">Nizami's Game (Shatranj)</option>
-                    <option value="capablanca" data-i18n="opt_capablanca">Capablanca Chess (10x8)</option>
-                    <option value="crazyhouse" data-i18n="opt_crazyhouse">Crazyhouse (Node Injection)</option>
-                    <option value="xiangqi" data-i18n="opt_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
-                </select>
-                <a href="senaryolar.html" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
-                    ⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)
-                </a>
-            </div>
-
-            <!-- Variant Badge -->
-            <div style="margin-bottom: 12px;">
-                <span class="badge badge-warning" id="variant-badge" data-i18n="variant_not_loaded">Yüklenmedi</span>
-            </div>
-
-            <!-- FEN -->
-            <div class="veri-kutusu">
-                <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span data-i18n="detected_fen">Algılanan FEN:</span>
-                    <button class="btn" onclick="apiFenCek()" style="padding: 4px 8px; font-size: 11px; background-color: #2196F3;" data-i18n="btn_fetch_api">🌐 Fetch Sensor Data from External API</button>
-                </div>
-                <div class="fen-text" id="fen-metni" data-i18n="fen_none">Yok</div>
-            </div>
-
-            <!-- Variant Params -->
-            <div id="variant-params" style="display:none;">
-                <h3 style="color:#00d2ff; font-size:14px; margin-top:14px;" data-i18n="variant_params_title">Varyant Parametreleri</h3>
-                <table class="param-table" id="param-table"></table>
-            </div>
-
-            <!-- WSN Grid -->
-            <div id="wsn-grid"></div>
-
-            <!-- Oyun Geçmişi Navigasyon -->
-            <div id="game-nav" style="display: none; gap: 4px; margin-top: 8px;">
-                <button class="nav-btn" id="btn-basa-don" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
-                <button class="nav-btn" id="btn-geri" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
-                <button class="nav-btn" id="btn-ileri" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
-            </div>
-        </div>
-
-        <!-- ======================== PANEL 2: MOTOR ======================== -->
-        <div class="panel">
-            <h2 data-i18n="panel2_title">2. Karar Motoru Çıktısı</h2>
-
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="bestmove_label">API'den Gelen En İyi Rota</div>
-                <div class="deger" id="bestmove" data-i18n="waiting">Bekleniyor...</div>
-            </div>
-            
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="full_solution_label">Tam Çözüm Yolu (PV)</div>
-                <div class="fen-text" id="full-solution" data-i18n="waiting" style="color: #4CAF50;">Bekleniyor...</div>
-            </div>
-
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="cp_label">Ham CP (Santipawn) Skoru</div>
-                <div class="deger" id="cp" data-i18n="waiting">Bekleniyor...</div>
-            </div>
-
-            <!-- Motor Info -->
-            <div class="veri-kutusu" style="border-left-color: #9c27b0;">
-                <div class="label" data-i18n="variant_status">Varyant Durumu</div>
-                <div class="deger" id="motor-varyant" style="font-size:14px; color:#ff9800;">—</div>
-            </div>
-
-            <!-- Depth Slider -->
-            <div class="veri-kutusu" style="border-left-color: #2196F3; margin-bottom: 15px;">
-                <div class="label" style="display: flex; justify-content: space-between;">
-                    <span data-i18n="engine_depth">Arama Derinliği:</span>
-                    <span id="depth-val" style="color: white; font-weight: bold;">12</span>
-                </div>
-                <input type="range" id="engine-depth" min="1" max="25" value="12" style="width: 100%; margin-top: 8px;" oninput="document.getElementById('depth-val').textContent = this.value">
-            </div>
-            
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="veriCek('next')" data-i18n="btn_next_move">En İyi Sonraki Hamle</button>
-                <button class="btn btn-accent" style="flex: 1; background: #ff9800;" onclick="veriCek('full')" data-i18n="btn_full_solution">Tüm Çözümü Göster</button>
-            </div>
-
-            <button class="btn" id="btn-oto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="otonomSimulasyonToggle()" data-i18n="btn_auto_sim">▶ Otonom Simülasyon (Canlı Demo)</button>
-
-            <div id="report-buttons" style="display: none; gap: 8px; margin-top: 10px; width: 100%;">
-                <button class="btn-report visible" id="btn-rapor" onclick="raporIndir()" style="flex:1; width:50%; margin:0; display:block;" data-i18n="btn_download_report">📄 Download Report (JSON)</button>
-                <button class="btn-report visible" id="btn-rapor-pdf" onclick="pdfRaporIndir()" style="flex:1; width:50%; margin:0; display:block; background: linear-gradient(135deg, #f44336, #d32f2f);" data-i18n="btn_pdf">📄 Download Report (PDF)</button>
-            </div>
-        </div>
-
-        <!-- ======================== PANEL 3: FİLTRE ======================== -->
-        <div class="panel" style="border: 1px solid #ff408133;">
-            <h2 style="color: #ff4081;" data-i18n="panel3_title">3. Özel CP Filtreleme Testi</h2>
-            <p class="panel-desc" data-i18n="panel3_desc">Gelen CP skorunu filtreleme mantığıyla test et.</p>
-
-            <label style="font-size: 13px; color: #ccc;" data-i18n="threshold_label">Minimum Kabul Edilebilir CP Eşiği:</label>
-            <input type="number" id="cp-esik" value="50">
-
-            <button class="btn btn-accent" onclick="filtreTesti()" data-i18n="apply_filter">Filtreyi Uygula</button>
-
-            <div class="veri-kutusu" style="border-left-color: #ff4081; margin-top: 16px;">
-                <div class="label" data-i18n="filter_result_label">Filtre Sonucu (Karar):</div>
-                <div class="deger" id="filtre-sonuc" style="color: #ffeb3b; font-size: 15px;" data-i18n="test_waiting">Test Bekleniyor...</div>
-            </div>
-        </div>
-    </div>
-
-<script>
-// API BASE URL - Dynamic for Vercel Serverless / Render fallback
-const API_BASE = window.location.hostname.includes("vercel.app") 
-    ? window.location.origin 
-    : "https://wsn-api.onrender.com";
-
-// =========================================================================
-// i18n SİSTEMİ — JSON dil dosyaları ile
-// =========================================================================
-let mevcutDil = localStorage.getItem("wsn_dil") || "en";
-let dilVerisi = {};
-
-async function dilYukle(dil) {
-    try {
-        const resp = await fetch(`lang/${dil}.json`);
-        if (!resp.ok) throw new Error("Dil dosyası bulunamadı");
-        dilVerisi = await resp.json();
-        mevcutDil = dil;
-        localStorage.setItem("wsn_dil", dil);
-        document.documentElement.lang = dil;
-        dilUygula();
-    } catch (err) {
-        console.error("Dil yükleme hatası:", err);
-    }
-}
-
-function dilUygula() {
-    // data-i18n attribute'ı olan tüm elementleri güncelle
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-        const anahtar = el.getAttribute("data-i18n");
-        if (dilVerisi[anahtar]) {
-            if (el.tagName === "INPUT" && el.type !== "number") {
-                el.placeholder = dilVerisi[anahtar];
-            } else if (el.tagName === "TITLE") {
-                document.title = dilVerisi[anahtar];
-            } else {
-                el.textContent = dilVerisi[anahtar];
-            }
-        }
-    });
-    // Dil butonu
-    document.getElementById("lang-btn").textContent = dilVerisi["lang_switch"] || (mevcutDil === "tr" ? "EN" : "TR");
-    
-    // Simülasyon butonu metnini koru
-    const btnSim = document.getElementById("btn-oto-sim");
-    if (btnSim) {
-        btnSim.textContent = (typeof simAktif !== 'undefined' && simAktif) ? t("btn_stop_sim") : t("btn_auto_sim");
-    }
-
-    // Kayıtlı senaryolar optgroup başlığını güncelle
-    const optGroup = document.getElementById('optgroup-custom-scenarios');
-    if (optGroup) {
-        optGroup.label = t('opt_custom_scenarios');
-    }
-
-    // Aktif varyant varsa paneli yeniden çiz (badge + tablo dinamik t() çağrıları)
-    if (typeof aktifVariant !== 'undefined' && aktifVariant) {
-        varyantPanelGuncelle(aktifVariant);
-    }
-}
-
-function dilDegistir() {
-    const yeniDil = mevcutDil === "tr" ? "en" : "tr";
-    dilYukle(yeniDil);
-}
-
-function t(anahtar, degiskenler = {}) {
-    let metin = dilVerisi[anahtar] || anahtar;
-    for (const [k, v] of Object.entries(degiskenler)) {
-        metin = metin.replace(`{${k}}`, v);
-    }
-    return metin;
-}
-
-// =========================================================================
-// HEALTH CHECK
-// =========================================================================
-async function healthCheck() {
-    const dot = document.getElementById("health-dot");
-    const label = document.getElementById("health-label");
-    dot.className = "health-dot checking";
-    label.textContent = t("health_checking");
-
-    try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 8000);
-        const resp = await fetch(`${API_BASE}/api/health`, { signal: controller.signal });
-        clearTimeout(tid);
-        if (resp.ok) {
-            dot.className = "health-dot ok";
-            label.setAttribute("data-i18n", "health_ok");
-            label.textContent = t("health_ok");
-            return;
-        }
-    } catch (e) {
-        console.warn("Health check primary failed, trying fallback...", e);
-    }
-
-    try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 8000);
-        const resp = await fetch("https://wsn-api.onrender.com/api/health", { signal: controller.signal });
-        clearTimeout(tid);
-        if (resp.ok) {
-            dot.className = "health-dot ok";
-            label.setAttribute("data-i18n", "health_ok");
-            label.textContent = t("health_ok");
-            return;
-        }
-    } catch (e) {
-        console.warn("Health check fallback failed", e);
-    }
-
-    dot.className = "health-dot fail";
-    label.setAttribute("data-i18n", "health_fail");
-    label.textContent = t("health_fail");
-}
-
-// =========================================================================
-// VARIANTS.INI PARSER VE TAHTA ÇİZİMİ
-// =========================================================================
-let aktifVariant = null;    // Parse edilmiş varyant verisi
-let aktifIniIcerik = null;  // Ham .ini içeriği (motora gönderilecek)
-let aktifFen = "";
-let gridSatir = 8;
-let gridSutun = 8;
-
-function iniParse(icerik) {
-    const satirlar = icerik.split('\n');
-    const sonuc = {
-        varyantAdi: "",
-        maxRank: 8,
-        maxFile: 8,
-        cylinder: false,
-        drop: false,
-        startFen: "",
-        customPieces: [],
-        promotionRegionWhite: "",
-        promotionRegionBlack: "",
-        promotionPieceTypes: "",
-        tumParametreler: {}
-    };
-
-    for (let satir of satirlar) {
-        satir = satir.trim();
-
-        if (satir.startsWith('[') && satir.includes(':')) {
-            sonuc.varyantAdi = satir.split('[')[1].split(':')[0].trim();
-            continue;
-        }
-
-        if (satir.startsWith('#') || !satir.includes('=')) continue;
-
-        const esitIdx = satir.indexOf('=');
-        const anahtar = satir.substring(0, esitIdx).trim();
-        let deger = satir.substring(esitIdx + 1).trim();
-
-        if (deger.includes('#')) {
-            deger = deger.split('#')[0].trim();
-        }
-
-        sonuc.tumParametreler[anahtar] = deger;
-
-        switch (anahtar) {
-            case 'maxRank': sonuc.maxRank = parseInt(deger) || 8; break;
-            case 'maxFile': sonuc.maxFile = parseInt(deger) || 8; break;
-            case 'cylinder': sonuc.cylinder = deger === 'true'; break;
-            case 'drop': sonuc.drop = deger === 'true'; break;
-            case 'startFen': sonuc.startFen = deger; break;
-            case 'promotionRegionWhite': sonuc.promotionRegionWhite = deger; break;
-            case 'promotionRegionBlack': sonuc.promotionRegionBlack = deger; break;
-            case 'promotionPieceTypes': sonuc.promotionPieceTypes = deger; break;
-        }
-
-        if (anahtar.startsWith('customPiece')) {
-            sonuc.customPieces.push(deger);
-        }
-    }
-
-    return sonuc;
-}
-
-function varyantPanelGuncelle(varyant) {
-    const params = document.getElementById("variant-params");
-    const tablo = document.getElementById("param-table");
-    const badge = document.getElementById("variant-badge");
-    const motorVaryant = document.getElementById("motor-varyant");
-
-    params.style.display = "block";
-    badge.className = "badge badge-success";
-    badge.textContent = `✓ ${t("active_variant_badge")}: ${varyant.varyantAdi}`;
-    badge.removeAttribute("data-i18n");
-
-    motorVaryant.textContent = varyant.varyantAdi || "—";
-    motorVaryant.style.color = "#4CAF50";
-
-    tablo.innerHTML = `
-        <tr><td data-i18n="variant_name">${t("variant_name")}</td><td>${varyant.varyantAdi}</td></tr>
-        <tr><td data-i18n="grid_size">${t("grid_size")}</td><td>${varyant.maxRank} × ${varyant.maxFile}</td></tr>
-        <tr><td data-i18n="topology">${t("topology")}</td><td>${varyant.cylinder ? t("topology_closed") : t("topology_open")}</td></tr>
-        <tr><td data-i18n="node_injection">${t("node_injection")}</td><td>${varyant.drop ? t("enabled") : t("disabled")}</td></tr>
-        <tr><td data-i18n="custom_pieces">${t("custom_pieces")}</td><td>${varyant.customPieces.length} ${t("unit_count")}</td></tr>
-        ${varyant.promotionRegionWhite ? `<tr><td data-i18n="promotion_zone">${t("promotion_zone")}</td><td>${varyant.promotionRegionWhite}</td></tr>` : ''}
-    `;
-}
-
-// =========================================================================
-// OYUN DURUMU (STATE) VE GEÇMİŞ
-// =========================================================================
-let seciliKareId = null;
-let siraKimde = 'w'; // 'w' = Kullanıcı(Beyaz), 'b' = Motor(Siyah)
-
-let fenGecmisi = [];
-let hamleGecmisiListesi = [];
-let gecmisIndeks = -1;
-
-function navButonlariGuncelle() {
-    const btnBasaDon = document.getElementById("btn-basa-don");
-    const btnGeri = document.getElementById("btn-geri");
-    const btnIleri = document.getElementById("btn-ileri");
-    if (btnBasaDon) btnBasaDon.disabled = (gecmisIndeks <= 0);
-    if (btnGeri) btnGeri.disabled = (gecmisIndeks <= 0);
-    if (btnIleri) btnIleri.disabled = (gecmisIndeks >= fenGecmisi.length - 1);
-}
-
-function gecmiseHamleEkle(yeniFen, hamleStr) {
-    if (gecmisIndeks < fenGecmisi.length - 1) {
-        fenGecmisi = fenGecmisi.slice(0, gecmisIndeks + 1);
-        hamleGecmisiListesi = hamleGecmisiListesi.slice(0, gecmisIndeks);
-    }
-    fenGecmisi.push(yeniFen);
-    hamleGecmisiListesi.push(hamleStr);
-    gecmisIndeks++;
-    document.getElementById("game-nav").style.display = "flex";
-    navButonlariGuncelle();
-}
-
-function navigasyonYukle(indeks) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    gecmisIndeks = indeks;
-    aktifFen = fenGecmisi[gecmisIndeks];
-    siraKimde = aktifFen.split(" ")[1] || 'w';
-    
-    // Seçim ve vurguları sıfırla
-    seciliKareId = null;
-    document.querySelectorAll(".secili, .rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("secili", "rota-kalkis", "rota-varis");
-    });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
-
-    document.getElementById("fen-metni").textContent = aktifFen;
-    fenCiz(aktifFen, gridSatir, gridSutun);
-    navButonlariGuncelle();
-    
-    // Sıra beyazdaysa yasal hamleleri yenile
-    if (siraKimde === 'w') {
-        yasalHamleleriGetir();
-    }
-}
-
-function basaDon() {
-    if (fenGecmisi.length > 0 && gecmisIndeks > 0) {
-        navigasyonYukle(0);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Başa Dön]" : "[Start]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
-        }
-    }
-}
-
-function geriAl() {
-    if (gecmisIndeks > 0) {
-        navigasyonYukle(gecmisIndeks - 1);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Geri]" : "[Back]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
-        }
-    }
-}
-
-function ileriAl() {
-    if (gecmisIndeks < fenGecmisi.length - 1) {
-        navigasyonYukle(gecmisIndeks + 1);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[İleri]" : "[Forward]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
-        }
-    }
-}
-
-// =========================================================================
-// TAHTA ÇİZİMİ (DİNAMİK GRID)
-// =========================================================================
-function tahtaOlustur(satir = 8, sutun = 8) {
-    const grid = document.getElementById("wsn-grid");
-    grid.innerHTML = "";
-    grid.style.gridTemplateColumns = `repeat(${sutun}, minmax(28px, 45px))`;
-    grid.style.gridTemplateRows = `repeat(${satir}, minmax(28px, 45px))`;
-
-    const harfler = "abcdefghijklmnopqrstuvwxyz";
-    let acikKare = true;
-    for (let s = 0; s < satir; s++) {
-        for (let st = 0; st < sutun; st++) {
-            const kare = document.createElement("div");
-            kare.className = "kare " + (acikKare ? "acik" : "koyu");
-            kare.id = `kare-${s}-${st}`;
-            kare.addEventListener('click', kareTiklandi);
-            
-            // Satır numarası (Sadece ilk sütunda)
-            if (st === 0) {
-                const spanR = document.createElement("span");
-                spanR.className = "coord-rank";
-                spanR.innerText = (satir - s);
-                kare.appendChild(spanR);
-            }
-            // Sütun harfi (Sadece son satırda)
-            if (s === satir - 1) {
-                const spanF = document.createElement("span");
-                spanF.className = "coord-file";
-                spanF.innerText = harfler[st];
-                kare.appendChild(spanF);
-            }
-            
-            grid.appendChild(kare);
-            acikKare = !acikKare;
-        }
-        if (sutun % 2 === 0) acikKare = !acikKare;
-    }
-}
-
-const P_MAP = {
-    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
-};
-
-function fenCiz(fenMetni, satir = 8, sutun = 8) {
-    tahtaOlustur(satir, sutun);
-
-    let sadeceDizilim = fenMetni.split(" ")[0];
-    if (sadeceDizilim.includes('[')) {
-        sadeceDizilim = sadeceDizilim.split('[')[0];
-    }
-
-    const fenSatirlari = sadeceDizilim.split("/");
-
-    for (let i = 0; i < fenSatirlari.length; i++) {
-        if (i >= satir) break;
-        const karakterler = fenSatirlari[i].split('');
-        let sutunIdx = 0;
-        let sayi = "";
-
-        for (let j = 0; j < karakterler.length; j++) {
-            const k = karakterler[j];
-            if (!isNaN(k)) {
-                sayi += k;
-            } else {
-                if (sayi) {
-                    sutunIdx += parseInt(sayi);
-                    sayi = "";
-                }
-                const kare = document.getElementById(`kare-${i}-${sutunIdx}`);
-                if (kare) {
-                    const tasNode = document.createElement("span");
-                    tasNode.className = "tas-val";
-                    tasNode.dataset.tas = k; // Gerçek FEN harfini sakla
-                    tasNode.innerText = P_MAP[k] || k; // İkon göster
-                    kare.appendChild(tasNode);
-                    kare.classList.add(k === k.toUpperCase() ? "tas-W" : "tas-B");
-                }
-                sutunIdx++;
-            }
-        }
-        if (sayi) sutunIdx += parseInt(sayi);
-    }
-}
-
-function karedekiTasiAl(kare) {
-    if (!kare) return "";
-    const tasNode = kare.querySelector(".tas-val");
-    return tasNode ? (tasNode.dataset.tas || "") : "";
-}
-
-function kareyeTasKoy(kare, tas) {
-    let tasNode = kare.querySelector(".tas-val");
-    if (!tasNode && tas) {
-        tasNode = document.createElement("span");
-        tasNode.className = "tas-val";
-        kare.appendChild(tasNode);
-    }
-    if (tasNode) {
-        if (tas) {
-            tasNode.dataset.tas = tas;
-            tasNode.innerText = P_MAP[tas] || tas;
-        } else {
-            tasNode.remove();
-        }
-    }
-}
-
-function tahtaToFen(sira = 'w') {
-    const satir = aktifVariant ? aktifVariant.maxRank : 8;
-    const sutun = aktifVariant ? aktifVariant.maxFile : 8;
-    let fenSatirlari = [];
-
-    for (let i = 0; i < satir; i++) {
-        let bosSayaci = 0;
-        let satirString = "";
-        for (let j = 0; j < sutun; j++) {
-            const kare = document.getElementById(`kare-${i}-${j}`);
-            const tas = karedekiTasiAl(kare);
-            
-            if (tas) {
-                if (bosSayaci > 0) {
-                    satirString += bosSayaci;
-                    bosSayaci = 0;
-                }
-                satirString += tas;
-            } else {
-                bosSayaci++;
-            }
-        }
-        if (bosSayaci > 0) {
-            satirString += bosSayaci;
-        }
-        fenSatirlari.push(satirString);
-    }
-    
-    const boardPart = fenSatirlari.join("/");
-    return `${boardPart} ${sira} - - 0 1`;
-}
-
-let mevcutYasalHamleler = [];
-
-function koordinatToHamle(kalkisId, varisId) {
-    const sutunHarfleri = "abcdefghij";
-    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
-    
-    const kParts = kalkisId.split('-');
-    const vParts = varisId.split('-');
-    
-    const kRow = parseInt(kParts[1]), kCol = parseInt(kParts[2]);
-    const vRow = parseInt(vParts[1]), vCol = parseInt(vParts[2]);
-    
-    const kStr = sutunHarfleri[kCol] + (toplam - kRow);
-    const vStr = sutunHarfleri[vCol] + (toplam - vRow);
-    
-    return kStr + vStr;
-}
-
-async function yasalHamleleriGetir() {
-    mevcutYasalHamleler = [];
-    const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
-
-    const endpoints = [
-        `${API_BASE}/api/legalmoves`,
-        "https://wsn-api.onrender.com/api/legalmoves"
-    ];
-
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data.legal_moves) {
-                    mevcutYasalHamleler = data.legal_moves;
-                    break;
-                }
-            }
-        } catch (e) {
-            // Sessizce geç
-        }
-    }
-}
-
-function kareTiklandi(event) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    if (siraKimde !== 'w') return; // Sadece beyaz (kullanıcı) oynayabilir
-
-    const kare = event.currentTarget;
-    const tas = karedekiTasiAl(kare);
-    const isWhite = tas && tas === tas.toUpperCase();
-
-    if (seciliKareId) {
-        const seciliKare = document.getElementById(seciliKareId);
-        
-        // Aynı kareye tıklandıysa seçimi kaldır
-        if (seciliKareId === kare.id) {
-            seciliKare.classList.remove("secili");
-            seciliKareId = null;
-            return;
-        }
-        
-        // Başka bir beyaz taşa tıklandıysa seçimi ona geçir
-        if (isWhite) {
-            seciliKare.classList.remove("secili");
-            kare.classList.add("secili");
-            seciliKareId = kare.id;
-            return;
-        }
-        
-        // Yasal hamle kontrolü (eğer yasalHamleler listesi doluysa)
-        const denenenHamle = koordinatToHamle(seciliKareId, kare.id);
-        
-        if (mevcutYasalHamleler && mevcutYasalHamleler.length > 0) {
-            const promosyonlu = mevcutYasalHamleler.find(h => h.startsWith(denenenHamle));
-            if (!promosyonlu) {
-                // Yasal olmayan hamle denendi
-                kare.style.backgroundColor = "#ff5252";
-                setTimeout(() => {
-                    kare.style.backgroundColor = "";
-                }, 300);
-                seciliKare.classList.remove("secili");
-                seciliKareId = null;
-                return;
-            }
-        }
-        
-        // Hamleyi Uygula (seciliKare -> kare)
-        const movingTas = karedekiTasiAl(seciliKare);
-        kareyeTasKoy(kare, movingTas);
-        
-        // Sadece taş rengi sınıflarını taşı (acik/koyu arka planı bozma)
-        kare.classList.remove("tas-W", "tas-B");
-        if (seciliKare.classList.contains("tas-W")) kare.classList.add("tas-W");
-        if (seciliKare.classList.contains("tas-B")) kare.classList.add("tas-B");
-        kare.classList.remove("secili");
-        
-        // Rota vurgusunu temizle (kullanıcı hamlesi de belli olsun)
-        document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-            el.classList.remove("rota-kalkis", "rota-varis");
-        });
-        kare.classList.add("rota-varis");
-        seciliKare.classList.add("rota-kalkis");
-
-        const secilenHamleStr = koordinatToHamle(seciliKareId, kare.id);
-
-        kareyeTasKoy(seciliKare, "");
-        seciliKare.classList.remove("tas-W", "tas-B", "secili");
-
-        seciliKareId = null;
-        siraKimde = 'b';
-        
-        // Yeni FEN üret ve motora gönder
-        aktifFen = tahtaToFen('b');
-        document.getElementById("fen-metni").textContent = aktifFen;
-        
-        // Hamleyi geçmişe ekle
-        gecmiseHamleEkle(aktifFen, secilenHamleStr);
-        
-        // Otomatik motoru tetikle
-        veriCek();
-
-    } else {
-        // Seçili taş yoksa ve tıklanan beyazsa seç
-        if (isWhite) {
-            kare.classList.add("secili");
-            seciliKareId = kare.id;
-        }
-    }
-}
-
-function varyantUygula(icerik) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    aktifIniIcerik = icerik;
-    const varyant = iniParse(aktifIniIcerik);
-    if (!varyant) return;
-    aktifVariant = varyant;
-
-    gridSatir = varyant.maxRank || 8;
-    gridSutun = varyant.maxFile || 8;
-
-    if (varyant.startFen) {
-        aktifFen = varyant.startFen;
-        siraKimde = 'w';
-        
-        // Geçmişi sıfırla
-        fenGecmisi = [aktifFen];
-        hamleGecmisiListesi = [];
-        gecmisIndeks = 0;
-        const nav = document.getElementById("game-nav");
-        if(nav) nav.style.display = "flex";
-        navButonlariGuncelle();
-        document.getElementById("fen-metni").innerText = aktifFen;
-        document.getElementById("fen-metni").removeAttribute("data-i18n");
-        fenCiz(aktifFen, gridSatir, gridSutun);
-        yasalHamleleriGetir();
-    } else {
-        document.getElementById("fen-metni").innerText = t("startfen_not_found");
-    }
-
-    varyantPanelGuncelle(varyant);
-}
-
-// INI dosyası yükleme eventi (sayfada varsa)
-const iniUploadEl = document.getElementById('iniUpload');
-if (iniUploadEl) {
-    iniUploadEl.addEventListener('change', function(e) {
-    const dosya = e.target.files[0];
-    if (!dosya) return;
-
-    const okuyucu = new FileReader();
-    okuyucu.onload = function(e) {
-        varyantUygula(e.target.result);
-    };
-    okuyucu.readAsText(dosya);
-    });
-}
-
-function varyantDropdownDegisti() {
-    const val = document.getElementById('variant-dropdown').value;
-    if (val === 'klasik') {
-        const ini = `[chess]\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8`;
-        varyantUygula(ini);
-    } else if (val === 'nizami') {
-        const ini = `[nizami:shatranj]\n# Nizami's Game (9th century)\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
-        varyantUygula(ini);
-    } else if (val === 'capablanca') {
-        const ini = `[capablanca:capablanca]\n# Capablanca Chess - 10x8 Extended Grid\nstartFen = rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 10`;
-        varyantUygula(ini);
-    } else if (val === 'crazyhouse') {
-        const ini = `[crazyhouse:crazyhouse]\n# Crazyhouse - Captured pieces can be dropped back\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8\ndrop = true`;
-        varyantUygula(ini);
-    } else if (val === 'xiangqi') {
-        const ini = `[xiangqi:xiangqi]\n# Xiangqi - Chinese Chess 10x9\nstartFen = rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1\nmaxRank = 10\nmaxFile = 9`;
-        varyantUygula(ini);
-    } else if (val && val.startsWith('custom_')) {
-        const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
-        const scen = saved.find(s => s.id === val);
-        if (scen) {
-            let sectionName = scen.varyant || 'chess';
-            let ini = `[${sectionName}]\nstartFen = ${scen.fen}\nmaxRank = ${scen.maxRank || 8}\nmaxFile = ${scen.maxFile || 8}`;
-            if (scen.drop) ini += `\ndrop = true`;
-            varyantUygula(ini);
-        }
-    }
-}
-
-function kayitliSenaryolariDropdownaYukle() {
-    const select = document.getElementById('variant-dropdown');
-    if (!select) return;
-
-    const existingGroup = document.getElementById('optgroup-custom-scenarios');
-    if (existingGroup) existingGroup.remove();
-
-    const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
-    if (saved.length > 0) {
-        const optgroup = document.createElement('optgroup');
-        optgroup.id = 'optgroup-custom-scenarios';
-        optgroup.label = t('opt_custom_scenarios');
-
-        saved.forEach(scen => {
-            const opt = document.createElement('option');
-            opt.value = scen.id;
-            opt.textContent = `${scen.ad} (${scen.maxRank || 8}x${scen.maxFile || 8})`;
-            optgroup.appendChild(opt);
-        });
-        select.appendChild(optgroup);
-    }
-}
-
-// =========================================================================
-// DIŞ API'DEN FEN ÇEKME (EXTERNAL API INTEGRATION)
-// =========================================================================
-async function apiFenCek() {
-    try {
-        const url = `${API_BASE}/api/external/random-puzzle`;
-            
-        document.getElementById("fen-metni").textContent = t("waiting") || "Veri çekiliyor...";
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.success && data.fen) {
-            document.getElementById("variant-dropdown").value = "klasik";
-            const ini = `[chess]\nstartFen = ${data.fen}\nmaxRank = 8\nmaxFile = 8`;
-            varyantUygula(ini);
-            veriCek('full'); 
-        } else {
-            alert(t("error") || "API Hatası: Veri çekilemedi.");
-            document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
-        }
-    } catch (err) {
-        console.error("API Fetch Error:", err);
-        alert(t("connection_error") || "Connection Error! Backend may be offline.");
-        document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
-    }
-}
-
-// =========================================================================
-// API VERİ ÇEKME — Varyant entegreli
-// =========================================================================
-let sonCpSkoru = 0;
-
-async function veriCek(type = 'next') {
-    const btnTetikle = document.getElementById("btn-tetikle");
-    const bestmoveEl = document.getElementById("bestmove");
-    const fullSolEl = document.getElementById("full-solution");
-    const cpEl = document.getElementById("cp");
-    const filtreEl = document.getElementById("filtre-sonuc");
-
-    if (btnTetikle) btnTetikle.disabled = true;
-    
-    bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
-    bestmoveEl.removeAttribute("data-i18n");
-    cpEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
-    cpEl.removeAttribute("data-i18n");
-    filtreEl.textContent = t("data_waiting");
-    filtreEl.removeAttribute("data-i18n");
-
-    if (fullSolEl && type === 'full') {
-        fullSolEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
-        fullSolEl.removeAttribute("data-i18n");
-    }
-
-    const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
-    const engineDepthEl = document.getElementById("engine-depth");
-    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
-
-    const endpoints = [
-        `${API_BASE}/api/karar`,
-        "https://wsn-api.onrender.com/api/karar"
-    ];
-
-    let basarili = false;
-
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye (Render uyanması için)
-
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-
-            if (!resp.ok) throw new Error("Server status " + resp.status);
-
-            const data = await resp.json();
-
-            if (data.hata) {
-                bestmoveEl.textContent = `${t("error")}: ${data.hata}`;
-                cpEl.textContent = t("error");
-                if (fullSolEl) fullSolEl.textContent = t("error");
-            } else {
-                bestmoveEl.textContent = data.bestmove || t("error");
-                
-                if (fullSolEl && data.full_solution) {
-                    fullSolEl.textContent = data.full_solution;
-                } else if (fullSolEl) {
-                    fullSolEl.textContent = "-";
-                }
-
-                cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
-                sonCpSkoru = data.cp_skoru || 0;
-
-                const motorVaryant = document.getElementById("motor-varyant");
-                motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
-
-                // Rota vurgulama sadece 'next' için
-                if (data.bestmove && type === 'next') {
-                    rotaVurgula(data.bestmove);
-                }
-
-                // Rapor verilerini sakla (Tüm veriler ham halde saklanır, indirme anında dile göre şekillenir)
-                sonRaporVerisi = {
-                    tarih_obj: new Date(),
-                    varyant: data.varyant || "standart",
-                    fen: data.fen || "startpos",
-                    bestmove: data.bestmove,
-                    full_solution: data.full_solution,
-                    cp_skoru: data.cp_skoru,
-                    gecikme_ms: data.gecikme_ms,
-                    motor: data.motor,
-                    derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
-                    aktif_varyant_obj: aktifVariant,
-                    filtre_esik: parseInt(document.getElementById("cp-esik").value),
-                    filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
-                };
-                const reportBtns = document.getElementById("report-buttons");
-                if(reportBtns) reportBtns.style.display = "flex";
-            }
-
-            basarili = true;
-            break;
-        } catch (err) {
-            console.warn(`Fetch error for ${url}:`, err);
-        }
-    }
-
-    if (!basarili) {
-        bestmoveEl.setAttribute("data-i18n", "connection_error_timeout");
-        bestmoveEl.textContent = t("connection_error_timeout");
-        if (fullSolEl) {
-            fullSolEl.setAttribute("data-i18n", "connection_error_timeout");
-            fullSolEl.textContent = t("connection_error_timeout");
-        }
-        cpEl.setAttribute("data-i18n", "error");
-        cpEl.textContent = t("error");
-    }
-
-    if (btnTetikle) btnTetikle.disabled = false;
-}
-
-// =========================================================================
-// CP FİLTRELEME TEST
-// =========================================================================
-function filtreTesti() {
-    const esik = parseInt(document.getElementById("cp-esik").value);
-    const sonucKutusu = document.getElementById("filtre-sonuc");
-
-    if (sonCpSkoru === 0 || isNaN(sonCpSkoru)) {
-        sonucKutusu.textContent = t("need_cp_first");
-        sonucKutusu.style.color = "#ffeb3b";
-        return;
-    }
-
-    if (sonCpSkoru >= esik) {
-        sonucKutusu.textContent = t("filter_success", { cp: sonCpSkoru, threshold: esik });
-        sonucKutusu.style.color = "#4CAF50";
-    } else {
-        sonucKutusu.textContent = t("filter_rejected", { cp: sonCpSkoru, threshold: esik });
-        sonucKutusu.style.color = "#f44336";
-    }
-}
-
-// =========================================================================
-// ROTA VURGULAMA (BESTMOVE HIGHLIGHT)
-// =========================================================================
-let sonRaporVerisi = null;
-
-function hamleToKoordinat(hamle) {
-    // UCI notasyonu: "g4g7" -> kalkış (g,4) hedef (g,7)
-    // Sütun: a=0, b=1, ... j=9
-    // Satır: 1=son satır, ... 10=ilk satır (FEN'de ters)
-    if (!hamle || hamle.length < 4) return null;
-
-    const sutunHarfleri = "abcdefghij";
-    const kalkisSutun = sutunHarfleri.indexOf(hamle[0]);
-    const varisSutun = sutunHarfleri.indexOf(hamle[hamle.length === 4 ? 2 : 2]);
-
-    // Satır numarasını parse et (1 veya 2 haneli olabilir: a1 veya a10)
-    let kalkisSatirStr, varisSatirStr;
-    if (hamle.length === 5) {
-        // Ör: "a10b5" veya "a1b10" — burada uzunluğa göre ayır
-        // En yaygın: ilk 2 karakter kalkış (harf+sayı), son 2 karakter varış
-        kalkisSatirStr = hamle.substring(1, 2);
-        varisSatirStr = hamle.substring(3, 5);
-        if (isNaN(parseInt(varisSatirStr))) {
-            kalkisSatirStr = hamle.substring(1, 3);
-            varisSatirStr = hamle.substring(4, 5);
-        }
-    } else if (hamle.length === 4) {
-        kalkisSatirStr = hamle[1];
-        varisSatirStr = hamle[3];
-    } else {
-        // 6 karakter: a10b10
-        kalkisSatirStr = hamle.substring(1, 3);
-        varisSatirStr = hamle.substring(4, 6);
-    }
-
-    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
-    const kalkisSatir = toplam - parseInt(kalkisSatirStr);
-    const varisSatir = toplam - parseInt(varisSatirStr);
-
-    return {
-        kalkis: { satir: kalkisSatir, sutun: kalkisSutun },
-        varis: { satir: varisSatir, sutun: varisSutun }
-    };
-}
-
-function rotaVurgula(bestmove) {
-    // Önceki vurguları temizle
-    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("rota-kalkis", "rota-varis");
-    });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
-
-    const koordinatlar = hamleToKoordinat(bestmove);
-    if (!koordinatlar) return;
-
-    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
-    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
-
-    if (kalkisKare && varisKare) {
-        if (siraKimde === 'b') {
-            // Siyahın hamlesini uygula
-            let movingTas = karedekiTasiAl(kalkisKare);
-            if (bestmove.length === 5 && !isNaN(bestmove[3])) {
-                const promoChar = bestmove[4];
-                if (promoChar) movingTas = promoChar.toLowerCase();
-            }
-
-            // Siyah Rok desteği (King 2 kare yana giderse)
-            if (movingTas === 'k' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
-                const row = koordinatlar.kalkis.satir;
-                if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
-                    const rookFrom = document.getElementById(`kare-${row}-7`);
-                    const rookTo = document.getElementById(`kare-${row}-5`);
-                    if (rookFrom && rookTo) {
-                        const rTas = karedekiTasiAl(rookFrom);
-                        kareyeTasKoy(rookTo, rTas);
-                        rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
-                        kareyeTasKoy(rookFrom, "");
-                        rookFrom.classList.remove("tas-W", "tas-B");
-                    }
-                } else {
-                    const rookFrom = document.getElementById(`kare-${row}-0`);
-                    const rookTo = document.getElementById(`kare-${row}-3`);
-                    if (rookFrom && rookTo) {
-                        const rTas = karedekiTasiAl(rookFrom);
-                        kareyeTasKoy(rookTo, rTas);
-                        rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
-                        kareyeTasKoy(rookFrom, "");
-                        rookFrom.classList.remove("tas-W", "tas-B");
-                    }
-                }
-            }
-
-            kareyeTasKoy(varisKare, movingTas);
-            
-            varisKare.classList.remove("tas-W", "tas-B");
-            if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
-            if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
-            
-            kareyeTasKoy(kalkisKare, "");
-            kalkisKare.classList.remove("tas-W", "tas-B");
-        }
-
-        kalkisKare.classList.add("rota-kalkis");
-        varisKare.classList.add("rota-varis");
-        
-        if (siraKimde === 'b') {
-            // Hamle yapıldıysa sırayı beyaza geçir ve FEN'i güncelle
-            aktifFen = tahtaToFen('w');
-            document.getElementById("fen-metni").textContent = aktifFen;
-            siraKimde = 'w';
-            
-            // Hamleyi geçmişe ekle
-            gecmiseHamleEkle(aktifFen, bestmove);
-            
-            yasalHamleleriGetir(); // Beyazın yasal hamlelerini hazırla
-        }
-    }
-
-    // Bestmove alanına rota yönü göster
-    const bestmoveEl = document.getElementById("bestmove");
-    if (bestmoveEl) {
-        const from = bestmove.substring(0, bestmove.length / 2);
-        const to = bestmove.substring(bestmove.length / 2);
-        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
-    }
-}
-
-// =========================================================================
-// OTONOM SİMÜLASYON (CANLI DEMO) MODU
-// =========================================================================
-let simAktif = false;
-let simTimer = null;
-
-function otonomSimulasyonDurdur() {
-    simAktif = false;
-    if (simTimer) {
-        clearTimeout(simTimer);
-        simTimer = null;
-    }
-    const btn = document.getElementById("btn-oto-sim");
-    if (btn) {
-        btn.textContent = t("btn_auto_sim");
-        btn.style.background = "linear-gradient(135deg, #00c853, #64dd17)";
-        btn.style.color = "#000";
-        btn.style.boxShadow = "0 4px 12px rgba(0,200,83,0.3)";
-    }
-}
-
-async function otonomSimulasyonToggle() {
-    if (simAktif) {
-        otonomSimulasyonDurdur();
-        return;
-    }
-
-    simAktif = true;
-    const btn = document.getElementById("btn-oto-sim");
-    if (btn) {
-        btn.textContent = t("btn_stop_sim");
-        btn.style.background = "linear-gradient(135deg, #d50000, #ff1744)";
-        btn.style.color = "#fff";
-        btn.style.boxShadow = "0 4px 12px rgba(255,23,68,0.4)";
-    }
-
-    otonomSimulasyonDongusu();
-}
-
-async function hamleHesapla() {
-    const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
-    const engineDepthEl = document.getElementById("engine-depth");
-    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
-
-    const endpoints = [
-        `${API_BASE}/api/karar`,
-        "https://wsn-api.onrender.com/api/karar"
-    ];
-
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000);
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-            if (resp.ok) {
-                return await resp.json();
-            }
-        } catch (err) {
-            console.warn(`hamleHesapla fetch error for ${url}:`, err);
-        }
-    }
-    return null;
-}
-
-function beyazHamlesiniTahtadaOyna(bestmove) {
-    if (!bestmove || bestmove.length < 4) return false;
-
-    const koordinatlar = hamleToKoordinat(bestmove);
-    if (!koordinatlar) return false;
-
-    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
-    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
-    if (!kalkisKare || !varisKare) return false;
-
-    let movingTas = karedekiTasiAl(kalkisKare);
-    if (bestmove.length === 5 && !isNaN(bestmove[3])) {
-        const promoChar = bestmove[4];
-        if (promoChar) movingTas = promoChar.toUpperCase();
-    }
-
-    // Beyaz Rok desteği (King 2 kare yana giderse)
-    if (movingTas === 'K' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
-        const row = koordinatlar.kalkis.satir;
-        if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
-            const rookFrom = document.getElementById(`kare-${row}-7`);
-            const rookTo = document.getElementById(`kare-${row}-5`);
-            if (rookFrom && rookTo) {
-                const rTas = karedekiTasiAl(rookFrom);
-                kareyeTasKoy(rookTo, rTas);
-                rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
-                kareyeTasKoy(rookFrom, "");
-                rookFrom.classList.remove("tas-W", "tas-B");
-            }
-        } else {
-            const rookFrom = document.getElementById(`kare-${row}-0`);
-            const rookTo = document.getElementById(`kare-${row}-3`);
-            if (rookFrom && rookTo) {
-                const rTas = karedekiTasiAl(rookFrom);
-                kareyeTasKoy(rookTo, rTas);
-                rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
-                kareyeTasKoy(rookFrom, "");
-                rookFrom.classList.remove("tas-W", "tas-B");
-            }
-        }
-    }
-
-    kareyeTasKoy(varisKare, movingTas);
-    varisKare.classList.remove("tas-W", "tas-B");
-    if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
-    if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
-    
-    kareyeTasKoy(kalkisKare, "");
-    kalkisKare.classList.remove("tas-W", "tas-B", "secili");
-
-    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("rota-kalkis", "rota-varis");
-    });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
-
-    kalkisKare.classList.add("rota-kalkis");
-    varisKare.classList.add("rota-varis");
-
-    siraKimde = 'b';
-    aktifFen = tahtaToFen('b');
-    document.getElementById("fen-metni").textContent = aktifFen;
-
-    gecmiseHamleEkle(aktifFen, bestmove);
-
-    const bestmoveEl = document.getElementById("bestmove");
-    if (bestmoveEl) {
-        const from = bestmove.substring(0, bestmove.length / 2);
-        const to = bestmove.substring(bestmove.length / 2);
-        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
-    }
-
-    return true;
-}
-
-async function otonomSimulasyonDongusu() {
-    if (!simAktif) return;
-
-    if (siraKimde === 'w') {
-        const bestmoveEl = document.getElementById("bestmove");
-        if (bestmoveEl) bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
-
-        const data = await hamleHesapla();
-        if (!simAktif) return;
-
-        if (!data || !data.bestmove || data.bestmove === "(none)" || data.bestmove === "0000") {
-            otonomSimulasyonDurdur();
-            return;
-        }
-
-        const cpEl = document.getElementById("cp");
-        if (cpEl) cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
-        sonCpSkoru = data.cp_skoru || 0;
-        const fullSolEl = document.getElementById("full-solution");
-        if (fullSolEl && data.full_solution) fullSolEl.textContent = data.full_solution;
-        const motorVaryant = document.getElementById("motor-varyant");
-        if (motorVaryant) motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
-
-        const engineDepthEl = document.getElementById("engine-depth");
-        sonRaporVerisi = {
-            tarih_obj: new Date(),
-            varyant: data.varyant || "standart",
-            fen: data.fen || "startpos",
-            bestmove: data.bestmove,
-            full_solution: data.full_solution,
-            cp_skoru: data.cp_skoru,
-            gecikme_ms: data.gecikme_ms,
-            motor: data.motor,
-            derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
-            aktif_varyant_obj: aktifVariant,
-            filtre_esik: parseInt(document.getElementById("cp-esik").value),
-            filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
-        };
-        const reportBtns = document.getElementById("report-buttons");
-        if (reportBtns) reportBtns.style.display = "flex";
-
-        const oynandi = beyazHamlesiniTahtadaOyna(data.bestmove);
-        if (!oynandi) {
-            otonomSimulasyonDurdur();
-            return;
-        }
-
-        simTimer = setTimeout(() => {
-            otonomSimulasyonDongusu();
-        }, 900);
-
-    } else if (siraKimde === 'b') {
-        await veriCek('next');
-        if (!simAktif) return;
-
-        if (!sonRaporVerisi || !sonRaporVerisi.bestmove || sonRaporVerisi.bestmove === "(none)" || sonRaporVerisi.bestmove === "0000") {
-            otonomSimulasyonDurdur();
-            return;
-        }
-
-        simTimer = setTimeout(() => {
-            otonomSimulasyonDongusu();
-        }, 900);
-    }
-}
-
-// =========================================================================
-// RAPOR İNDİRME (KARAR RAPORU EXPORT)
-// =========================================================================
-function raporIndir() {
-    if (!sonRaporVerisi) return;
-
-    if (typeof aktifFen !== 'undefined' && aktifFen) {
-        sonRaporVerisi.fen = aktifFen;
-    }
-
-    // Tarih formatı: yyyy_mm_dd_hh_mm
-    const d = sonRaporVerisi.tarih_obj;
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const dateStr = `${yyyy}_${mm}_${dd}_${hh}_${min}`;
-
-    const v = sonRaporVerisi.aktif_varyant_obj;
-    
-    // JSON anahtarlarını ve değerlerini aktif dile göre oluştur
-    const rapor = {
-        [t("report_title")]: {
-            [t("rep_date")]: dateStr,
-            [t("rep_sys")]: {
-                [t("rep_engine")]: sonRaporVerisi.motor,
-                [t("engine_depth")]: sonRaporVerisi.derinlik,
-                [t("rep_var")]: sonRaporVerisi.varyant,
-                [t("rep_grid")]: v ? `${v.maxRank}x${v.maxFile}` : "8x8",
-                [t("rep_top")]: (v && v.cylinder) ? t("topology_closed") : t("topology_open")
-            },
-            [t("rep_var_params")]: {
-                [t("rep_node_inj")]: (v && v.drop) ? t("enabled") : t("disabled"),
-                [t("rep_custom_nodes")]: (v && v.customPieces.length > 0) ? v.customPieces.join(", ") : t("val_none"),
-                [t("rep_promo_zone")]: (v && v.promotionRegionWhite) ? v.promotionRegionWhite : t("val_none")
-            },
-            [t("rep_analysis")]: {
-                [t("rep_fen")]: sonRaporVerisi.fen,
-                [t("moves")]: hamleGecmisiListesi.join(", ") || t("val_none"),
-                [t("rep_best")]: sonRaporVerisi.bestmove,
-                [t("rep_full_sol")]: sonRaporVerisi.full_solution || "-",
-                [t("rep_cp")]: sonRaporVerisi.cp_skoru,
-                [t("rep_lat")]: sonRaporVerisi.gecikme_ms
-            },
-            [t("rep_filter")]: {
-                [t("rep_thresh")]: sonRaporVerisi.filtre_esik,
-                [t("rep_dec")]: sonRaporVerisi.filtre_onay ? t("filter_approved") : t("filter_denied"),
-                [t("rep_exp")]: sonRaporVerisi.filtre_onay ? t("report_route_approved") : t("report_route_rejected")
-            }
-        }
-    };
-
-    const blob = new Blob([JSON.stringify(rapor, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `wsn_decision_report_${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-function toAsciiSafe(str) {
-    if (!str) return "";
-    return String(str)
-        .replace(/ğ/g, "g").replace(/Ğ/g, "G")
-        .replace(/ü/g, "u").replace(/Ü/g, "U")
-        .replace(/ş/g, "s").replace(/Ş/g, "S")
-        .replace(/ı/g, "i").replace(/İ/g, "I")
-        .replace(/ö/g, "o").replace(/Ö/g, "O")
-        .replace(/ç/g, "c").replace(/Ç/g, "C");
-}
-
-function pdfRaporIndir() {
-    if (!sonRaporVerisi || !window.jspdf) {
-        alert("PDF / Report data not available.");
-        return;
-    }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Aktif FEN ve geçmişi rapora senkronize et
-    if (typeof aktifFen !== 'undefined' && aktifFen) {
-        sonRaporVerisi.fen = aktifFen;
-    }
-    
-    const d = sonRaporVerisi.tarih_obj || new Date();
-    const dateStr = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}_${String(d.getMinutes()).padStart(2, '0')}`;
-    const v = sonRaporVerisi.aktif_varyant_obj;
-    const isTR = mevcutDil === 'tr';
-
-    // ---- BAŞLIK / HEADER ----
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(0, 150, 210);
-    doc.text(isTR ? "WSN Otonom Karar Raporu" : "WSN Autonomous Decision Report", 105, 18, { align: "center" });
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`${isTR ? "Uretim Tarihi" : "Generated"}: ${d.toLocaleString()}  |  ${isTR ? "Surum" : "Version"}: ${dateStr}`, 105, 25, { align: "center" });
-
-    // Üst çizgi
-    doc.setDrawColor(0, 210, 255);
-    doc.setLineWidth(0.6);
-    doc.line(20, 29, 190, 29);
-
-    let y = 38;
-
-    function addSection(title) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        doc.setTextColor(0, 130, 180);
-        doc.text(toAsciiSafe(title), 20, y);
-        doc.setDrawColor(0, 210, 255);
-        doc.setLineWidth(0.3);
-        doc.line(20, y + 2, 190, y + 2);
-        y += 8;
-        doc.setTextColor(30, 30, 30);
-    }
-
-    function addLine(label, value) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(20, 20, 20);
-        
-        const safeLabel = toAsciiSafe(label);
-        const safeVal = toAsciiSafe(String(value !== undefined && value !== null ? value : "-"));
-        
-        const labelPrefix = `${safeLabel} : `;
-        const prefixWidth = doc.getTextWidth(labelPrefix);
-        
-        doc.text(labelPrefix, 20, y);
-        doc.setFont("helvetica", "normal");
-        
-        const availableWidth = 170 - prefixWidth;
-        const valWidth = doc.getTextWidth(safeVal);
-        
-        if (valWidth <= availableWidth) {
-            doc.text(safeVal, 20 + prefixWidth, y);
-            y += 6.5;
-        } else {
-            const valLines = doc.splitTextToSize(safeVal, availableWidth);
-            doc.text(valLines[0], 20 + prefixWidth, y);
-            y += 5.5;
-            for (let i = 1; i < valLines.length; i++) {
-                doc.text(valLines[i], 20 + prefixWidth, y);
-                y += 5.5;
-            }
-            y += 1.5;
-        }
-    }
-
-    // ======== 1. BÖLÜM: SİSTEM BİLGİLERİ ========
-    addSection(isTR ? "1. Sistem Bilgileri" : "1. System Information");
-    addLine(isTR ? "Motor" : "Engine", sonRaporVerisi.motor);
-    addLine(isTR ? "Arama Derinligi" : "Search Depth", sonRaporVerisi.derinlik);
-    addLine(isTR ? "Varyant" : "Variant", sonRaporVerisi.varyant);
-    addLine(isTR ? "Izgara Boyutu" : "Grid Size", v ? `${v.maxRank}x${v.maxFile}` : "8x8");
-    addLine(isTR ? "Topoloji" : "Topology", (v && v.cylinder) ? (isTR ? "Kapali Devre (Silindirik)" : "Closed (Cylinder)") : (isTR ? "Acik" : "Open (Flat)"));
-    addLine(isTR ? "Dugum Enjeksiyonu" : "Node Injection", (v && v.drop) ? (isTR ? "Aktif" : "Enabled") : (isTR ? "Pasif" : "Disabled"));
-    y += 4;
-
-    // ======== 2. BÖLÜM: ANALİZ SONUÇLARI ========
-    addSection(isTR ? "2. Analiz Sonuclari" : "2. Analysis Results");
-    addLine("FEN", sonRaporVerisi.fen);
-    addLine(isTR ? "Oynanan Hamleler" : "Moves", hamleGecmisiListesi.length > 0 ? hamleGecmisiListesi.join(", ") : "-");
-    addLine(isTR ? "En Iyi Rota" : "Best Route", sonRaporVerisi.bestmove);
-    addLine(isTR ? "Tam Cozum Yolu (PV)" : "Full Solution (PV)", sonRaporVerisi.full_solution || "-");
-    addLine(isTR ? "CP Skoru" : "CP Score", sonRaporVerisi.cp_skoru);
-    addLine(isTR ? "Gecikme Suresi" : "Latency", `${sonRaporVerisi.gecikme_ms} ms`);
-    y += 4;
-
-    // ======== 3. BÖLÜM: FİLTRE KARARI ========
-    addSection(isTR ? "3. Filtre Karari" : "3. Filter Decision");
-    addLine(isTR ? "Esik Degeri" : "Threshold", sonRaporVerisi.filtre_esik);
-    const decText = sonRaporVerisi.filtre_onay ? (isTR ? "ONAYLANDI" : "APPROVED") : (isTR ? "REDDEDILDI" : "REJECTED");
-    addLine(isTR ? "Karar" : "Decision", decText);
-
-    doc.save(`wsn_decision_report_${dateStr}.pdf`);
-}
-
-// =========================================================================
-// BAŞLANGIÇ
-// =========================================================================
-(async function init() {
-    tahtaOlustur();
-    await dilYukle(mevcutDil);
-    kayitliSenaryolariDropdownaYukle();
-
-    const activeScenId = localStorage.getItem('wsn_active_scenario');
-    if (activeScenId) {
-        localStorage.removeItem('wsn_active_scenario');
-        const select = document.getElementById('variant-dropdown');
-        if (select) {
-            select.value = activeScenId;
-            varyantDropdownDegisti();
-        }
-    } else {
-        document.getElementById('variant-dropdown').value = 'klasik';
-        varyantDropdownDegisti();
-    }
-
-    healthCheck();
-})();
-</script>
-
-</body>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title data-i18n="page_title">WSN Otonom Karar & Filtreleme Paneli</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            background-color: #0a0a1a;
+
+            color: #e0e0e0;
+
+            min-height: 100vh;
+
+        }
+
+
+
+        /* --- HEADER --- */
+
+        .header {
+
+            background: linear-gradient(135deg, #1a1a3e, #0d0d2b);
+
+            padding: 15px 30px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            border-bottom: 2px solid #00d2ff33;
+
+        }
+
+        .header h1 {
+
+            font-size: 18px;
+
+            color: #00d2ff;
+
+            letter-spacing: 1px;
+
+        }
+
+        .header-controls {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+        }
+
+        .lang-btn {
+
+            background: transparent;
+
+            border: 2px solid #00d2ff;
+
+            color: #00d2ff;
+
+            padding: 6px 16px;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            font-size: 13px;
+
+            transition: all 0.3s;
+
+        }
+
+        .lang-btn:hover { background: #00d2ff22; }
+
+        .health-dot {
+
+            width: 12px; height: 12px;
+
+            border-radius: 50%;
+
+            background: #666;
+
+            transition: background 0.3s;
+
+        }
+
+        .health-dot.ok { background: #4CAF50; box-shadow: 0 0 8px #4CAF5088; }
+
+        .health-dot.fail { background: #f44336; box-shadow: 0 0 8px #f4433688; }
+
+        .health-dot.checking { background: #ff9800; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+
+
+        .health-label {
+
+            font-size: 12px;
+
+            color: #888;
+
+        }
+
+
+
+        /* --- LAYOUT --- */
+
+        .container {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr 1fr;
+
+            gap: 20px;
+
+            padding: 20px;
+
+            max-width: 1400px;
+
+            margin: 0 auto;
+
+        }
+
+        @media (max-width: 1000px) {
+
+            .container { grid-template-columns: 1fr; }
+
+        }
+
+
+
+        /* --- PANELS --- */
+
+        .panel {
+
+            background: linear-gradient(180deg, #1a1a3e, #12122a);
+
+            padding: 24px;
+
+            border-radius: 14px;
+
+            border: 1px solid #ffffff0a;
+
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+
+        }
+
+        .panel h2 {
+
+            color: #00d2ff;
+
+            margin-bottom: 4px;
+
+            font-size: 17px;
+
+            border-bottom: 1px solid #ffffff10;
+
+            padding-bottom: 10px;
+
+        }
+
+        .panel-desc {
+
+            font-size: 12px;
+
+            color: #888;
+
+            margin-bottom: 16px;
+
+        }
+
+
+
+        /* --- VERI KUTUSU --- */
+
+        .veri-kutusu {
+
+            background: #0d0d25;
+
+            margin: 10px 0;
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            border-left: 4px solid #00d2ff;
+
+        }
+
+        .veri-kutusu .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+
+        .veri-kutusu .deger {
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            color: #fff;
+
+            word-wrap: break-word;
+
+        }
+
+
+
+        /* --- BUTTONS --- */
+
+        .btn {
+
+            border: none;
+
+            padding: 12px 18px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+            width: 100%;
+
+            margin-top: 12px;
+
+            transition: all 0.2s;
+
+        }
+
+        .btn-primary { background: #00d2ff; color: #0a0a1a; }
+
+        .btn-primary:hover { background: #00b8e6; transform: translateY(-1px); }
+
+        .btn-primary:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; }
+
+        .btn-accent { background: #ff4081; color: white; }
+
+        .btn-accent:hover { background: #e63973; transform: translateY(-1px); }
+
+
+
+        /* --- FILE UPLOAD --- */
+
+        .file-upload-area {
+
+            border: 2px dashed #00d2ff44;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition: all 0.3s;
+
+            position: relative;
+
+            margin-bottom: 12px;
+
+        }
+
+        .file-upload-area:hover { border-color: #00d2ff; background: #00d2ff08; }
+
+        .file-upload-area input[type="file"] {
+
+            position: absolute;
+
+            inset: 0;
+
+            opacity: 0;
+
+            cursor: pointer;
+
+        }
+
+        .file-upload-area .upload-icon { font-size: 28px; margin-bottom: 6px; }
+
+        .file-upload-area .upload-text { font-size: 13px; color: #888; }
+
+
+
+        /* --- BADGE --- */
+
+        .badge {
+
+            display: inline-block;
+
+            padding: 3px 10px;
+
+            border-radius: 12px;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            letter-spacing: 0.5px;
+
+        }
+
+        .badge-success { background: #4CAF5033; color: #4CAF50; border: 1px solid #4CAF5044; }
+
+        .badge-warning { background: #ff980033; color: #ff9800; border: 1px solid #ff980044; }
+
+        .badge-info { background: #00d2ff22; color: #00d2ff; border: 1px solid #00d2ff33; }
+
+
+
+        /* --- VARIANT PARAMS TABLE --- */
+
+        .param-table {
+
+            width: 100%;
+
+            font-size: 13px;
+
+            margin-top: 10px;
+
+        }
+
+        .param-table td {
+
+            padding: 6px 8px;
+
+            border-bottom: 1px solid #ffffff08;
+
+        }
+
+        .param-table td:first-child { color: #888; width: 45%; }
+
+        .param-table td:last-child { color: #fff; font-weight: 500; }
+
+
+
+        /* --- WSN GRID --- */
+
+        #wsn-grid {
+
+            display: grid;
+
+            gap: 2px;
+
+            margin-top: 14px;
+
+            justify-content: center;
+
+            background: #0005;
+
+            padding: 6px;
+
+            border-radius: 8px;
+
+        }
+
+        .kare {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            color: #121212;
+
+            min-width: 0;
+
+            aspect-ratio: 1;
+
+            cursor: pointer;
+
+            user-select: none;
+
+            position: relative;
+
+        }
+
+        .kare.acik { background-color: #cfd8dc; }
+
+        .kare.koyu { background-color: #78909c; }
+
+        .kare.secili {
+
+            background-color: #2196F3 !important;
+
+            box-shadow: inset 0 0 10px #ffffffaa;
+
+            border-radius: 4px;
+
+        }
+
+        
+
+        /* Satranç Koordinatları (a-b-c, 1-2-3) */
+
+        .coord-rank {
+
+            position: absolute;
+
+            top: 2px;
+
+            left: 2px;
+
+            font-size: 9px;
+
+            font-weight: bold;
+
+            pointer-events: none;
+
+        }
+
+        .coord-file {
+
+            position: absolute;
+
+            bottom: 2px;
+
+            right: 2px;
+
+            font-size: 9px;
+
+            font-weight: bold;
+
+            pointer-events: none;
+
+        }
+
+        .kare.acik .coord-rank, .kare.acik .coord-file { color: #78909c; }
+
+        .kare.koyu .coord-rank, .kare.koyu .coord-file { color: #cfd8dc; }
+
+
+
+        .tas-val {
+
+            font-size: 2.2em; /* Taşları büyüt */
+
+            line-height: 1;
+
+        }
+
+
+
+        .tas-W { color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2; }
+
+        .tas-B { color: #1a1a1a; text-shadow: 1px 1px 2px #ffffff88; z-index: 2; }
+
+
+
+        /* --- INPUT --- */
+
+        input[type="number"] {
+
+            background: #0d0d25;
+
+            color: #fff;
+
+            border: 1px solid #ffffff20;
+
+            padding: 10px 14px;
+
+            border-radius: 8px;
+
+            width: 100%;
+
+            font-size: 14px;
+
+            margin-top: 6px;
+
+        }
+
+        input[type="number"]:focus { outline: none; border-color: #00d2ff; }
+
+
+
+        /* --- SPINNER --- */
+
+        .spinner {
+
+            display: inline-block;
+
+            width: 16px; height: 16px;
+
+            border: 2px solid #ffffff44;
+
+            border-top-color: #00d2ff;
+
+            border-radius: 50%;
+
+            animation: spin 0.8s linear infinite;
+
+            vertical-align: middle;
+
+            margin-right: 6px;
+
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+        /* --- FEN TEXT --- */
+
+        .fen-text {
+
+            color: #ffeb3b;
+
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+
+            font-size: 12px;
+
+            word-wrap: break-word;
+
+            line-height: 1.6;
+
+        }
+
+
+
+        /* --- ROTA VURGULAMA (BESTMOVE HIGHLIGHT) --- */
+
+        .kare.rota-kalkis {
+
+            background: #4CAF50 !important;
+
+            box-shadow: 0 0 12px #4CAF50aa, inset 0 0 6px #ffffff44;
+
+            animation: rotaPulse 1.2s ease-in-out infinite;
+
+            border-radius: 4px;
+
+        }
+
+        .kare.rota-varis {
+
+            background: #FFD700 !important;
+
+            box-shadow: 0 0 14px #FFD700aa, inset 0 0 6px #ffffff44;
+
+            animation: rotaPulse 1.2s ease-in-out infinite 0.3s;
+
+            border-radius: 4px;
+
+        }
+
+        @keyframes rotaPulse {
+
+            0%, 100% { transform: scale(1); }
+
+            50% { transform: scale(1.08); }
+
+        }
+
+        .rota-ok {
+
+            font-size: 10px;
+
+            color: #4CAF50;
+
+            margin-top: 6px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+        }
+
+
+
+        /* --- RAPOR BUTONU --- */
+
+        .btn-report {
+
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+
+            color: white;
+
+            border: none;
+
+            padding: 10px 16px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            font-size: 13px;
+
+            width: 100%;
+
+            margin-top: 10px;
+
+            transition: all 0.2s;
+
+            display: none;
+
+        }
+
+        .btn-report:hover { background: linear-gradient(135deg, #ab47bc, #8e24aa); transform: translateY(-1px); }
+
+        .btn-report.visible { display: block; }
+
+
+
+        /* --- NAVIGATION BUTTONS --- */
+
+        .nav-btn {
+
+            flex: 1;
+
+            color: #ffffff;
+
+            font-size: 11px;
+
+            padding: 7px 8px;
+
+            margin: 0;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            letter-spacing: 0.3px;
+
+            transition: all 0.2s ease;
+
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+
+        }
+
+        #btn-basa-don {
+
+            background: linear-gradient(135deg, #ff6d00, #ff9100);
+
+            box-shadow: 0 2px 8px rgba(255, 109, 0, 0.4);
+
+        }
+
+        #btn-basa-don:hover:not(:disabled) {
+
+            background: linear-gradient(135deg, #ff7d1a, #ffa726);
+
+            transform: translateY(-1px);
+
+            box-shadow: 0 4px 12px rgba(255, 109, 0, 0.6);
+
+        }
+
+        #btn-geri {
+
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+
+        }
+
+        #btn-geri:hover:not(:disabled) {
+
+            background: linear-gradient(135deg, #2185d0, #42a5f5);
+
+            transform: translateY(-1px);
+
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.6);
+
+        }
+
+        #btn-ileri {
+
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+
+            box-shadow: 0 2px 8px rgba(67, 160, 71, 0.4);
+
+        }
+
+        #btn-ileri:hover:not(:disabled) {
+
+            background: linear-gradient(135deg, #388e3c, #4caf50);
+
+            transform: translateY(-1px);
+
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.6);
+
+        }
+
+        .nav-btn:disabled {
+
+            background: #232733 !important;
+
+            color: #5c6275 !important;
+
+            border: 1px solid #323747 !important;
+
+            box-shadow: none !important;
+
+            text-shadow: none !important;
+
+            opacity: 0.4 !important;
+
+            cursor: not-allowed !important;
+
+            transform: none !important;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <!-- === HEADER === -->
+
+    <div class="header">
+
+        <h1 data-i18n="header_title">🛰️ WSN Otonom Karar Sistemi</h1>
+
+        <div class="header-controls">
+
+            <div class="health-dot checking" id="health-dot" title=""></div>
+
+            <span class="health-label" id="health-label" data-i18n="health_checking">Sunucu kontrol ediliyor...</span>
+
+            <button class="btn btn-primary" id="btn-tetikle" onclick="veriCek()" data-i18n="trigger_engine" style="padding: 4px 10px; margin-right: 10px; font-size: 12px; height: 30px;">Motoru Tetikle</button>
+
+            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">EN</button>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="container">
+
+
+
+        <!-- ======================== PANEL 1: TOPOLOJİ ======================== -->
+
+        <div class="panel">
+
+            <h2 data-i18n="panel1_title">1. WSN Topoloji Görselleştirici</h2>
+
+            <p class="panel-desc" data-i18n="panel1_desc">Varyant veya kayıtlı FEN senaryolarını seçin, topoloji ekrana yansısın.</p>
+
+
+
+            <div style="margin-top: 10px; margin-bottom: 12px;">
+
+                <label style="font-size: 13px; color: #ccc;" data-i18n="select_variant">Varyant Seç:</label>
+
+                <select id="variant-dropdown" onchange="varyantDropdownDegisti()" style="width: 100%; background: #0d0d25; color: #fff; border: 1px solid #ffffff20; padding: 8px; border-radius: 6px; margin-top: 4px;">
+
+                                        <option value="klasik" data-i18n="opt_classic">Standard Chess</option>
+
+                    <option value="nizami" data-i18n="opt_nizami">Nizami's Game (Shatranj)</option>
+
+                    <option value="capablanca" data-i18n="opt_capablanca">Capablanca Chess (10x8)</option>
+
+                    <option value="crazyhouse" data-i18n="opt_crazyhouse">Crazyhouse (Node Injection)</option>
+
+                    <option value="xiangqi" data-i18n="opt_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
+
+                </select>
+
+                <a href="senaryolar.html" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
+
+                    ⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)
+
+                </a>
+
+            </div>
+
+
+
+            <!-- Variant Badge -->
+
+            <div style="margin-bottom: 12px;">
+
+                <span class="badge badge-warning" id="variant-badge" data-i18n="variant_not_loaded">Yüklenmedi</span>
+
+            </div>
+
+
+
+            <!-- FEN -->
+
+            <div class="veri-kutusu">
+
+                <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
+
+                    <span data-i18n="detected_fen">Algılanan FEN:</span>
+
+                    <button class="btn" onclick="apiFenCek()" style="padding: 4px 8px; font-size: 11px; background-color: #2196F3;" data-i18n="btn_fetch_api">🌐 Fetch Sensor Data from External API</button>
+
+                </div>
+
+                <div class="fen-text" id="fen-metni" data-i18n="fen_none">Yok</div>
+
+            </div>
+
+
+
+            <!-- Variant Params -->
+
+            <div id="variant-params" style="display:none;">
+
+                <h3 style="color:#00d2ff; font-size:14px; margin-top:14px;" data-i18n="variant_params_title">Varyant Parametreleri</h3>
+
+                <table class="param-table" id="param-table"></table>
+
+            </div>
+
+
+
+            <!-- WSN Grid -->
+
+            <div id="wsn-grid"></div>
+
+
+
+            <!-- Oyun Geçmişi Navigasyon -->
+
+            <div id="game-nav" style="display: none; gap: 4px; margin-top: 8px;">
+
+                <button class="nav-btn" id="btn-basa-don" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
+
+                <button class="nav-btn" id="btn-geri" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
+
+                <button class="nav-btn" id="btn-ileri" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ======================== PANEL 2: MOTOR ======================== -->
+
+        <div class="panel">
+
+            <h2 data-i18n="panel2_title">2. Karar Motoru Çıktısı</h2>
+
+
+
+            <div class="veri-kutusu">
+
+                <div class="label" data-i18n="bestmove_label">API'den Gelen En İyi Rota</div>
+
+                <div class="deger" id="bestmove" data-i18n="waiting">Bekleniyor...</div>
+
+            </div>
+
+            
+
+            <div class="veri-kutusu">
+
+                <div class="label" data-i18n="full_solution_label">Tam Çözüm Yolu (PV)</div>
+
+                <div class="fen-text" id="full-solution" data-i18n="waiting" style="color: #4CAF50;">Bekleniyor...</div>
+
+            </div>
+
+
+
+            <div class="veri-kutusu">
+
+                <div class="label" data-i18n="cp_label">Ham CP (Santipawn) Skoru</div>
+
+                <div class="deger" id="cp" data-i18n="waiting">Bekleniyor...</div>
+
+            </div>
+
+
+
+            <!-- Motor Info -->
+
+            <div class="veri-kutusu" style="border-left-color: #9c27b0;">
+
+                <div class="label" data-i18n="variant_status">Varyant Durumu</div>
+
+                <div class="deger" id="motor-varyant" style="font-size:14px; color:#ff9800;">—</div>
+
+            </div>
+
+
+
+            <!-- Depth Slider -->
+
+            <div class="veri-kutusu" style="border-left-color: #2196F3; margin-bottom: 15px;">
+
+                <div class="label" style="display: flex; justify-content: space-between;">
+
+                    <span data-i18n="engine_depth">Arama Derinliği:</span>
+
+                    <span id="depth-val" style="color: white; font-weight: bold;">12</span>
+
+                </div>
+
+                <input type="range" id="engine-depth" min="1" max="25" value="12" style="width: 100%; margin-top: 8px;" oninput="document.getElementById('depth-val').textContent = this.value">
+
+            </div>
+
+            
+
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+
+                <button class="btn btn-primary" style="flex: 1;" onclick="veriCek('next')" data-i18n="btn_next_move">En İyi Sonraki Hamle</button>
+
+                <button class="btn btn-accent" style="flex: 1; background: #ff9800;" onclick="veriCek('full')" data-i18n="btn_full_solution">Tüm Çözümü Göster</button>
+
+            </div>
+
+
+
+            <button class="btn" id="btn-oto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="otonomSimulasyonToggle()" data-i18n="btn_auto_sim">▶ Otonom Simülasyon (Canlı Demo)</button>
+
+
+
+            <div id="report-buttons" style="display: none; gap: 8px; margin-top: 10px; width: 100%;">
+
+                <button class="btn-report visible" id="btn-rapor" onclick="raporIndir()" style="flex:1; width:50%; margin:0; display:block;" data-i18n="btn_download_report">📄 Download Report (JSON)</button>
+
+                <button class="btn-report visible" id="btn-rapor-pdf" onclick="pdfRaporIndir()" style="flex:1; width:50%; margin:0; display:block; background: linear-gradient(135deg, #f44336, #d32f2f);" data-i18n="btn_pdf">📄 Download Report (PDF)</button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ======================== PANEL 3: FİLTRE ======================== -->
+
+        <div class="panel" style="border: 1px solid #ff408133;">
+
+            <h2 style="color: #ff4081;" data-i18n="panel3_title">3. Özel CP Filtreleme Testi</h2>
+
+            <p class="panel-desc" data-i18n="panel3_desc">Gelen CP skorunu filtreleme mantığıyla test et.</p>
+
+
+
+            <label style="font-size: 13px; color: #ccc;" data-i18n="threshold_label">Minimum Kabul Edilebilir CP Eşiği:</label>
+
+            <input type="number" id="cp-esik" value="50">
+
+
+
+            <button class="btn btn-accent" onclick="filtreTesti()" data-i18n="apply_filter">Filtreyi Uygula</button>
+
+
+
+            <div class="veri-kutusu" style="border-left-color: #ff4081; margin-top: 16px;">
+
+                <div class="label" data-i18n="filter_result_label">Filtre Sonucu (Karar):</div>
+
+                <div class="deger" id="filtre-sonuc" style="color: #ffeb3b; font-size: 15px;" data-i18n="test_waiting">Test Bekleniyor...</div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+<script>
+
+// API BASE URL - Dynamic for Vercel Serverless / Render fallback
+
+const API_BASE = window.location.hostname.includes("vercel.app") 
+
+    ? window.location.origin 
+
+    : "https://wsn-api.onrender.com";
+
+
+
+// =========================================================================
+
+// i18n SİSTEMİ — JSON dil dosyaları ile
+
+// =========================================================================
+
+let mevcutDil = localStorage.getItem("wsn_dil") || "en";
+
+let dilVerisi = {};
+
+
+
+async function dilYukle(dil) {
+
+    try {
+
+        const resp = await fetch(`lang/${dil}.json`);
+
+        if (!resp.ok) throw new Error("Dil dosyası bulunamadı");
+
+        dilVerisi = await resp.json();
+
+        mevcutDil = dil;
+
+        localStorage.setItem("wsn_dil", dil);
+
+        document.documentElement.lang = dil;
+
+        dilUygula();
+
+    } catch (err) {
+
+        console.error("Dil yükleme hatası:", err);
+
+    }
+
+}
+
+
+
+function dilUygula() {
+
+    // data-i18n attribute'ı olan tüm elementleri güncelle
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+
+        const anahtar = el.getAttribute("data-i18n");
+
+        if (dilVerisi[anahtar]) {
+
+            if (el.tagName === "INPUT" && el.type !== "number") {
+
+                el.placeholder = dilVerisi[anahtar];
+
+            } else if (el.tagName === "TITLE") {
+
+                document.title = dilVerisi[anahtar];
+
+            } else {
+
+                el.textContent = dilVerisi[anahtar];
+
+            }
+
+        }
+
+    });
+
+    // Dil butonu
+
+    document.getElementById("lang-btn").textContent = dilVerisi["lang_switch"] || (mevcutDil === "tr" ? "EN" : "TR");
+
+    
+
+    // Simülasyon butonu metnini koru
+
+    const btnSim = document.getElementById("btn-oto-sim");
+
+    if (btnSim) {
+
+        btnSim.textContent = (typeof simAktif !== 'undefined' && simAktif) ? t("btn_stop_sim") : t("btn_auto_sim");
+
+    }
+
+
+
+    // Kayıtlı senaryolar optgroup başlığını güncelle
+
+    const optGroup = document.getElementById('optgroup-custom-scenarios');
+
+    if (optGroup) {
+
+        optGroup.label = t('opt_custom_scenarios');
+
+    }
+
+
+
+    // Aktif varyant varsa paneli yeniden çiz (badge + tablo dinamik t() çağrıları)
+
+    if (typeof aktifVariant !== 'undefined' && aktifVariant) {
+
+        varyantPanelGuncelle(aktifVariant);
+
+    }
+
+}
+
+
+
+function dilDegistir() {
+
+    const yeniDil = mevcutDil === "tr" ? "en" : "tr";
+
+    dilYukle(yeniDil);
+
+}
+
+
+
+function t(anahtar, degiskenler = {}) {
+
+    let metin = dilVerisi[anahtar] || anahtar;
+
+    for (const [k, v] of Object.entries(degiskenler)) {
+
+        metin = metin.replace(`{${k}}`, v);
+
+    }
+
+    return metin;
+
+}
+
+
+
+// =========================================================================
+
+// HEALTH CHECK
+
+// =========================================================================
+
+async function healthCheck() {
+
+    const dot = document.getElementById("health-dot");
+
+    const label = document.getElementById("health-label");
+
+    dot.className = "health-dot checking";
+
+    label.textContent = t("health_checking");
+
+
+
+    try {
+
+        const controller = new AbortController();
+
+        const tid = setTimeout(() => controller.abort(), 8000);
+
+        const resp = await fetch(`${API_BASE}/api/health`, { signal: controller.signal });
+
+        clearTimeout(tid);
+
+        if (resp.ok) {
+
+            dot.className = "health-dot ok";
+
+            label.setAttribute("data-i18n", "health_ok");
+
+            label.textContent = t("health_ok");
+
+            return;
+
+        }
+
+    } catch (e) {
+
+        console.warn("Health check primary failed, trying fallback...", e);
+
+    }
+
+
+
+    try {
+
+        const controller = new AbortController();
+
+        const tid = setTimeout(() => controller.abort(), 8000);
+
+        const resp = await fetch("https://wsn-api.onrender.com/api/health", { signal: controller.signal });
+
+        clearTimeout(tid);
+
+        if (resp.ok) {
+
+            dot.className = "health-dot ok";
+
+            label.setAttribute("data-i18n", "health_ok");
+
+            label.textContent = t("health_ok");
+
+            return;
+
+        }
+
+    } catch (e) {
+
+        console.warn("Health check fallback failed", e);
+
+    }
+
+
+
+    dot.className = "health-dot fail";
+
+    label.setAttribute("data-i18n", "health_fail");
+
+    label.textContent = t("health_fail");
+
+}
+
+
+
+// =========================================================================
+
+// VARIANTS.INI PARSER VE TAHTA ÇİZİMİ
+
+// =========================================================================
+
+let aktifVariant = null;    // Parse edilmiş varyant verisi
+
+let aktifIniIcerik = null;  // Ham .ini içeriği (motora gönderilecek)
+
+let aktifFen = "";
+
+let gridSatir = 8;
+
+let gridSutun = 8;
+
+
+
+function iniParse(icerik) {
+
+    const satirlar = icerik.split('\n');
+
+    const sonuc = {
+
+        varyantAdi: "",
+
+        maxRank: 8,
+
+        maxFile: 8,
+
+        cylinder: false,
+
+        drop: false,
+
+        startFen: "",
+
+        customPieces: [],
+
+        promotionRegionWhite: "",
+
+        promotionRegionBlack: "",
+
+        promotionPieceTypes: "",
+
+        tumParametreler: {}
+
+    };
+
+
+
+    for (let satir of satirlar) {
+
+        satir = satir.trim();
+
+
+
+        if (satir.startsWith('[') && satir.includes(':')) {
+
+            sonuc.varyantAdi = satir.split('[')[1].split(':')[0].trim();
+
+            continue;
+
+        }
+
+
+
+        if (satir.startsWith('#') || !satir.includes('=')) continue;
+
+
+
+        const esitIdx = satir.indexOf('=');
+
+        const anahtar = satir.substring(0, esitIdx).trim();
+
+        let deger = satir.substring(esitIdx + 1).trim();
+
+
+
+        if (deger.includes('#')) {
+
+            deger = deger.split('#')[0].trim();
+
+        }
+
+
+
+        sonuc.tumParametreler[anahtar] = deger;
+
+
+
+        switch (anahtar) {
+
+            case 'maxRank': sonuc.maxRank = parseInt(deger) || 8; break;
+
+            case 'maxFile': sonuc.maxFile = parseInt(deger) || 8; break;
+
+            case 'cylinder': sonuc.cylinder = deger === 'true'; break;
+
+            case 'drop': sonuc.drop = deger === 'true'; break;
+
+            case 'startFen': sonuc.startFen = deger; break;
+
+            case 'promotionRegionWhite': sonuc.promotionRegionWhite = deger; break;
+
+            case 'promotionRegionBlack': sonuc.promotionRegionBlack = deger; break;
+
+            case 'promotionPieceTypes': sonuc.promotionPieceTypes = deger; break;
+
+        }
+
+
+
+        if (anahtar.startsWith('customPiece')) {
+
+            sonuc.customPieces.push(deger);
+
+        }
+
+    }
+
+
+
+    return sonuc;
+
+}
+
+
+
+function varyantPanelGuncelle(varyant) {
+
+    const params = document.getElementById("variant-params");
+
+    const tablo = document.getElementById("param-table");
+
+    const badge = document.getElementById("variant-badge");
+
+    const motorVaryant = document.getElementById("motor-varyant");
+
+
+
+    params.style.display = "block";
+
+    badge.className = "badge badge-success";
+
+    badge.textContent = `✓ ${t("active_variant_badge")}: ${varyant.varyantAdi}`;
+
+    badge.removeAttribute("data-i18n");
+
+
+
+    motorVaryant.textContent = varyant.varyantAdi || "—";
+
+    motorVaryant.style.color = "#4CAF50";
+
+
+
+    tablo.innerHTML = `
+
+        <tr><td data-i18n="variant_name">${t("variant_name")}</td><td>${varyant.varyantAdi}</td></tr>
+
+        <tr><td data-i18n="grid_size">${t("grid_size")}</td><td>${varyant.maxRank} × ${varyant.maxFile}</td></tr>
+
+        <tr><td data-i18n="topology">${t("topology")}</td><td>${varyant.cylinder ? t("topology_closed") : t("topology_open")}</td></tr>
+
+        <tr><td data-i18n="node_injection">${t("node_injection")}</td><td>${varyant.drop ? t("enabled") : t("disabled")}</td></tr>
+
+        <tr><td data-i18n="custom_pieces">${t("custom_pieces")}</td><td>${varyant.customPieces.length} ${t("unit_count")}</td></tr>
+
+        ${varyant.promotionRegionWhite ? `<tr><td data-i18n="promotion_zone">${t("promotion_zone")}</td><td>${varyant.promotionRegionWhite}</td></tr>` : ''}
+
+    `;
+
+}
+
+
+
+// =========================================================================
+
+// OYUN DURUMU (STATE) VE GEÇMİŞ
+
+// =========================================================================
+
+let seciliKareId = null;
+
+let siraKimde = 'w'; // 'w' = Kullanıcı(Beyaz), 'b' = Motor(Siyah)
+
+
+
+let fenGecmisi = [];
+
+let hamleGecmisiListesi = [];
+
+let gecmisIndeks = -1;
+
+
+
+function navButonlariGuncelle() {
+
+    const btnBasaDon = document.getElementById("btn-basa-don");
+
+    const btnGeri = document.getElementById("btn-geri");
+
+    const btnIleri = document.getElementById("btn-ileri");
+
+    if (btnBasaDon) btnBasaDon.disabled = (gecmisIndeks <= 0);
+
+    if (btnGeri) btnGeri.disabled = (gecmisIndeks <= 0);
+
+    if (btnIleri) btnIleri.disabled = (gecmisIndeks >= fenGecmisi.length - 1);
+
+}
+
+
+
+function gecmiseHamleEkle(yeniFen, hamleStr) {
+
+    if (gecmisIndeks < fenGecmisi.length - 1) {
+
+        fenGecmisi = fenGecmisi.slice(0, gecmisIndeks + 1);
+
+        hamleGecmisiListesi = hamleGecmisiListesi.slice(0, gecmisIndeks);
+
+    }
+
+    fenGecmisi.push(yeniFen);
+
+    hamleGecmisiListesi.push(hamleStr);
+
+    gecmisIndeks++;
+
+    document.getElementById("game-nav").style.display = "flex";
+
+    navButonlariGuncelle();
+
+}
+
+
+
+function navigasyonYukle(indeks) {
+
+    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
+
+    gecmisIndeks = indeks;
+
+    aktifFen = fenGecmisi[gecmisIndeks];
+
+    siraKimde = aktifFen.split(" ")[1] || 'w';
+
+    
+
+    // Seçim ve vurguları sıfırla
+
+    seciliKareId = null;
+
+    document.querySelectorAll(".secili, .rota-kalkis, .rota-varis").forEach(el => {
+
+        el.classList.remove("secili", "rota-kalkis", "rota-varis");
+
+    });
+
+    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+
+
+
+    document.getElementById("fen-metni").textContent = aktifFen;
+
+    fenCiz(aktifFen, gridSatir, gridSutun);
+
+    navButonlariGuncelle();
+
+    
+
+    // Sıra beyazdaysa yasal hamleleri yenile
+
+    if (siraKimde === 'w') {
+
+        yasalHamleleriGetir();
+
+    }
+
+}
+
+
+
+function basaDon() {
+
+    if (fenGecmisi.length > 0 && gecmisIndeks > 0) {
+
+        navigasyonYukle(0);
+
+        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Başa Dön]" : "[Start]");
+
+        if (sonRaporVerisi) {
+
+            sonRaporVerisi.fen = aktifFen;
+
+            sonRaporVerisi.tarih_obj = new Date();
+
+        }
+
+    }
+
+}
+
+
+
+function geriAl() {
+
+    if (gecmisIndeks > 0) {
+
+        navigasyonYukle(gecmisIndeks - 1);
+
+        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Geri]" : "[Back]");
+
+        if (sonRaporVerisi) {
+
+            sonRaporVerisi.fen = aktifFen;
+
+            sonRaporVerisi.tarih_obj = new Date();
+
+        }
+
+    }
+
+}
+
+
+
+function ileriAl() {
+
+    if (gecmisIndeks < fenGecmisi.length - 1) {
+
+        navigasyonYukle(gecmisIndeks + 1);
+
+        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[İleri]" : "[Forward]");
+
+        if (sonRaporVerisi) {
+
+            sonRaporVerisi.fen = aktifFen;
+
+            sonRaporVerisi.tarih_obj = new Date();
+
+        }
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// TAHTA ÇİZİMİ (DİNAMİK GRID)
+
+// =========================================================================
+
+function tahtaOlustur(satir = 8, sutun = 8) {
+
+    const grid = document.getElementById("wsn-grid");
+
+    grid.innerHTML = "";
+
+    grid.style.gridTemplateColumns = `repeat(${sutun}, minmax(28px, 45px))`;
+
+    grid.style.gridTemplateRows = `repeat(${satir}, minmax(28px, 45px))`;
+
+
+
+    const harfler = "abcdefghijklmnopqrstuvwxyz";
+
+    let acikKare = true;
+
+    for (let s = 0; s < satir; s++) {
+
+        for (let st = 0; st < sutun; st++) {
+
+            const kare = document.createElement("div");
+
+            kare.className = "kare " + (acikKare ? "acik" : "koyu");
+
+            kare.id = `kare-${s}-${st}`;
+
+            kare.addEventListener('click', kareTiklandi);
+
+            
+
+            // Satır numarası (Sadece ilk sütunda)
+
+            if (st === 0) {
+
+                const spanR = document.createElement("span");
+
+                spanR.className = "coord-rank";
+
+                spanR.innerText = (satir - s);
+
+                kare.appendChild(spanR);
+
+            }
+
+            // Sütun harfi (Sadece son satırda)
+
+            if (s === satir - 1) {
+
+                const spanF = document.createElement("span");
+
+                spanF.className = "coord-file";
+
+                spanF.innerText = harfler[st];
+
+                kare.appendChild(spanF);
+
+            }
+
+            
+
+            grid.appendChild(kare);
+
+            acikKare = !acikKare;
+
+        }
+
+        if (sutun % 2 === 0) acikKare = !acikKare;
+
+    }
+
+}
+
+
+
+const P_MAP = {
+
+    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+
+    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+
+};
+
+
+
+function fenCiz(fenMetni, satir = 8, sutun = 8) {
+
+    tahtaOlustur(satir, sutun);
+
+
+
+    let sadeceDizilim = fenMetni.split(" ")[0];
+
+    if (sadeceDizilim.includes('[')) {
+
+        sadeceDizilim = sadeceDizilim.split('[')[0];
+
+    }
+
+
+
+    const fenSatirlari = sadeceDizilim.split("/");
+
+
+
+    for (let i = 0; i < fenSatirlari.length; i++) {
+
+        if (i >= satir) break;
+
+        const karakterler = fenSatirlari[i].split('');
+
+        let sutunIdx = 0;
+
+        let sayi = "";
+
+
+
+        for (let j = 0; j < karakterler.length; j++) {
+
+            const k = karakterler[j];
+
+            if (!isNaN(k)) {
+
+                sayi += k;
+
+            } else {
+
+                if (sayi) {
+
+                    sutunIdx += parseInt(sayi);
+
+                    sayi = "";
+
+                }
+
+                const kare = document.getElementById(`kare-${i}-${sutunIdx}`);
+
+                if (kare) {
+
+                    const tasNode = document.createElement("span");
+
+                    tasNode.className = "tas-val";
+
+                    tasNode.dataset.tas = k; // Gerçek FEN harfini sakla
+
+                    tasNode.innerText = P_MAP[k] || k; // İkon göster
+
+                    kare.appendChild(tasNode);
+
+                    kare.classList.add(k === k.toUpperCase() ? "tas-W" : "tas-B");
+
+                }
+
+                sutunIdx++;
+
+            }
+
+        }
+
+        if (sayi) sutunIdx += parseInt(sayi);
+
+    }
+
+}
+
+
+
+function karedekiTasiAl(kare) {
+
+    if (!kare) return "";
+
+    const tasNode = kare.querySelector(".tas-val");
+
+    return tasNode ? (tasNode.dataset.tas || "") : "";
+
+}
+
+
+
+function kareyeTasKoy(kare, tas) {
+
+    let tasNode = kare.querySelector(".tas-val");
+
+    if (!tasNode && tas) {
+
+        tasNode = document.createElement("span");
+
+        tasNode.className = "tas-val";
+
+        kare.appendChild(tasNode);
+
+    }
+
+    if (tasNode) {
+
+        if (tas) {
+
+            tasNode.dataset.tas = tas;
+
+            tasNode.innerText = P_MAP[tas] || tas;
+
+        } else {
+
+            tasNode.remove();
+
+        }
+
+    }
+
+}
+
+
+
+function tahtaToFen(sira = 'w') {
+
+    const satir = aktifVariant ? aktifVariant.maxRank : 8;
+
+    const sutun = aktifVariant ? aktifVariant.maxFile : 8;
+
+    let fenSatirlari = [];
+
+
+
+    for (let i = 0; i < satir; i++) {
+
+        let bosSayaci = 0;
+
+        let satirString = "";
+
+        for (let j = 0; j < sutun; j++) {
+
+            const kare = document.getElementById(`kare-${i}-${j}`);
+
+            const tas = karedekiTasiAl(kare);
+
+            
+
+            if (tas) {
+
+                if (bosSayaci > 0) {
+
+                    satirString += bosSayaci;
+
+                    bosSayaci = 0;
+
+                }
+
+                satirString += tas;
+
+            } else {
+
+                bosSayaci++;
+
+            }
+
+        }
+
+        if (bosSayaci > 0) {
+
+            satirString += bosSayaci;
+
+        }
+
+        fenSatirlari.push(satirString);
+
+    }
+
+    
+
+    const boardPart = fenSatirlari.join("/");
+
+    return `${boardPart} ${sira} - - 0 1`;
+
+}
+
+
+
+let mevcutYasalHamleler = [];
+
+
+
+function koordinatToHamle(kalkisId, varisId) {
+
+    const sutunHarfleri = "abcdefghij";
+
+    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
+
+    
+
+    const kParts = kalkisId.split('-');
+
+    const vParts = varisId.split('-');
+
+    
+
+    const kRow = parseInt(kParts[1]), kCol = parseInt(kParts[2]);
+
+    const vRow = parseInt(vParts[1]), vCol = parseInt(vParts[2]);
+
+    
+
+    const kStr = sutunHarfleri[kCol] + (toplam - kRow);
+
+    const vStr = sutunHarfleri[vCol] + (toplam - vRow);
+
+    
+
+    return kStr + vStr;
+
+}
+
+
+
+async function yasalHamleleriGetir() {
+
+    mevcutYasalHamleler = [];
+
+    const payload = {};
+
+    if (aktifFen) payload.fen = aktifFen;
+
+    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
+
+    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+
+
+
+    const endpoints = [
+
+        `${API_BASE}/api/legalmoves`,
+
+        "https://wsn-api.onrender.com/api/legalmoves"
+
+    ];
+
+
+
+    for (const url of endpoints) {
+
+        try {
+
+            const controller = new AbortController();
+
+            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye
+
+            const resp = await fetch(url, {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify(payload),
+
+                signal: controller.signal
+
+            });
+
+            clearTimeout(tid);
+
+
+
+            if (resp.ok) {
+
+                const data = await resp.json();
+
+                if (data.legal_moves) {
+
+                    mevcutYasalHamleler = data.legal_moves;
+
+                    break;
+
+                }
+
+            }
+
+        } catch (e) {
+
+            // Sessizce geç
+
+        }
+
+    }
+
+}
+
+
+
+function kareTiklandi(event) {
+
+    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
+
+    if (siraKimde !== 'w') return; // Sadece beyaz (kullanıcı) oynayabilir
+
+
+
+    const kare = event.currentTarget;
+
+    const tas = karedekiTasiAl(kare);
+
+    const isWhite = tas && tas === tas.toUpperCase();
+
+
+
+    if (seciliKareId) {
+
+        const seciliKare = document.getElementById(seciliKareId);
+
+        
+
+        // Aynı kareye tıklandıysa seçimi kaldır
+
+        if (seciliKareId === kare.id) {
+
+            seciliKare.classList.remove("secili");
+
+            seciliKareId = null;
+
+            return;
+
+        }
+
+        
+
+        // Başka bir beyaz taşa tıklandıysa seçimi ona geçir
+
+        if (isWhite) {
+
+            seciliKare.classList.remove("secili");
+
+            kare.classList.add("secili");
+
+            seciliKareId = kare.id;
+
+            return;
+
+        }
+
+        
+
+        // Yasal hamle kontrolü (eğer yasalHamleler listesi doluysa)
+
+        const denenenHamle = koordinatToHamle(seciliKareId, kare.id);
+
+        
+
+        if (mevcutYasalHamleler && mevcutYasalHamleler.length > 0) {
+
+            const promosyonlu = mevcutYasalHamleler.find(h => h.startsWith(denenenHamle));
+
+            if (!promosyonlu) {
+
+                // Yasal olmayan hamle denendi
+
+                kare.style.backgroundColor = "#ff5252";
+
+                setTimeout(() => {
+
+                    kare.style.backgroundColor = "";
+
+                }, 300);
+
+                seciliKare.classList.remove("secili");
+
+                seciliKareId = null;
+
+                return;
+
+            }
+
+        }
+
+        
+
+        // Hamleyi Uygula (seciliKare -> kare)
+
+        const movingTas = karedekiTasiAl(seciliKare);
+
+        kareyeTasKoy(kare, movingTas);
+
+        
+
+        // Sadece taş rengi sınıflarını taşı (acik/koyu arka planı bozma)
+
+        kare.classList.remove("tas-W", "tas-B");
+
+        if (seciliKare.classList.contains("tas-W")) kare.classList.add("tas-W");
+
+        if (seciliKare.classList.contains("tas-B")) kare.classList.add("tas-B");
+
+        kare.classList.remove("secili");
+
+        
+
+        // Rota vurgusunu temizle (kullanıcı hamlesi de belli olsun)
+
+        document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
+
+            el.classList.remove("rota-kalkis", "rota-varis");
+
+        });
+
+        kare.classList.add("rota-varis");
+
+        seciliKare.classList.add("rota-kalkis");
+
+
+
+        const secilenHamleStr = koordinatToHamle(seciliKareId, kare.id);
+
+
+
+        kareyeTasKoy(seciliKare, "");
+
+        seciliKare.classList.remove("tas-W", "tas-B", "secili");
+
+
+
+        seciliKareId = null;
+
+        siraKimde = 'b';
+
+        
+
+        // Yeni FEN üret ve motora gönder
+
+        aktifFen = tahtaToFen('b');
+
+        document.getElementById("fen-metni").textContent = aktifFen;
+
+        
+
+        // Hamleyi geçmişe ekle
+
+        gecmiseHamleEkle(aktifFen, secilenHamleStr);
+
+        
+
+        // Otomatik motoru tetikle
+
+        veriCek();
+
+
+
+    } else {
+
+        // Seçili taş yoksa ve tıklanan beyazsa seç
+
+        if (isWhite) {
+
+            kare.classList.add("secili");
+
+            seciliKareId = kare.id;
+
+        }
+
+    }
+
+}
+
+
+
+function varyantUygula(icerik) {
+
+    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
+
+    aktifIniIcerik = icerik;
+
+    const varyant = iniParse(aktifIniIcerik);
+
+    if (!varyant) return;
+
+    aktifVariant = varyant;
+
+
+
+    gridSatir = varyant.maxRank || 8;
+
+    gridSutun = varyant.maxFile || 8;
+
+
+
+    if (varyant.startFen) {
+
+        aktifFen = varyant.startFen;
+
+        siraKimde = 'w';
+
+        
+
+        // Geçmişi sıfırla
+
+        fenGecmisi = [aktifFen];
+
+        hamleGecmisiListesi = [];
+
+        gecmisIndeks = 0;
+
+        const nav = document.getElementById("game-nav");
+
+        if(nav) nav.style.display = "flex";
+
+        navButonlariGuncelle();
+
+        document.getElementById("fen-metni").innerText = aktifFen;
+
+        document.getElementById("fen-metni").removeAttribute("data-i18n");
+
+        fenCiz(aktifFen, gridSatir, gridSutun);
+
+        yasalHamleleriGetir();
+
+    } else {
+
+        document.getElementById("fen-metni").innerText = t("startfen_not_found");
+
+    }
+
+
+
+    varyantPanelGuncelle(varyant);
+
+}
+
+
+
+// INI dosyası yükleme eventi (sayfada varsa)
+
+const iniUploadEl = document.getElementById('iniUpload');
+
+if (iniUploadEl) {
+
+    iniUploadEl.addEventListener('change', function(e) {
+
+    const dosya = e.target.files[0];
+
+    if (!dosya) return;
+
+
+
+    const okuyucu = new FileReader();
+
+    okuyucu.onload = function(e) {
+
+        varyantUygula(e.target.result);
+
+    };
+
+    okuyucu.readAsText(dosya);
+
+    });
+
+}
+
+
+
+function varyantDropdownDegisti() {
+
+    const val = document.getElementById('variant-dropdown').value;
+
+    if (val === 'klasik') {
+
+        const ini = `[chess]\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8`;
+
+        varyantUygula(ini);
+
+    } else if (val === 'nizami') {
+
+        const ini = `[nizami:shatranj]\n# Nizami's Game (9th century)\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
+
+        varyantUygula(ini);
+
+    } else if (val === 'capablanca') {
+
+        const ini = `[capablanca:capablanca]\n# Capablanca Chess - 10x8 Extended Grid\nstartFen = rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 10`;
+
+        varyantUygula(ini);
+
+    } else if (val === 'crazyhouse') {
+
+        const ini = `[crazyhouse:crazyhouse]\n# Crazyhouse - Captured pieces can be dropped back\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8\ndrop = true`;
+
+        varyantUygula(ini);
+
+    } else if (val === 'xiangqi') {
+
+        const ini = `[xiangqi:xiangqi]\n# Xiangqi - Chinese Chess 10x9\nstartFen = rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1\nmaxRank = 10\nmaxFile = 9`;
+
+        varyantUygula(ini);
+
+    } else if (val && val.startsWith('custom_')) {
+
+        const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
+
+        const scen = saved.find(s => s.id === val);
+
+        if (scen) {
+
+            let sectionName = scen.varyant || 'chess';
+
+            let ini = `[${sectionName}]\nstartFen = ${scen.fen}\nmaxRank = ${scen.maxRank || 8}\nmaxFile = ${scen.maxFile || 8}`;
+
+            if (scen.drop) ini += `\ndrop = true`;
+
+            varyantUygula(ini);
+
+        }
+
+    }
+
+}
+
+
+
+function kayitliSenaryolariDropdownaYukle() {
+
+    const select = document.getElementById('variant-dropdown');
+
+    if (!select) return;
+
+
+
+    const existingGroup = document.getElementById('optgroup-custom-scenarios');
+
+    if (existingGroup) existingGroup.remove();
+
+
+
+    const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
+
+    if (saved.length > 0) {
+
+        const optgroup = document.createElement('optgroup');
+
+        optgroup.id = 'optgroup-custom-scenarios';
+
+        optgroup.label = t('opt_custom_scenarios');
+
+
+
+        saved.forEach(scen => {
+
+            const opt = document.createElement('option');
+
+            opt.value = scen.id;
+
+            opt.textContent = `${scen.ad} (${scen.maxRank || 8}x${scen.maxFile || 8})`;
+
+            optgroup.appendChild(opt);
+
+        });
+
+        select.appendChild(optgroup);
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// DIŞ API'DEN FEN ÇEKME (EXTERNAL API INTEGRATION)
+
+// =========================================================================
+
+async function apiFenCek() {
+
+    try {
+
+        const url = `${API_BASE}/api/external/random-puzzle`;
+
+            
+
+        document.getElementById("fen-metni").textContent = t("waiting") || "Veri çekiliyor...";
+
+        
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        
+
+        if (data.success && data.fen) {
+
+            document.getElementById("variant-dropdown").value = "klasik";
+
+            const ini = `[chess]\nstartFen = ${data.fen}\nmaxRank = 8\nmaxFile = 8`;
+
+            varyantUygula(ini);
+
+            veriCek('full'); 
+
+        } else {
+
+            alert(t("error") || "API Hatası: Veri çekilemedi.");
+
+            document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
+
+        }
+
+    } catch (err) {
+
+        console.error("API Fetch Error:", err);
+
+        alert(t("connection_error") || "Connection Error! Backend may be offline.");
+
+        document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// API VERİ ÇEKME — Varyant entegreli
+
+// =========================================================================
+
+let sonCpSkoru = 0;
+
+
+
+async function veriCek(type = 'next') {
+
+    const btnTetikle = document.getElementById("btn-tetikle");
+
+    const bestmoveEl = document.getElementById("bestmove");
+
+    const fullSolEl = document.getElementById("full-solution");
+
+    const cpEl = document.getElementById("cp");
+
+    const filtreEl = document.getElementById("filtre-sonuc");
+
+
+
+    if (btnTetikle) btnTetikle.disabled = true;
+
+    
+
+    bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
+
+    bestmoveEl.removeAttribute("data-i18n");
+
+    cpEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
+
+    cpEl.removeAttribute("data-i18n");
+
+    filtreEl.textContent = t("data_waiting");
+
+    filtreEl.removeAttribute("data-i18n");
+
+
+
+    if (fullSolEl && type === 'full') {
+
+        fullSolEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
+
+        fullSolEl.removeAttribute("data-i18n");
+
+    }
+
+
+
+    const payload = {};
+
+    if (aktifFen) payload.fen = aktifFen;
+
+    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
+
+    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+
+    const engineDepthEl = document.getElementById("engine-depth");
+
+    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
+
+
+
+    const endpoints = [
+
+        `${API_BASE}/api/karar`,
+
+        "https://wsn-api.onrender.com/api/karar"
+
+    ];
+
+
+
+    let basarili = false;
+
+
+
+    for (const url of endpoints) {
+
+        try {
+
+            const controller = new AbortController();
+
+            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye (Render uyanması için)
+
+
+
+            const resp = await fetch(url, {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify(payload),
+
+                signal: controller.signal
+
+            });
+
+            clearTimeout(tid);
+
+
+
+            if (!resp.ok) throw new Error("Server status " + resp.status);
+
+
+
+            const data = await resp.json();
+
+
+
+            if (data.hata) {
+
+                bestmoveEl.textContent = `${t("error")}: ${data.hata}`;
+
+                cpEl.textContent = t("error");
+
+                if (fullSolEl) fullSolEl.textContent = t("error");
+
+            } else {
+
+                bestmoveEl.textContent = data.bestmove || t("error");
+
+                
+
+                if (fullSolEl && data.full_solution) {
+
+                    fullSolEl.textContent = data.full_solution;
+
+                } else if (fullSolEl) {
+
+                    fullSolEl.textContent = "-";
+
+                }
+
+
+
+                cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
+
+                sonCpSkoru = data.cp_skoru || 0;
+
+
+
+                const motorVaryant = document.getElementById("motor-varyant");
+
+                motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
+
+
+
+                // Rota vurgulama sadece 'next' için
+
+                if (data.bestmove && type === 'next') {
+
+                    rotaVurgula(data.bestmove);
+
+                }
+
+
+
+                // Rapor verilerini sakla (Tüm veriler ham halde saklanır, indirme anında dile göre şekillenir)
+
+                sonRaporVerisi = {
+
+                    tarih_obj: new Date(),
+
+                    varyant: data.varyant || "standart",
+
+                    fen: data.fen || "startpos",
+
+                    bestmove: data.bestmove,
+
+                    full_solution: data.full_solution,
+
+                    cp_skoru: data.cp_skoru,
+
+                    gecikme_ms: data.gecikme_ms,
+
+                    motor: data.motor,
+
+                    derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
+
+                    aktif_varyant_obj: aktifVariant,
+
+                    filtre_esik: parseInt(document.getElementById("cp-esik").value),
+
+                    filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
+
+                };
+
+                const reportBtns = document.getElementById("report-buttons");
+
+                if(reportBtns) reportBtns.style.display = "flex";
+
+            }
+
+
+
+            basarili = true;
+
+            break;
+
+        } catch (err) {
+
+            console.warn(`Fetch error for ${url}:`, err);
+
+        }
+
+    }
+
+
+
+    if (!basarili) {
+
+        bestmoveEl.setAttribute("data-i18n", "connection_error_timeout");
+
+        bestmoveEl.textContent = t("connection_error_timeout");
+
+        if (fullSolEl) {
+
+            fullSolEl.setAttribute("data-i18n", "connection_error_timeout");
+
+            fullSolEl.textContent = t("connection_error_timeout");
+
+        }
+
+        cpEl.setAttribute("data-i18n", "error");
+
+        cpEl.textContent = t("error");
+
+    }
+
+
+
+    if (btnTetikle) btnTetikle.disabled = false;
+
+}
+
+
+
+// =========================================================================
+
+// CP FİLTRELEME TEST
+
+// =========================================================================
+
+function filtreTesti() {
+
+    const esik = parseInt(document.getElementById("cp-esik").value);
+
+    const sonucKutusu = document.getElementById("filtre-sonuc");
+
+
+
+    if (sonCpSkoru === 0 || isNaN(sonCpSkoru)) {
+
+        sonucKutusu.textContent = t("need_cp_first");
+
+        sonucKutusu.style.color = "#ffeb3b";
+
+        return;
+
+    }
+
+
+
+    if (sonCpSkoru >= esik) {
+
+        sonucKutusu.textContent = t("filter_success", { cp: sonCpSkoru, threshold: esik });
+
+        sonucKutusu.style.color = "#4CAF50";
+
+    } else {
+
+        sonucKutusu.textContent = t("filter_rejected", { cp: sonCpSkoru, threshold: esik });
+
+        sonucKutusu.style.color = "#f44336";
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// ROTA VURGULAMA (BESTMOVE HIGHLIGHT)
+
+// =========================================================================
+
+let sonRaporVerisi = null;
+
+
+
+function hamleToKoordinat(hamle) {
+
+    // UCI notasyonu: "g4g7" -> kalkış (g,4) hedef (g,7)
+
+    // Sütun: a=0, b=1, ... j=9
+
+    // Satır: 1=son satır, ... 10=ilk satır (FEN'de ters)
+
+    if (!hamle || hamle.length < 4) return null;
+
+
+
+    const sutunHarfleri = "abcdefghij";
+
+    const kalkisSutun = sutunHarfleri.indexOf(hamle[0]);
+
+    const varisSutun = sutunHarfleri.indexOf(hamle[hamle.length === 4 ? 2 : 2]);
+
+
+
+    // Satır numarasını parse et (1 veya 2 haneli olabilir: a1 veya a10)
+
+    let kalkisSatirStr, varisSatirStr;
+
+    if (hamle.length === 5) {
+
+        // Ör: "a10b5" veya "a1b10" — burada uzunluğa göre ayır
+
+        // En yaygın: ilk 2 karakter kalkış (harf+sayı), son 2 karakter varış
+
+        kalkisSatirStr = hamle.substring(1, 2);
+
+        varisSatirStr = hamle.substring(3, 5);
+
+        if (isNaN(parseInt(varisSatirStr))) {
+
+            kalkisSatirStr = hamle.substring(1, 3);
+
+            varisSatirStr = hamle.substring(4, 5);
+
+        }
+
+    } else if (hamle.length === 4) {
+
+        kalkisSatirStr = hamle[1];
+
+        varisSatirStr = hamle[3];
+
+    } else {
+
+        // 6 karakter: a10b10
+
+        kalkisSatirStr = hamle.substring(1, 3);
+
+        varisSatirStr = hamle.substring(4, 6);
+
+    }
+
+
+
+    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
+
+    const kalkisSatir = toplam - parseInt(kalkisSatirStr);
+
+    const varisSatir = toplam - parseInt(varisSatirStr);
+
+
+
+    return {
+
+        kalkis: { satir: kalkisSatir, sutun: kalkisSutun },
+
+        varis: { satir: varisSatir, sutun: varisSutun }
+
+    };
+
+}
+
+
+
+function rotaVurgula(bestmove) {
+
+    // Önceki vurguları temizle
+
+    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
+
+        el.classList.remove("rota-kalkis", "rota-varis");
+
+    });
+
+    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+
+
+
+    const koordinatlar = hamleToKoordinat(bestmove);
+
+    if (!koordinatlar) return;
+
+
+
+    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
+
+    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
+
+
+
+    if (kalkisKare && varisKare) {
+
+        if (siraKimde === 'b') {
+
+            // Siyahın hamlesini uygula
+
+            let movingTas = karedekiTasiAl(kalkisKare);
+
+            if (bestmove.length === 5 && !isNaN(bestmove[3])) {
+
+                const promoChar = bestmove[4];
+
+                if (promoChar) movingTas = promoChar.toLowerCase();
+
+            }
+
+
+
+            // Siyah Rok desteği (King 2 kare yana giderse)
+
+            if (movingTas === 'k' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
+
+                const row = koordinatlar.kalkis.satir;
+
+                if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
+
+                    const rookFrom = document.getElementById(`kare-${row}-7`);
+
+                    const rookTo = document.getElementById(`kare-${row}-5`);
+
+                    if (rookFrom && rookTo) {
+
+                        const rTas = karedekiTasiAl(rookFrom);
+
+                        kareyeTasKoy(rookTo, rTas);
+
+                        rookTo.classList.remove("tas-W", "tas-B");
+
+                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
+
+                        kareyeTasKoy(rookFrom, "");
+
+                        rookFrom.classList.remove("tas-W", "tas-B");
+
+                    }
+
+                } else {
+
+                    const rookFrom = document.getElementById(`kare-${row}-0`);
+
+                    const rookTo = document.getElementById(`kare-${row}-3`);
+
+                    if (rookFrom && rookTo) {
+
+                        const rTas = karedekiTasiAl(rookFrom);
+
+                        kareyeTasKoy(rookTo, rTas);
+
+                        rookTo.classList.remove("tas-W", "tas-B");
+
+                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
+
+                        kareyeTasKoy(rookFrom, "");
+
+                        rookFrom.classList.remove("tas-W", "tas-B");
+
+                    }
+
+                }
+
+            }
+
+
+
+            kareyeTasKoy(varisKare, movingTas);
+
+            
+
+            varisKare.classList.remove("tas-W", "tas-B");
+
+            if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
+
+            if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
+
+            
+
+            kareyeTasKoy(kalkisKare, "");
+
+            kalkisKare.classList.remove("tas-W", "tas-B");
+
+        }
+
+
+
+        kalkisKare.classList.add("rota-kalkis");
+
+        varisKare.classList.add("rota-varis");
+
+        
+
+        if (siraKimde === 'b') {
+
+            // Hamle yapıldıysa sırayı beyaza geçir ve FEN'i güncelle
+
+            aktifFen = tahtaToFen('w');
+
+            document.getElementById("fen-metni").textContent = aktifFen;
+
+            siraKimde = 'w';
+
+            
+
+            // Hamleyi geçmişe ekle
+
+            gecmiseHamleEkle(aktifFen, bestmove);
+
+            
+
+            yasalHamleleriGetir(); // Beyazın yasal hamlelerini hazırla
+
+        }
+
+    }
+
+
+
+    // Bestmove alanına rota yönü göster
+
+    const bestmoveEl = document.getElementById("bestmove");
+
+    if (bestmoveEl) {
+
+        const from = bestmove.substring(0, bestmove.length / 2);
+
+        const to = bestmove.substring(bestmove.length / 2);
+
+        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// OTONOM SİMÜLASYON (CANLI DEMO) MODU
+
+// =========================================================================
+
+let simAktif = false;
+
+let simTimer = null;
+
+
+
+function otonomSimulasyonDurdur() {
+
+    simAktif = false;
+
+    if (simTimer) {
+
+        clearTimeout(simTimer);
+
+        simTimer = null;
+
+    }
+
+    const btn = document.getElementById("btn-oto-sim");
+
+    if (btn) {
+
+        btn.textContent = t("btn_auto_sim");
+
+        btn.style.background = "linear-gradient(135deg, #00c853, #64dd17)";
+
+        btn.style.color = "#000";
+
+        btn.style.boxShadow = "0 4px 12px rgba(0,200,83,0.3)";
+
+    }
+
+}
+
+
+
+async function otonomSimulasyonToggle() {
+
+    if (simAktif) {
+
+        otonomSimulasyonDurdur();
+
+        return;
+
+    }
+
+
+
+    simAktif = true;
+
+    const btn = document.getElementById("btn-oto-sim");
+
+    if (btn) {
+
+        btn.textContent = t("btn_stop_sim");
+
+        btn.style.background = "linear-gradient(135deg, #d50000, #ff1744)";
+
+        btn.style.color = "#fff";
+
+        btn.style.boxShadow = "0 4px 12px rgba(255,23,68,0.4)";
+
+    }
+
+
+
+    otonomSimulasyonDongusu();
+
+}
+
+
+
+async function hamleHesapla() {
+
+    const payload = {};
+
+    if (aktifFen) payload.fen = aktifFen;
+
+    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
+
+    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+
+    const engineDepthEl = document.getElementById("engine-depth");
+
+    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
+
+
+
+    const endpoints = [
+
+        `${API_BASE}/api/karar`,
+
+        "https://wsn-api.onrender.com/api/karar"
+
+    ];
+
+
+
+    for (const url of endpoints) {
+
+        try {
+
+            const controller = new AbortController();
+
+            const tid = setTimeout(() => controller.abort(), 60000);
+
+            const resp = await fetch(url, {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify(payload),
+
+                signal: controller.signal
+
+            });
+
+            clearTimeout(tid);
+
+            if (resp.ok) {
+
+                return await resp.json();
+
+            }
+
+        } catch (err) {
+
+            console.warn(`hamleHesapla fetch error for ${url}:`, err);
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+
+function beyazHamlesiniTahtadaOyna(bestmove) {
+
+    if (!bestmove || bestmove.length < 4) return false;
+
+
+
+    const koordinatlar = hamleToKoordinat(bestmove);
+
+    if (!koordinatlar) return false;
+
+
+
+    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
+
+    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
+
+    if (!kalkisKare || !varisKare) return false;
+
+
+
+    let movingTas = karedekiTasiAl(kalkisKare);
+
+    if (bestmove.length === 5 && !isNaN(bestmove[3])) {
+
+        const promoChar = bestmove[4];
+
+        if (promoChar) movingTas = promoChar.toUpperCase();
+
+    }
+
+
+
+    // Beyaz Rok desteği (King 2 kare yana giderse)
+
+    if (movingTas === 'K' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
+
+        const row = koordinatlar.kalkis.satir;
+
+        if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
+
+            const rookFrom = document.getElementById(`kare-${row}-7`);
+
+            const rookTo = document.getElementById(`kare-${row}-5`);
+
+            if (rookFrom && rookTo) {
+
+                const rTas = karedekiTasiAl(rookFrom);
+
+                kareyeTasKoy(rookTo, rTas);
+
+                rookTo.classList.remove("tas-W", "tas-B");
+
+                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
+
+                kareyeTasKoy(rookFrom, "");
+
+                rookFrom.classList.remove("tas-W", "tas-B");
+
+            }
+
+        } else {
+
+            const rookFrom = document.getElementById(`kare-${row}-0`);
+
+            const rookTo = document.getElementById(`kare-${row}-3`);
+
+            if (rookFrom && rookTo) {
+
+                const rTas = karedekiTasiAl(rookFrom);
+
+                kareyeTasKoy(rookTo, rTas);
+
+                rookTo.classList.remove("tas-W", "tas-B");
+
+                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
+
+                kareyeTasKoy(rookFrom, "");
+
+                rookFrom.classList.remove("tas-W", "tas-B");
+
+            }
+
+        }
+
+    }
+
+
+
+    kareyeTasKoy(varisKare, movingTas);
+
+    varisKare.classList.remove("tas-W", "tas-B");
+
+    if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
+
+    if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
+
+    
+
+    kareyeTasKoy(kalkisKare, "");
+
+    kalkisKare.classList.remove("tas-W", "tas-B", "secili");
+
+
+
+    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
+
+        el.classList.remove("rota-kalkis", "rota-varis");
+
+    });
+
+    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+
+
+
+    kalkisKare.classList.add("rota-kalkis");
+
+    varisKare.classList.add("rota-varis");
+
+
+
+    siraKimde = 'b';
+
+    aktifFen = tahtaToFen('b');
+
+    document.getElementById("fen-metni").textContent = aktifFen;
+
+
+
+    gecmiseHamleEkle(aktifFen, bestmove);
+
+
+
+    const bestmoveEl = document.getElementById("bestmove");
+
+    if (bestmoveEl) {
+
+        const from = bestmove.substring(0, bestmove.length / 2);
+
+        const to = bestmove.substring(bestmove.length / 2);
+
+        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
+
+    }
+
+
+
+    return true;
+
+}
+
+
+
+async function otonomSimulasyonDongusu() {
+
+    if (!simAktif) return;
+
+
+
+    if (siraKimde === 'w') {
+
+        const bestmoveEl = document.getElementById("bestmove");
+
+        if (bestmoveEl) bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
+
+
+
+        const data = await hamleHesapla();
+
+        if (!simAktif) return;
+
+
+
+        if (!data || !data.bestmove || data.bestmove === "(none)" || data.bestmove === "0000") {
+
+            otonomSimulasyonDurdur();
+
+            return;
+
+        }
+
+
+
+        const cpEl = document.getElementById("cp");
+
+        if (cpEl) cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
+
+        sonCpSkoru = data.cp_skoru || 0;
+
+        const fullSolEl = document.getElementById("full-solution");
+
+        if (fullSolEl && data.full_solution) fullSolEl.textContent = data.full_solution;
+
+        const motorVaryant = document.getElementById("motor-varyant");
+
+        if (motorVaryant) motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
+
+
+
+        const engineDepthEl = document.getElementById("engine-depth");
+
+        sonRaporVerisi = {
+
+            tarih_obj: new Date(),
+
+            varyant: data.varyant || "standart",
+
+            fen: data.fen || "startpos",
+
+            bestmove: data.bestmove,
+
+            full_solution: data.full_solution,
+
+            cp_skoru: data.cp_skoru,
+
+            gecikme_ms: data.gecikme_ms,
+
+            motor: data.motor,
+
+            derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
+
+            aktif_varyant_obj: aktifVariant,
+
+            filtre_esik: parseInt(document.getElementById("cp-esik").value),
+
+            filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
+
+        };
+
+        const reportBtns = document.getElementById("report-buttons");
+
+        if (reportBtns) reportBtns.style.display = "flex";
+
+
+
+        const oynandi = beyazHamlesiniTahtadaOyna(data.bestmove);
+
+        if (!oynandi) {
+
+            otonomSimulasyonDurdur();
+
+            return;
+
+        }
+
+
+
+        simTimer = setTimeout(() => {
+
+            otonomSimulasyonDongusu();
+
+        }, 900);
+
+
+
+    } else if (siraKimde === 'b') {
+
+        await veriCek('next');
+
+        if (!simAktif) return;
+
+
+
+        if (!sonRaporVerisi || !sonRaporVerisi.bestmove || sonRaporVerisi.bestmove === "(none)" || sonRaporVerisi.bestmove === "0000") {
+
+            otonomSimulasyonDurdur();
+
+            return;
+
+        }
+
+
+
+        simTimer = setTimeout(() => {
+
+            otonomSimulasyonDongusu();
+
+        }, 900);
+
+    }
+
+}
+
+
+
+// =========================================================================
+
+// RAPOR İNDİRME (KARAR RAPORU EXPORT)
+
+// =========================================================================
+
+function raporIndir() {
+
+    if (!sonRaporVerisi) return;
+
+
+
+    if (typeof aktifFen !== 'undefined' && aktifFen) {
+
+        sonRaporVerisi.fen = aktifFen;
+
+    }
+
+
+
+    // Tarih formatı: yyyy_mm_dd_hh_mm
+
+    const d = sonRaporVerisi.tarih_obj;
+
+    const yyyy = d.getFullYear();
+
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+
+    const dd = String(d.getDate()).padStart(2, '0');
+
+    const hh = String(d.getHours()).padStart(2, '0');
+
+    const min = String(d.getMinutes()).padStart(2, '0');
+
+    const dateStr = `${yyyy}_${mm}_${dd}_${hh}_${min}`;
+
+
+
+    const v = sonRaporVerisi.aktif_varyant_obj;
+
+    
+
+    // JSON anahtarlarını ve değerlerini aktif dile göre oluştur
+
+    const rapor = {
+
+        [t("report_title")]: {
+
+            [t("rep_date")]: dateStr,
+
+            [t("rep_sys")]: {
+
+                [t("rep_engine")]: sonRaporVerisi.motor,
+
+                [t("engine_depth")]: sonRaporVerisi.derinlik,
+
+                [t("rep_var")]: sonRaporVerisi.varyant,
+
+                [t("rep_grid")]: v ? `${v.maxRank}x${v.maxFile}` : "8x8",
+
+                [t("rep_top")]: (v && v.cylinder) ? t("topology_closed") : t("topology_open")
+
+            },
+
+            [t("rep_var_params")]: {
+
+                [t("rep_node_inj")]: (v && v.drop) ? t("enabled") : t("disabled"),
+
+                [t("rep_custom_nodes")]: (v && v.customPieces.length > 0) ? v.customPieces.join(", ") : t("val_none"),
+
+                [t("rep_promo_zone")]: (v && v.promotionRegionWhite) ? v.promotionRegionWhite : t("val_none")
+
+            },
+
+            [t("rep_analysis")]: {
+
+                [t("rep_fen")]: sonRaporVerisi.fen,
+
+                [t("moves")]: hamleGecmisiListesi.join(", ") || t("val_none"),
+
+                [t("rep_best")]: sonRaporVerisi.bestmove,
+
+                [t("rep_full_sol")]: sonRaporVerisi.full_solution || "-",
+
+                [t("rep_cp")]: sonRaporVerisi.cp_skoru,
+
+                [t("rep_lat")]: sonRaporVerisi.gecikme_ms
+
+            },
+
+            [t("rep_filter")]: {
+
+                [t("rep_thresh")]: sonRaporVerisi.filtre_esik,
+
+                [t("rep_dec")]: sonRaporVerisi.filtre_onay ? t("filter_approved") : t("filter_denied"),
+
+                [t("rep_exp")]: sonRaporVerisi.filtre_onay ? t("report_route_approved") : t("report_route_rejected")
+
+            }
+
+        }
+
+    };
+
+
+
+    const blob = new Blob([JSON.stringify(rapor, null, 2)], { type: "application/json" });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download = `wsn_decision_report_${dateStr}.json`;
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+
+function toAsciiSafe(str) {
+
+    if (!str) return "";
+
+    return String(str)
+
+        .replace(/ğ/g, "g").replace(/Ğ/g, "G")
+
+        .replace(/ü/g, "u").replace(/Ü/g, "U")
+
+        .replace(/ş/g, "s").replace(/Ş/g, "S")
+
+        .replace(/ı/g, "i").replace(/İ/g, "I")
+
+        .replace(/ö/g, "o").replace(/Ö/g, "O")
+
+        .replace(/ç/g, "c").replace(/Ç/g, "C");
+
+}
+
+
+
+function pdfRaporIndir() {
+
+    if (!sonRaporVerisi || !window.jspdf) {
+
+        alert("PDF / Report data not available.");
+
+        return;
+
+    }
+
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    
+
+    // Aktif FEN ve geçmişi rapora senkronize et
+
+    if (typeof aktifFen !== 'undefined' && aktifFen) {
+
+        sonRaporVerisi.fen = aktifFen;
+
+    }
+
+    
+
+    const d = sonRaporVerisi.tarih_obj || new Date();
+
+    const dateStr = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}_${String(d.getMinutes()).padStart(2, '0')}`;
+
+    const v = sonRaporVerisi.aktif_varyant_obj;
+
+    const isTR = mevcutDil === 'tr';
+
+
+
+    // ---- BAŞLIK / HEADER ----
+
+    doc.setFont("helvetica", "bold");
+
+    doc.setFontSize(16);
+
+    doc.setTextColor(0, 150, 210);
+
+    doc.text(isTR ? "WSN Otonom Karar Raporu" : "WSN Autonomous Decision Report", 105, 18, { align: "center" });
+
+    
+
+    doc.setFont("helvetica", "normal");
+
+    doc.setFontSize(9);
+
+    doc.setTextColor(100, 100, 100);
+
+    doc.text(`${isTR ? "Uretim Tarihi" : "Generated"}: ${d.toLocaleString()}  |  ${isTR ? "Surum" : "Version"}: ${dateStr}`, 105, 25, { align: "center" });
+
+
+
+    // Üst çizgi
+
+    doc.setDrawColor(0, 210, 255);
+
+    doc.setLineWidth(0.6);
+
+    doc.line(20, 29, 190, 29);
+
+
+
+    let y = 38;
+
+
+
+    function addSection(title) {
+
+        doc.setFont("helvetica", "bold");
+
+        doc.setFontSize(12);
+
+        doc.setTextColor(0, 130, 180);
+
+        doc.text(toAsciiSafe(title), 20, y);
+
+        doc.setDrawColor(0, 210, 255);
+
+        doc.setLineWidth(0.3);
+
+        doc.line(20, y + 2, 190, y + 2);
+
+        y += 8;
+
+        doc.setTextColor(30, 30, 30);
+
+    }
+
+
+
+    function addLine(label, value) {
+
+        doc.setFont("helvetica", "bold");
+
+        doc.setFontSize(10);
+
+        doc.setTextColor(20, 20, 20);
+
+        
+
+        const safeLabel = toAsciiSafe(label);
+
+        const safeVal = toAsciiSafe(String(value !== undefined && value !== null ? value : "-"));
+
+        
+
+        const labelPrefix = `${safeLabel} : `;
+
+        const prefixWidth = doc.getTextWidth(labelPrefix);
+
+        
+
+        doc.text(labelPrefix, 20, y);
+
+        doc.setFont("helvetica", "normal");
+
+        
+
+        const availableWidth = 170 - prefixWidth;
+
+        const valWidth = doc.getTextWidth(safeVal);
+
+        
+
+        if (valWidth <= availableWidth) {
+
+            doc.text(safeVal, 20 + prefixWidth, y);
+
+            y += 6.5;
+
+        } else {
+
+            const valLines = doc.splitTextToSize(safeVal, availableWidth);
+
+            doc.text(valLines[0], 20 + prefixWidth, y);
+
+            y += 5.5;
+
+            for (let i = 1; i < valLines.length; i++) {
+
+                doc.text(valLines[i], 20 + prefixWidth, y);
+
+                y += 5.5;
+
+            }
+
+            y += 1.5;
+
+        }
+
+    }
+
+
+
+    // ======== 1. BÖLÜM: SİSTEM BİLGİLERİ ========
+
+    addSection(isTR ? "1. Sistem Bilgileri" : "1. System Information");
+
+    addLine(isTR ? "Motor" : "Engine", sonRaporVerisi.motor);
+
+    addLine(isTR ? "Arama Derinligi" : "Search Depth", sonRaporVerisi.derinlik);
+
+    addLine(isTR ? "Varyant" : "Variant", sonRaporVerisi.varyant);
+
+    addLine(isTR ? "Izgara Boyutu" : "Grid Size", v ? `${v.maxRank}x${v.maxFile}` : "8x8");
+
+    addLine(isTR ? "Topoloji" : "Topology", (v && v.cylinder) ? (isTR ? "Kapali Devre (Silindirik)" : "Closed (Cylinder)") : (isTR ? "Acik" : "Open (Flat)"));
+
+    addLine(isTR ? "Dugum Enjeksiyonu" : "Node Injection", (v && v.drop) ? (isTR ? "Aktif" : "Enabled") : (isTR ? "Pasif" : "Disabled"));
+
+    y += 4;
+
+
+
+    // ======== 2. BÖLÜM: ANALİZ SONUÇLARI ========
+
+    addSection(isTR ? "2. Analiz Sonuclari" : "2. Analysis Results");
+
+    addLine("FEN", sonRaporVerisi.fen);
+
+    addLine(isTR ? "Oynanan Hamleler" : "Moves", hamleGecmisiListesi.length > 0 ? hamleGecmisiListesi.join(", ") : "-");
+
+    addLine(isTR ? "En Iyi Rota" : "Best Route", sonRaporVerisi.bestmove);
+
+    addLine(isTR ? "Tam Cozum Yolu (PV)" : "Full Solution (PV)", sonRaporVerisi.full_solution || "-");
+
+    addLine(isTR ? "CP Skoru" : "CP Score", sonRaporVerisi.cp_skoru);
+
+    addLine(isTR ? "Gecikme Suresi" : "Latency", `${sonRaporVerisi.gecikme_ms} ms`);
+
+    y += 4;
+
+
+
+    // ======== 3. BÖLÜM: FİLTRE KARARI ========
+
+    addSection(isTR ? "3. Filtre Karari" : "3. Filter Decision");
+
+    addLine(isTR ? "Esik Degeri" : "Threshold", sonRaporVerisi.filtre_esik);
+
+    const decText = sonRaporVerisi.filtre_onay ? (isTR ? "ONAYLANDI" : "APPROVED") : (isTR ? "REDDEDILDI" : "REJECTED");
+
+    addLine(isTR ? "Karar" : "Decision", decText);
+
+
+
+    doc.save(`wsn_decision_report_${dateStr}.pdf`);
+
+}
+
+
+
+// =========================================================================
+
+// BAŞLANGIÇ
+
+// =========================================================================
+
+(async function init() {
+
+    tahtaOlustur();
+
+    await dilYukle(mevcutDil);
+
+    kayitliSenaryolariDropdownaYukle();
+
+
+
+    const activeScenId = localStorage.getItem('wsn_active_scenario');
+
+    if (activeScenId) {
+
+        localStorage.removeItem('wsn_active_scenario');
+
+        const select = document.getElementById('variant-dropdown');
+
+        if (select) {
+
+            select.value = activeScenId;
+
+            varyantDropdownDegisti();
+
+        }
+
+    } else {
+
+        document.getElementById('variant-dropdown').value = 'klasik';
+
+        varyantDropdownDegisti();
+
+    }
+
+
+
+    healthCheck();
+
+})();
+
+</script>
+
+
+
+</body>
+
 </html>
