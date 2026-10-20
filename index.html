@@ -745,8 +745,9 @@ function gecmiseHamleEkle(yeniFen, hamleStr) {
 function navigasyonYukle(indeks) {
     if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
     gecmisIndeks = indeks;
-    aktifFen = fenGecmisi[gecmisIndeks];
-    siraKimde = aktifFen.split(" ")[1] || 'w';
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    siraKimde = kullaniciRengi;
+    aktifFen = fenSiraGuncelle(fenGecmisi[gecmisIndeks], kullaniciRengi);
     
     // Seçim ve vurguları sıfırla
     seciliKareId = null;
@@ -759,10 +760,9 @@ function navigasyonYukle(indeks) {
     fenCiz(aktifFen, gridSatir, gridSutun);
     navButonlariGuncelle();
     
-    // Sıra beyazdaysa yasal hamleleri yenile
-    if (siraKimde === 'w') {
-        yasalHamleleriGetir();
-    }
+    // Kullanıcının rengi için yasal hamleleri yenile
+    mevcutYasalHamleler = [];
+    yasalHamleleriGetir();
 }
 
 function basaDon() {
@@ -803,9 +803,38 @@ function ileriAl() {
 // =========================================================================
 let tahtaTersMi = false;
 
+function fenSiraGuncelle(fen, yeniSira) {
+    if (!fen) return "";
+    const parcalar = fen.trim().split(/\s+/);
+    if (parcalar.length >= 2) {
+        parcalar[1] = yeniSira;
+        return parcalar.join(" ");
+    }
+    return `${fen.trim()} ${yeniSira} - - 0 1`;
+}
+
 function tahtayiTersCevir() {
+    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
     tahtaTersMi = !tahtaTersMi;
     tahtaYonuUygula();
+
+    // Seçili kare varsa temizle
+    seciliKareId = null;
+    document.querySelectorAll(".secili").forEach(el => el.classList.remove("secili"));
+
+    // Tahta ters çevrilince kullanıcı Siyah ('b'), düzken Beyaz ('w') ile oynar
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    siraKimde = kullaniciRengi;
+    if (aktifFen) {
+        aktifFen = fenSiraGuncelle(aktifFen, kullaniciRengi);
+        document.getElementById("fen-metni").textContent = aktifFen;
+        if (gecmisIndeks >= 0 && fenGecmisi[gecmisIndeks]) {
+            fenGecmisi[gecmisIndeks] = aktifFen;
+        }
+    }
+    mevcutYasalHamleler = [];
+    yasalHamleleriGetir();
+
     hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Ters Çevir]" : "[Flip]");
     if (sonRaporVerisi) {
         sonRaporVerisi.fen = aktifFen;
@@ -1054,11 +1083,13 @@ async function yasalHamleleriGetir() {
 
 function kareTiklandi(event) {
     if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    if (siraKimde !== 'w') return; // Sadece beyaz (kullanıcı) oynayabilir
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    const motorRengi = tahtaTersMi ? 'w' : 'b';
+    if (siraKimde !== kullaniciRengi) return; // Sadece kullanıcının kendi renginin sırasıysa oynayabilir
 
     const kare = event.currentTarget;
     const tas = karedekiTasiAl(kare);
-    const isWhite = tas && tas === tas.toUpperCase();
+    const isOwnPiece = tas && (kullaniciRengi === 'w' ? (tas === tas.toUpperCase()) : (tas === tas.toLowerCase()));
 
     if (seciliKareId) {
         const seciliKare = document.getElementById(seciliKareId);
@@ -1070,8 +1101,8 @@ function kareTiklandi(event) {
             return;
         }
         
-        // Başka bir beyaz taşa tıklandıysa seçimi ona geçir
-        if (isWhite) {
+        // Başka bir kendi taşına tıklandıysa seçimi ona geçir
+        if (isOwnPiece) {
             seciliKare.classList.remove("secili");
             kare.classList.add("secili");
             seciliKareId = kare.id;
@@ -1080,9 +1111,10 @@ function kareTiklandi(event) {
         
         // Yasal hamle kontrolü (eğer yasalHamleler listesi doluysa)
         const denenenHamle = koordinatToHamle(seciliKareId, kare.id);
+        let promosyonlu = null;
         
         if (mevcutYasalHamleler && mevcutYasalHamleler.length > 0) {
-            const promosyonlu = mevcutYasalHamleler.find(h => h.startsWith(denenenHamle));
+            promosyonlu = mevcutYasalHamleler.find(h => h.startsWith(denenenHamle));
             if (!promosyonlu) {
                 // Yasal olmayan hamle denendi
                 kare.style.backgroundColor = "#ff5252";
@@ -1096,7 +1128,11 @@ function kareTiklandi(event) {
         }
         
         // Hamleyi Uygula (seciliKare -> kare)
-        const movingTas = karedekiTasiAl(seciliKare);
+        let movingTas = karedekiTasiAl(seciliKare);
+        if (promosyonlu && promosyonlu.length === 5 && !isNaN(promosyonlu[3])) {
+            const promoChar = promosyonlu[4];
+            if (promoChar) movingTas = (kullaniciRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
+        }
         kareyeTasKoy(kare, movingTas);
         
         // Sadece taş rengi sınıflarını taşı (acik/koyu arka planı bozma)
@@ -1112,16 +1148,16 @@ function kareTiklandi(event) {
         kare.classList.add("rota-varis");
         seciliKare.classList.add("rota-kalkis");
 
-        const secilenHamleStr = koordinatToHamle(seciliKareId, kare.id);
+        const secilenHamleStr = promosyonlu || koordinatToHamle(seciliKareId, kare.id);
 
         kareyeTasKoy(seciliKare, "");
         seciliKare.classList.remove("tas-W", "tas-B", "secili");
 
         seciliKareId = null;
-        siraKimde = 'b';
+        siraKimde = motorRengi;
         
         // Yeni FEN üret ve motora gönder
-        aktifFen = tahtaToFen('b');
+        aktifFen = tahtaToFen(motorRengi);
         document.getElementById("fen-metni").textContent = aktifFen;
         
         // Hamleyi geçmişe ekle
@@ -1131,8 +1167,8 @@ function kareTiklandi(event) {
         veriCek();
 
     } else {
-        // Seçili taş yoksa ve tıklanan beyazsa seç
-        if (isWhite) {
+        // Seçili taş yoksa ve tıklanan kendi taşıysa seç
+        if (isOwnPiece) {
             kare.classList.add("secili");
             seciliKareId = kare.id;
         }
@@ -1150,8 +1186,9 @@ function varyantUygula(icerik) {
     gridSutun = varyant.maxFile || 8;
 
     if (varyant.startFen) {
-        aktifFen = varyant.startFen;
-        siraKimde = 'w';
+        const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+        siraKimde = kullaniciRengi;
+        aktifFen = fenSiraGuncelle(varyant.startFen, kullaniciRengi);
         
         // Geçmişi sıfırla
         fenGecmisi = [aktifFen];
@@ -1163,6 +1200,7 @@ function varyantUygula(icerik) {
         document.getElementById("fen-metni").innerText = aktifFen;
         document.getElementById("fen-metni").removeAttribute("data-i18n");
         fenCiz(aktifFen, gridSatir, gridSutun);
+        mevcutYasalHamleler = [];
         yasalHamleleriGetir();
     } else {
         document.getElementById("fen-metni").innerText = t("startfen_not_found");
@@ -1472,18 +1510,22 @@ function rotaVurgula(bestmove) {
     const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
     const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
 
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    const motorRengi = tahtaTersMi ? 'w' : 'b';
+
     if (kalkisKare && varisKare) {
-        if (siraKimde === 'b') {
-            // Siyahın hamlesini uygula
+        if (siraKimde === motorRengi) {
+            // Motorun hamlesini (tahta düzken Siyah, tersken Beyaz) uygula
             let movingTas = karedekiTasiAl(kalkisKare);
             if (bestmove.length === 5 && !isNaN(bestmove[3])) {
                 const promoChar = bestmove[4];
-                if (promoChar) movingTas = promoChar.toLowerCase();
+                if (promoChar) movingTas = (motorRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
             }
 
-            // Siyah Rok desteği (King 2 kare yana giderse)
-            if (movingTas === 'k' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
+            // Rok desteği (King 2 kare yana giderse)
+            if ((movingTas === 'k' || movingTas === 'K') && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
                 const row = koordinatlar.kalkis.satir;
+                const rookClass = (motorRengi === 'w') ? "tas-W" : "tas-B";
                 if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
                     const rookFrom = document.getElementById(`kare-${row}-7`);
                     const rookTo = document.getElementById(`kare-${row}-5`);
@@ -1491,7 +1533,7 @@ function rotaVurgula(bestmove) {
                         const rTas = karedekiTasiAl(rookFrom);
                         kareyeTasKoy(rookTo, rTas);
                         rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
+                        if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
                         kareyeTasKoy(rookFrom, "");
                         rookFrom.classList.remove("tas-W", "tas-B");
                     }
@@ -1502,7 +1544,7 @@ function rotaVurgula(bestmove) {
                         const rTas = karedekiTasiAl(rookFrom);
                         kareyeTasKoy(rookTo, rTas);
                         rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains("tas-B")) rookTo.classList.add("tas-B");
+                        if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
                         kareyeTasKoy(rookFrom, "");
                         rookFrom.classList.remove("tas-W", "tas-B");
                     }
@@ -1522,16 +1564,17 @@ function rotaVurgula(bestmove) {
         kalkisKare.classList.add("rota-kalkis");
         varisKare.classList.add("rota-varis");
         
-        if (siraKimde === 'b') {
-            // Hamle yapıldıysa sırayı beyaza geçir ve FEN'i güncelle
-            aktifFen = tahtaToFen('w');
+        if (siraKimde === motorRengi) {
+            // Hamle yapıldıysa sırayı kullanıcıya geçir ve FEN'i güncelle
+            aktifFen = tahtaToFen(kullaniciRengi);
             document.getElementById("fen-metni").textContent = aktifFen;
-            siraKimde = 'w';
+            siraKimde = kullaniciRengi;
             
             // Hamleyi geçmişe ekle
             gecmiseHamleEkle(aktifFen, bestmove);
             
-            yasalHamleleriGetir(); // Beyazın yasal hamlelerini hazırla
+            mevcutYasalHamleler = [];
+            yasalHamleleriGetir(); // Kullanıcının yasal hamlelerini hazırla
         }
     }
 
@@ -1620,6 +1663,9 @@ async function hamleHesapla() {
 function beyazHamlesiniTahtadaOyna(bestmove) {
     if (!bestmove || bestmove.length < 4) return false;
 
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    const motorRengi = tahtaTersMi ? 'w' : 'b';
+
     const koordinatlar = hamleToKoordinat(bestmove);
     if (!koordinatlar) return false;
 
@@ -1630,12 +1676,13 @@ function beyazHamlesiniTahtadaOyna(bestmove) {
     let movingTas = karedekiTasiAl(kalkisKare);
     if (bestmove.length === 5 && !isNaN(bestmove[3])) {
         const promoChar = bestmove[4];
-        if (promoChar) movingTas = promoChar.toUpperCase();
+        if (promoChar) movingTas = (kullaniciRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
     }
 
-    // Beyaz Rok desteği (King 2 kare yana giderse)
-    if (movingTas === 'K' && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
+    // Rok desteği (King 2 kare yana giderse)
+    if ((movingTas === 'K' || movingTas === 'k') && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
         const row = koordinatlar.kalkis.satir;
+        const rookClass = (kullaniciRengi === 'w') ? "tas-W" : "tas-B";
         if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
             const rookFrom = document.getElementById(`kare-${row}-7`);
             const rookTo = document.getElementById(`kare-${row}-5`);
@@ -1643,7 +1690,7 @@ function beyazHamlesiniTahtadaOyna(bestmove) {
                 const rTas = karedekiTasiAl(rookFrom);
                 kareyeTasKoy(rookTo, rTas);
                 rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
+                if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
                 kareyeTasKoy(rookFrom, "");
                 rookFrom.classList.remove("tas-W", "tas-B");
             }
@@ -1654,7 +1701,7 @@ function beyazHamlesiniTahtadaOyna(bestmove) {
                 const rTas = karedekiTasiAl(rookFrom);
                 kareyeTasKoy(rookTo, rTas);
                 rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains("tas-W")) rookTo.classList.add("tas-W");
+                if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
                 kareyeTasKoy(rookFrom, "");
                 rookFrom.classList.remove("tas-W", "tas-B");
             }
@@ -1677,8 +1724,8 @@ function beyazHamlesiniTahtadaOyna(bestmove) {
     kalkisKare.classList.add("rota-kalkis");
     varisKare.classList.add("rota-varis");
 
-    siraKimde = 'b';
-    aktifFen = tahtaToFen('b');
+    siraKimde = motorRengi;
+    aktifFen = tahtaToFen(motorRengi);
     document.getElementById("fen-metni").textContent = aktifFen;
 
     gecmiseHamleEkle(aktifFen, bestmove);
@@ -1696,7 +1743,10 @@ function beyazHamlesiniTahtadaOyna(bestmove) {
 async function otonomSimulasyonDongusu() {
     if (!simAktif) return;
 
-    if (siraKimde === 'w') {
+    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
+    const motorRengi = tahtaTersMi ? 'w' : 'b';
+
+    if (siraKimde === kullaniciRengi) {
         const bestmoveEl = document.getElementById("bestmove");
         if (bestmoveEl) bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
 
@@ -1744,7 +1794,7 @@ async function otonomSimulasyonDongusu() {
             otonomSimulasyonDongusu();
         }, 900);
 
-    } else if (siraKimde === 'b') {
+    } else if (siraKimde === motorRengi) {
         await veriCek('next');
         if (!simAktif) return;
 
