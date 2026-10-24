@@ -148,38 +148,67 @@ def karar_al():
         derinlik = veri.get('derinlik', 12)
         try:
             derinlik = int(derinlik)
-        except ValueError:
+        except (ValueError, TypeError):
             derinlik = 12
+        derinlik = max(1, min(derinlik, 40))
 
-        motor.stdin.write(f"go depth {derinlik}\n")
+        # Arama modu:
+        #   'depth' (varsayılan) -> go depth N        : sabit derinlikte en iyi hamle
+        #   'mate'               -> go mate N movetime : N hamlede mat arar (mansube / problem çözücü)
+        arama_modu = str(veri.get('mod', 'depth')).lower()
+        mat_hamle = None
+        if arama_modu == 'mate':
+            try:
+                mat_hamle = int(veri.get('mat_hamle', 8))
+            except (ValueError, TypeError):
+                mat_hamle = 8
+            mat_hamle = max(1, min(mat_hamle, 30))
+            # movetime: sunucu zaman aşımına düşmemek için üst süre sınırı (ms)
+            motor.stdin.write(f"go mate {mat_hamle} movetime 25000\n")
+        else:
+            motor.stdin.write(f"go depth {derinlik}\n")
         motor.stdin.flush()
 
         bestmove = None
         cp_skoru = None
+        mat_skoru = None   # +N: hamle sırası olan taraf N hamlede mat eder, -N: N hamlede mat olur
         full_pv = None
+        ulasilan_derinlik = None
 
         while True:
             satir = motor.stdout.readline().strip()
+            parcalar = satir.split()
 
-            if "pv" in satir.split():
-                parcalar = satir.split()
+            if satir.startswith("info") and "depth" in parcalar:
+                try:
+                    ulasilan_derinlik = int(parcalar[parcalar.index("depth") + 1])
+                except (ValueError, IndexError):
+                    pass
+
+            if "pv" in parcalar:
                 try:
                     pv_indeksi = parcalar.index("pv")
                     full_pv = " ".join(parcalar[pv_indeksi + 1:])
                 except ValueError:
                     pass
 
-            if "score cp" in satir:
-                parcalar = satir.split()
+            if "score" in parcalar:
                 try:
-                    cp_indeksi = parcalar.index("cp")
-                    cp_skoru = int(parcalar[cp_indeksi + 1])
+                    s_idx = parcalar.index("score")
+                    tur = parcalar[s_idx + 1]
+                    deger = int(parcalar[s_idx + 2])
+                    if tur == "cp":
+                        cp_skoru = deger
+                        mat_skoru = None
+                    elif tur == "mate":
+                        mat_skoru = deger
+                        cp_skoru = None
                 except (ValueError, IndexError):
                     pass
 
             if satir.startswith("bestmove"):
-                if len(satir.split()) > 1:
-                    bestmove = satir.split()[1]
+                if len(parcalar) > 1:
+                    bestmove = parcalar[1]
                 break
 
         motor.terminate()
@@ -197,6 +226,10 @@ def karar_al():
             "bestmove": bestmove,
             "full_solution": full_pv,
             "cp_skoru": cp_skoru,
+            "mat_skoru": mat_skoru,
+            "arama_modu": arama_modu,
+            "mat_hamle": mat_hamle,
+            "ulasilan_derinlik": ulasilan_derinlik,
             "motor": os.path.basename(exe_yolu).split('.')[0],
             "varyant": varyant_adi if varyant_adi else "standart",
             "gecikme_ms": gecen_sure

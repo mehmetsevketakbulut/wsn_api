@@ -45,7 +45,7 @@
   "health_checking": "Sunucu kontrol ediliyor...",
   "upload_ini": "variants.ini Yükle",
   "active_variant_badge": "AKTİF VARYANT",
-  "no_variant_warning": "Varyant yüklenmedi — motor varsayılan pozisyonla çalışacak.",
+  "no_variant_warning": "Varyant yüklenmedi - motor varsayılan pozisyonla çalışacak.",
   "engine_result_title": "Motor Sonuçları",
   "retry_info": "Yeniden deneniyor... ({n}/{max})",
   "connection_error_timeout": "Bağlantı Hatası: Sunucu uyanıyor olabilir, lütfen 30 sn bekleyip tekrar deneyin.",
@@ -55,7 +55,7 @@
   "full_solution_label": "Tam Çözüm Yolu (PV)",
   "opt_upload": "-- Dosya Yüklenebilir --",
   "opt_classic": "Klasik Satranç",
-  "opt_nizami": "Nizami'nin Oyunu (Şatranç)",
+  "opt_nizami": "Shatranj (Şatranç)",
   "header_title": "🛰️ WSN Otonom Karar Sistemi",
   "btn_download_report": "📄 Raporu İndir (JSON)",
   "unit_count": "adet",
@@ -99,5 +99,13 @@
   "btn_stop_sim": "⏹ Simülasyonu Durdur",
   "manage_scenarios_btn": "⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)",
   "opt_custom_scenarios": "📂 Kayıtlı Senaryolar / FEN",
-  "btn_flip": "🔄 Ters Çevir"
+  "btn_flip": "🔄 Ters Çevir",
+  "btn_mate_search": "♚ Mat Ara (Mansube Çözücü)",
+  "mate_moves_label": "Mat Hamle Sayısı (N):",
+  "mate_for_side": "#{n} - {n} hamlede mat",
+  "mate_against_side": "#-{n} - {n} hamlede mat oluyor",
+  "mate_not_found": "{n} hamle içinde mat bulunamadı (CP: {cp})",
+  "shatranj_legend": "Şatranç taşları: F = Ferz (1 kare çapraz), A = Alfil (2 kare çapraz zıplar). Rok ve piyonun çift adımı yoktur.",
+  "rep_mate": "mat_skoru",
+  "rep_mode": "arama_modu"
 }

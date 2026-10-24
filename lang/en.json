@@ -45,7 +45,7 @@
   "health_checking": "Checking server...",
   "upload_ini": "Upload variants.ini",
   "active_variant_badge": "ACTIVE VARIANT",
-  "no_variant_warning": "No variant loaded — engine will use default position.",
+  "no_variant_warning": "No variant loaded - engine will use default position.",
   "engine_result_title": "Engine Results",
   "retry_info": "Retrying... ({n}/{max})",
   "connection_error_timeout": "Connection Error: Server might be waking up, please wait 30s and try again.",
@@ -55,7 +55,7 @@
   "full_solution_label": "Full Solution (PV)",
   "opt_upload": "-- File Upload Ready --",
   "opt_classic": "Standard Chess",
-  "opt_nizami": "Nizami's Game (Shatranj)",
+  "opt_nizami": "Shatranj",
   "header_title": "🛰️ WSN Autonomous Decision System",
   "btn_download_report": "📄 Download Report (JSON)",
   "unit_count": "units",
@@ -99,5 +99,13 @@
   "btn_stop_sim": "⏹ Stop Simulation",
   "manage_scenarios_btn": "⚙️ FEN & Scenario Management (Add / Save / Delete)",
   "opt_custom_scenarios": "📂 Saved Scenarios / FEN",
-  "btn_flip": "🔄 Flip"
+  "btn_flip": "🔄 Flip",
+  "btn_mate_search": "♚ Search Mate (Mansuba Solver)",
+  "mate_moves_label": "Mate in N moves:",
+  "mate_for_side": "#{n} - mate in {n}",
+  "mate_against_side": "#-{n} - getting mated in {n}",
+  "mate_not_found": "No mate found within {n} moves (CP: {cp})",
+  "shatranj_legend": "Shatranj pieces: F = Ferz (1 square diagonal), A = Alfil (jumps 2 squares diagonally). No castling, no pawn double-step.",
+  "rep_mate": "mate_score",
+  "rep_mode": "search_mode"
 }

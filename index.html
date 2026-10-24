@@ -234,6 +234,14 @@
 
         .tas-W { color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2; }
         .tas-B { color: #1a1a1a; text-shadow: 1px 1px 2px #ffffff88; z-index: 2; }
+        .tas-etiket {
+            font-size: 0.32em;
+            font-weight: 800;
+            color: #ff9800;
+            text-shadow: 0 0 2px #000;
+            margin-left: -2px;
+            vertical-align: super;
+        }
 
         /* --- INPUT --- */
         input[type="number"] {
@@ -400,7 +408,7 @@
                 <label style="font-size: 13px; color: #ccc;" data-i18n="select_variant">Varyant Seç:</label>
                 <select id="variant-dropdown" onchange="varyantDropdownDegisti()" style="width: 100%; background: #0d0d25; color: #fff; border: 1px solid #ffffff20; padding: 8px; border-radius: 6px; margin-top: 4px;">
                                         <option value="klasik" data-i18n="opt_classic">Standard Chess</option>
-                    <option value="nizami" data-i18n="opt_nizami">Nizami's Game (Shatranj)</option>
+                    <option value="nizami" data-i18n="opt_nizami">Shatranj</option>
                     <option value="capablanca" data-i18n="opt_capablanca">Capablanca Chess (10x8)</option>
                     <option value="crazyhouse" data-i18n="opt_crazyhouse">Crazyhouse (Node Injection)</option>
                     <option value="xiangqi" data-i18n="opt_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
@@ -479,6 +487,15 @@
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                 <button class="btn btn-primary" style="flex: 1;" onclick="veriCek('next')" data-i18n="btn_next_move">En İyi Sonraki Hamle</button>
                 <button class="btn btn-accent" style="flex: 1; background: #ff9800;" onclick="veriCek('full')" data-i18n="btn_full_solution">Tüm Çözümü Göster</button>
+            </div>
+
+            <!-- Mat Arama (Mansube / Problem Çözücü) -->
+            <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 10px;">
+                <div style="flex: 0 0 38%;">
+                    <label for="mate-moves" style="font-size: 11px; color: #aaa;" data-i18n="mate_moves_label">Mat Hamle Sayısı (N):</label>
+                    <input type="number" id="mate-moves" min="1" max="30" value="8" style="margin-top: 2px; padding: 8px 10px;">
+                </div>
+                <button class="btn" style="flex: 1; margin-top: 0; background: linear-gradient(135deg, #c62828, #8e24aa); color: #fff;" onclick="veriCek('mate')" data-i18n="btn_mate_search">♚ Mat Ara (Mansube Çözücü)</button>
             </div>
 
             <button class="btn" id="btn-oto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="otonomSimulasyonToggle()" data-i18n="btn_auto_sim">▶ Otonom Simülasyon (Canlı Demo)</button>
@@ -636,6 +653,7 @@ function iniParse(icerik) {
     const satirlar = icerik.split('\n');
     const sonuc = {
         varyantAdi: "",
+        ustVaryant: "",
         maxRank: 8,
         maxFile: 8,
         cylinder: false,
@@ -652,7 +670,9 @@ function iniParse(icerik) {
         satir = satir.trim();
 
         if (satir.startsWith('[') && satir.includes(':')) {
-            sonuc.varyantAdi = satir.split('[')[1].split(':')[0].trim();
+            const ic = satir.split('[')[1].split(']')[0];
+            sonuc.varyantAdi = ic.split(':')[0].trim();
+            sonuc.ustVaryant = (ic.split(':')[1] || '').trim();
             continue;
         }
 
@@ -708,6 +728,7 @@ function varyantPanelGuncelle(varyant) {
         <tr><td data-i18n="node_injection">${t("node_injection")}</td><td>${varyant.drop ? t("enabled") : t("disabled")}</td></tr>
         <tr><td data-i18n="custom_pieces">${t("custom_pieces")}</td><td>${varyant.customPieces.length} ${t("unit_count")}</td></tr>
         ${varyant.promotionRegionWhite ? `<tr><td data-i18n="promotion_zone">${t("promotion_zone")}</td><td>${varyant.promotionRegionWhite}</td></tr>` : ''}
+        ${satrancModuMu() ? `<tr><td colspan="2" style="color:#ff9800; font-size:12px; width:auto;">♟ ${t("shatranj_legend")}</td></tr>` : ''}
     `;
 }
 
@@ -930,6 +951,27 @@ const P_MAP = {
     'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
 };
 
+// Şatranç (Shatranj) modunda mı? Fairy-Stockfish shatranj'da FEN'deki
+// 'Q' = Ferz (1 kare çapraz), 'B' = Alfil (2 kare çapraz zıplar) taşıdır.
+function satrancModuMu() {
+    return !!(aktifVariant && (aktifVariant.ustVaryant === 'shatranj' || aktifVariant.varyantAdi === 'shatranj'));
+}
+
+function tasGoster(tasNode, k) {
+    tasNode.dataset.tas = k;
+    const ikon = P_MAP[k] || k;
+    const ust = k.toUpperCase();
+    if (satrancModuMu() && (ust === 'Q' || ust === 'B')) {
+        const etiket = ust === 'Q' ? 'F' : 'A';
+        const baslik = ust === 'Q' ? 'Ferz' : 'Alfil';
+        tasNode.innerHTML = `${ikon}<sup class="tas-etiket">${etiket}</sup>`;
+        tasNode.title = baslik;
+    } else {
+        tasNode.textContent = ikon;
+        tasNode.removeAttribute('title');
+    }
+}
+
 function fenCiz(fenMetni, satir = 8, sutun = 8) {
     tahtaOlustur(satir, sutun);
 
@@ -959,8 +1001,7 @@ function fenCiz(fenMetni, satir = 8, sutun = 8) {
                 if (kare) {
                     const tasNode = document.createElement("span");
                     tasNode.className = "tas-val";
-                    tasNode.dataset.tas = k; // Gerçek FEN harfini sakla
-                    tasNode.innerText = P_MAP[k] || k; // İkon göster
+                    tasGoster(tasNode, k); // Gerçek FEN harfini sakla + ikon göster
                     kare.appendChild(tasNode);
                     kare.classList.add(k === k.toUpperCase() ? "tas-W" : "tas-B");
                 }
@@ -986,8 +1027,7 @@ function kareyeTasKoy(kare, tas) {
     }
     if (tasNode) {
         if (tas) {
-            tasNode.dataset.tas = tas;
-            tasNode.innerText = P_MAP[tas] || tas;
+            tasGoster(tasNode, tas);
         } else {
             tasNode.remove();
         }
@@ -1230,7 +1270,7 @@ function varyantDropdownDegisti() {
         const ini = `[chess]\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8`;
         varyantUygula(ini);
     } else if (val === 'nizami') {
-        const ini = `[nizami:shatranj]\n# Nizami's Game (9th century)\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
+        const ini = `[shatranj_nizami:shatranj]\n# Shatranj - Nizami position (9th century)\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
         varyantUygula(ini);
     } else if (val === 'capablanca') {
         const ini = `[capablanca:capablanca]\n# Capablanca Chess - 10x8 Extended Grid\nstartFen = rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 10`;
@@ -1245,8 +1285,17 @@ function varyantDropdownDegisti() {
         const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
         const scen = saved.find(s => s.id === val);
         if (scen) {
-            let sectionName = scen.varyant || 'chess';
-            let ini = `[${sectionName}]\nstartFen = ${scen.fen}\nmaxRank = ${scen.maxRank || 8}\nmaxFile = ${scen.maxFile || 8}`;
+            // Senaryo türünü Fairy-Stockfish'in yerleşik ana varyantına eşle.
+            // ÖNEMLİ: Bölüm başlığı mutlaka "[ad:ana_varyant]" formatında olmalı;
+            // aksi halde UCI_Variant gönderilmez ve motor MODERN SATRANÇ kurallarıyla oynar.
+            const ANA_VARYANT = {
+                chess: 'chess', klasik: 'chess', custom: 'chess',
+                nizami: 'shatranj', shatranj: 'shatranj',
+                capablanca: 'capablanca', crazyhouse: 'crazyhouse', xiangqi: 'xiangqi'
+            };
+            const ana = ANA_VARYANT[(scen.varyant || 'chess').toLowerCase()] || 'chess';
+            const bolumAdi = `${ana}_senaryo`;
+            let ini = `[${bolumAdi}:${ana}]\nstartFen = ${scen.fen}\nmaxRank = ${scen.maxRank || 8}\nmaxFile = ${scen.maxFile || 8}`;
             if (scen.drop) ini += `\ndrop = true`;
             varyantUygula(ini);
         }
@@ -1314,6 +1363,27 @@ async function apiFenCek() {
 // =========================================================================
 let sonCpSkoru = 0;
 
+// Motor skorunu ekranda gösterilecek metne çevirir (CP veya Mat)
+function skorMetni(data) {
+    if (data.mat_skoru !== null && data.mat_skoru !== undefined) {
+        const n = Math.abs(data.mat_skoru);
+        return data.mat_skoru > 0 ? t("mate_for_side", { n }) : t("mate_against_side", { n });
+    }
+    if (data.arama_modu === 'mate' && data.mat_hamle) {
+        return t("mate_not_found", { n: data.mat_hamle, cp: data.cp_skoru !== null ? data.cp_skoru : 0 });
+    }
+    return data.cp_skoru !== null && data.cp_skoru !== undefined ? data.cp_skoru : "0";
+}
+
+// Filtre karşılaştırması için mat skorunu CP eşdeğerine çevirir
+// (mat bulmak her CP eşiğinden üstün, mat olmak her eşiğin altındadır)
+function skorEsdegerCp(data) {
+    if (data.mat_skoru !== null && data.mat_skoru !== undefined) {
+        return data.mat_skoru > 0 ? (100000 - data.mat_skoru) : (-100000 - data.mat_skoru);
+    }
+    return data.cp_skoru || 0;
+}
+
 async function veriCek(type = 'next') {
     const btnTetikle = document.getElementById("btn-tetikle");
     const bestmoveEl = document.getElementById("bestmove");
@@ -1330,7 +1400,7 @@ async function veriCek(type = 'next') {
     filtreEl.textContent = t("data_waiting");
     filtreEl.removeAttribute("data-i18n");
 
-    if (fullSolEl && type === 'full') {
+    if (fullSolEl && (type === 'full' || type === 'mate')) {
         fullSolEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
         fullSolEl.removeAttribute("data-i18n");
     }
@@ -1341,6 +1411,11 @@ async function veriCek(type = 'next') {
     if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
     const engineDepthEl = document.getElementById("engine-depth");
     if (engineDepthEl) payload.derinlik = engineDepthEl.value;
+    if (type === 'mate') {
+        payload.mod = 'mate';
+        const matEl = document.getElementById("mate-moves");
+        payload.mat_hamle = matEl ? (parseInt(matEl.value) || 8) : 8;
+    }
 
     const endpoints = [
         `${API_BASE}/api/karar`,
@@ -1379,8 +1454,8 @@ async function veriCek(type = 'next') {
                     fullSolEl.textContent = "-";
                 }
 
-                cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
-                sonCpSkoru = data.cp_skoru || 0;
+                cpEl.textContent = skorMetni(data);
+                sonCpSkoru = skorEsdegerCp(data);
 
                 const motorVaryant = document.getElementById("motor-varyant");
                 motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
@@ -1398,12 +1473,15 @@ async function veriCek(type = 'next') {
                     bestmove: data.bestmove,
                     full_solution: data.full_solution,
                     cp_skoru: data.cp_skoru,
+                    mat_skoru: data.mat_skoru,
+                    skor_metni: String(skorMetni(data)),
+                    arama_modu: data.arama_modu || 'depth',
                     gecikme_ms: data.gecikme_ms,
                     motor: data.motor,
                     derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
                     aktif_varyant_obj: aktifVariant,
                     filtre_esik: parseInt(document.getElementById("cp-esik").value),
-                    filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
+                    filtre_onay: skorEsdegerCp(data) >= parseInt(document.getElementById("cp-esik").value)
                 };
                 const reportBtns = document.getElementById("report-buttons");
                 if(reportBtns) reportBtns.style.display = "flex";
@@ -1759,8 +1837,8 @@ async function otonomSimulasyonDongusu() {
         }
 
         const cpEl = document.getElementById("cp");
-        if (cpEl) cpEl.textContent = data.cp_skoru !== null ? data.cp_skoru : "0";
-        sonCpSkoru = data.cp_skoru || 0;
+        if (cpEl) cpEl.textContent = skorMetni(data);
+        sonCpSkoru = skorEsdegerCp(data);
         const fullSolEl = document.getElementById("full-solution");
         if (fullSolEl && data.full_solution) fullSolEl.textContent = data.full_solution;
         const motorVaryant = document.getElementById("motor-varyant");
@@ -1774,12 +1852,15 @@ async function otonomSimulasyonDongusu() {
             bestmove: data.bestmove,
             full_solution: data.full_solution,
             cp_skoru: data.cp_skoru,
+            mat_skoru: data.mat_skoru,
+            skor_metni: String(skorMetni(data)),
+            arama_modu: data.arama_modu || 'depth',
             gecikme_ms: data.gecikme_ms,
             motor: data.motor,
             derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
             aktif_varyant_obj: aktifVariant,
             filtre_esik: parseInt(document.getElementById("cp-esik").value),
-            filtre_onay: data.cp_skoru >= parseInt(document.getElementById("cp-esik").value)
+            filtre_onay: skorEsdegerCp(data) >= parseInt(document.getElementById("cp-esik").value)
         };
         const reportBtns = document.getElementById("report-buttons");
         if (reportBtns) reportBtns.style.display = "flex";
@@ -1852,6 +1933,8 @@ function raporIndir() {
                 [t("rep_best")]: sonRaporVerisi.bestmove,
                 [t("rep_full_sol")]: sonRaporVerisi.full_solution || "-",
                 [t("rep_cp")]: sonRaporVerisi.cp_skoru,
+                [t("rep_mate")]: (sonRaporVerisi.mat_skoru !== null && sonRaporVerisi.mat_skoru !== undefined) ? sonRaporVerisi.skor_metni : t("val_none"),
+                [t("rep_mode")]: sonRaporVerisi.arama_modu === 'mate' ? "go mate" : "go depth",
                 [t("rep_lat")]: sonRaporVerisi.gecikme_ms
             },
             [t("rep_filter")]: {
@@ -1981,6 +2064,10 @@ function pdfRaporIndir() {
     addLine(isTR ? "En Iyi Rota" : "Best Route", sonRaporVerisi.bestmove);
     addLine(isTR ? "Tam Cozum Yolu (PV)" : "Full Solution (PV)", sonRaporVerisi.full_solution || "-");
     addLine(isTR ? "CP Skoru" : "CP Score", sonRaporVerisi.cp_skoru);
+    if (sonRaporVerisi.mat_skoru !== null && sonRaporVerisi.mat_skoru !== undefined) {
+        addLine(isTR ? "Mat Skoru" : "Mate Score", sonRaporVerisi.skor_metni);
+    }
+    addLine(isTR ? "Arama Modu" : "Search Mode", sonRaporVerisi.arama_modu === 'mate' ? "go mate" : "go depth");
     addLine(isTR ? "Gecikme Suresi" : "Latency", `${sonRaporVerisi.gecikme_ms} ms`);
     y += 4;
 
