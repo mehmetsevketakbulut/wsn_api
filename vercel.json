@@ -2,7 +2,7 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/lang/(.*)", "destination": "/lang/$1" },
-    { "source": "/senaryolar.html", "destination": "/senaryolar.html" },
+    { "source": "/scenarios.html", "destination": "/scenarios.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

@@ -1,0 +1,590 @@
+{
+  "page_title": {
+    "en": "Autonomous Decision & Filtering Panel",
+    "tr": "Otonom Karar & Filtreleme Paneli"
+  },
+  "panel1_title": {
+    "en": "1. Topology Visualizer",
+    "tr": "1. Topoloji Görselleştirici"
+  },
+  "panel1_desc": {
+    "en": "Select variant or custom FEN scenarios to visualize topology.",
+    "tr": "Varyant veya kayıtlı FEN senaryolarını seçin, topoloji ekrana yansısın."
+  },
+  "detected_fen": {
+    "en": "Detected FEN:",
+    "tr": "Algılanan FEN:"
+  },
+  "fen_none": {
+    "en": "None",
+    "tr": "Yok"
+  },
+  "panel2_title": {
+    "en": "2. Decision Engine Output",
+    "tr": "2. Karar Motoru Çıktısı"
+  },
+  "bestmove_label": {
+    "en": "Optimal Route from Engine (Best Move)",
+    "tr": "API'den Gelen En İyi Rota (En İyi Hamle)"
+  },
+  "cp_label": {
+    "en": "Raw CP (Centipawn) Score",
+    "tr": "Ham CP (Santipiyon) Skoru"
+  },
+  "waiting": {
+    "en": "Waiting...",
+    "tr": "Bekleniyor..."
+  },
+  "trigger_engine": {
+    "en": "Trigger Engine",
+    "tr": "Motoru Tetikle"
+  },
+  "panel3_title": {
+    "en": "3. Custom CP Filter Test",
+    "tr": "3. Özel CP Filtreleme Testi"
+  },
+  "panel3_desc": {
+    "en": "Test the incoming CP score with your custom filter logic.",
+    "tr": "Gelen CP skorunu filtreleme mantığıyla test et."
+  },
+  "threshold_label": {
+    "en": "Minimum Acceptable CP Threshold:",
+    "tr": "Minimum Kabul Edilebilir CP Eşiği:"
+  },
+  "apply_filter": {
+    "en": "Apply Filter",
+    "tr": "Filtreyi Uygula"
+  },
+  "filter_result_label": {
+    "en": "Filter Result (Decision):",
+    "tr": "Filtre Sonucu (Karar):"
+  },
+  "test_waiting": {
+    "en": "Awaiting Test...",
+    "tr": "Test Bekleniyor..."
+  },
+  "calculating": {
+    "en": "Calculating...",
+    "tr": "Hesaplanıyor..."
+  },
+  "data_waiting": {
+    "en": "Waiting for data...",
+    "tr": "Veri bekleniyor..."
+  },
+  "connection_error": {
+    "en": "Connection Error",
+    "tr": "Bağlantı Hatası"
+  },
+  "error": {
+    "en": "Error",
+    "tr": "Hata"
+  },
+  "need_cp_first": {
+    "en": "Trigger the engine first to get a CP score!",
+    "tr": "Önce motoru tetikleyip CP skoru almalısın!"
+  },
+  "filter_success": {
+    "en": "APPROVED: Score ({cp}) is above threshold ({threshold}). Route CONFIRMED.",
+    "tr": "BAŞARILI: Skor ({cp}), eşiğin ({threshold}) üzerinde. Rota ONAYLANDI."
+  },
+  "filter_rejected": {
+    "en": "REJECTED: Score ({cp}) is below threshold ({threshold})! Low reliability.",
+    "tr": "REDDEDİLDİ: Skor ({cp}), eşiğin ({threshold}) altında! Düşük güvenilirlik."
+  },
+  "startfen_not_found": {
+    "en": "Starting FEN not found!",
+    "tr": "Başlangıç FEN dizilimi bulunamadı!"
+  },
+  "lang_switch": {
+    "en": "TR",
+    "tr": "EN"
+  },
+  "server_waking": {
+    "en": "Server is waking up, please wait...",
+    "tr": "Sunucu uyanıyor, lütfen bekleyin..."
+  },
+  "server_rejected": {
+    "en": "Server rejected the request",
+    "tr": "Sunucu isteği reddetti"
+  },
+  "variant_status": {
+    "en": "Variant Status",
+    "tr": "Varyant Durumu"
+  },
+  "variant_loaded": {
+    "en": "Loaded",
+    "tr": "Yüklendi"
+  },
+  "variant_not_loaded": {
+    "en": "Not Loaded",
+    "tr": "Yüklenmedi"
+  },
+  "variant_name": {
+    "en": "Variant Name:",
+    "tr": "Varyant Adı:"
+  },
+  "grid_size": {
+    "en": "Grid Size:",
+    "tr": "Izgara Boyutu:"
+  },
+  "topology": {
+    "en": "Topology:",
+    "tr": "Topoloji:"
+  },
+  "topology_closed": {
+    "en": "Closed Loop (Cylindrical)",
+    "tr": "Kapalı Devre (Silindirik)"
+  },
+  "topology_open": {
+    "en": "Open",
+    "tr": "Açık"
+  },
+  "node_injection": {
+    "en": "Node Injection:",
+    "tr": "Düğüm Enjeksiyonu:"
+  },
+  "enabled": {
+    "en": "Enabled",
+    "tr": "Aktif"
+  },
+  "disabled": {
+    "en": "Disabled",
+    "tr": "Pasif"
+  },
+  "custom_pieces": {
+    "en": "Custom Nodes:",
+    "tr": "Özel Düğümler:"
+  },
+  "promotion_zone": {
+    "en": "Collection Zone:",
+    "tr": "Toplama Bölgesi:"
+  },
+  "variant_params_title": {
+    "en": "Variant Parameters",
+    "tr": "Varyant Parametreleri"
+  },
+  "health_ok": {
+    "en": "Server Active",
+    "tr": "Sunucu Aktif"
+  },
+  "health_fail": {
+    "en": "Server Not Responding",
+    "tr": "Sunucu Yanıt Vermiyor"
+  },
+  "health_checking": {
+    "en": "Checking server...",
+    "tr": "Sunucu kontrol ediliyor..."
+  },
+  "upload_ini": {
+    "en": "Upload Configuration (.ini)",
+    "tr": "Yapılandırma Dosyası (.ini) Yükle"
+  },
+  "active_variant_badge": {
+    "en": "ACTIVE VARIANT",
+    "tr": "AKTİF VARYANT"
+  },
+  "no_variant_warning": {
+    "en": "No variant loaded - engine will use default position.",
+    "tr": "Varyant yüklenmedi - motor varsayılan pozisyonla çalışacak."
+  },
+  "engine_result_title": {
+    "en": "Engine Results",
+    "tr": "Motor Sonuçları"
+  },
+  "retry_info": {
+    "en": "Retrying... ({n}/{max})",
+    "tr": "Yeniden deneniyor... ({n}/{max})"
+  },
+  "connection_error_timeout": {
+    "en": "Connection Error: Server might be waking up, please wait 30s and try again.",
+    "tr": "Bağlantı Hatası: Sunucu uyanıyor olabilir, lütfen 30 sn bekleyip tekrar deneyin."
+  },
+  "btn_next_move": {
+    "en": "Best Next Move",
+    "tr": "En İyi Sonraki Hamle"
+  },
+  "btn_full_solution": {
+    "en": "Full Solution",
+    "tr": "Tüm Çözümü Göster"
+  },
+  "select_variant": {
+    "en": "Select Variant:",
+    "tr": "Varyant Seç:"
+  },
+  "full_solution_label": {
+    "en": "Full Solution (PV)",
+    "tr": "Tam Çözüm Yolu"
+  },
+  "opt_upload": {
+    "en": "-- File Upload Ready --",
+    "tr": "-- Dosya Yüklenebilir --"
+  },
+  "opt_classic": {
+    "en": "Standard Chess",
+    "tr": "Klasik Satranç"
+  },
+  "opt_nizami": {
+    "en": "Shatranj",
+    "tr": "Şatranç (Nizami)"
+  },
+  "header_title": {
+    "en": "🛰️ Autonomous Decision System",
+    "tr": "🛰️ Otonom Karar Sistemi"
+  },
+  "btn_download_report": {
+    "en": "📄 Download Report (JSON)",
+    "tr": "📄 Raporu İndir (JSON)"
+  },
+  "unit_count": {
+    "en": "units",
+    "tr": "adet"
+  },
+  "report_title": {
+    "en": "Autonomous Decision Report",
+    "tr": "Otonom Karar Raporu"
+  },
+  "report_route_approved": {
+    "en": "Route deemed reliable, communication approved.",
+    "tr": "Rota güvenilir bulundu, iletişim onaylandı."
+  },
+  "report_route_rejected": {
+    "en": "Route below reliability threshold, communication rejected.",
+    "tr": "Rota güvenilirlik eşiğinin altında, iletişim reddedildi."
+  },
+  "filter_approved": {
+    "en": "APPROVED",
+    "tr": "ONAYLANDI"
+  },
+  "filter_denied": {
+    "en": "REJECTED",
+    "tr": "REDDEDİLDİ"
+  },
+  "opt_capablanca": {
+    "en": "Capablanca Chess (10x8)",
+    "tr": "Capablanca Satrancı (10x8)"
+  },
+  "opt_crazyhouse": {
+    "en": "Crazyhouse (Node Injection)",
+    "tr": "Crazyhouse (Düğüm Enjeksiyonu)"
+  },
+  "opt_xiangqi": {
+    "en": "Xiangqi - Chinese Chess (10x9)",
+    "tr": "Xiangqi - Çin Satrancı (10x9)"
+  },
+  "rep_date": {
+    "en": "generation_date",
+    "tr": "uretim_tarihi"
+  },
+  "rep_sys": {
+    "en": "system_info",
+    "tr": "sistem_bilgisi"
+  },
+  "rep_engine": {
+    "en": "engine",
+    "tr": "motor"
+  },
+  "rep_depth": {
+    "en": "search_depth",
+    "tr": "arama_derinligi"
+  },
+  "rep_var": {
+    "en": "variant",
+    "tr": "varyant"
+  },
+  "rep_grid": {
+    "en": "grid_size",
+    "tr": "izgara_boyutu"
+  },
+  "rep_top": {
+    "en": "topology",
+    "tr": "topoloji"
+  },
+  "rep_var_params": {
+    "en": "variant_parameters",
+    "tr": "varyant_parametreleri"
+  },
+  "rep_node_inj": {
+    "en": "node_injection",
+    "tr": "dugum_enjeksiyonu"
+  },
+  "rep_custom_nodes": {
+    "en": "custom_nodes",
+    "tr": "ozel_dugumler"
+  },
+  "rep_promo_zone": {
+    "en": "collection_zone",
+    "tr": "toplama_bolgesi"
+  },
+  "rep_analysis": {
+    "en": "analysis",
+    "tr": "analiz"
+  },
+  "rep_fen": {
+    "en": "fen_layout",
+    "tr": "fen_dizilimi"
+  },
+  "rep_moves": {
+    "en": "played_moves",
+    "tr": "oynanan_hamleler"
+  },
+  "rep_best": {
+    "en": "best_route",
+    "tr": "en_iyi_rota"
+  },
+  "rep_full_sol": {
+    "en": "full_solution_pv",
+    "tr": "tam_cozum_yolu"
+  },
+  "rep_cp": {
+    "en": "cp_score",
+    "tr": "cp_skoru"
+  },
+  "rep_lat": {
+    "en": "latency_ms",
+    "tr": "gecikme_ms"
+  },
+  "rep_filter": {
+    "en": "filtering",
+    "tr": "filtreleme"
+  },
+  "rep_thresh": {
+    "en": "threshold",
+    "tr": "esik_degeri"
+  },
+  "rep_dec": {
+    "en": "decision",
+    "tr": "karar"
+  },
+  "rep_exp": {
+    "en": "explanation",
+    "tr": "aciklama"
+  },
+  "val_none": {
+    "en": "None",
+    "tr": "Yok"
+  },
+  "btn_fetch_api": {
+    "en": "🌐 Fetch Sensor Data from External API",
+    "tr": "🌐 Dış API'den Sensör Verisi Çek"
+  },
+  "btn_start": {
+    "en": "|◀ Start",
+    "tr": "|◀ Başa Dön"
+  },
+  "btn_back": {
+    "en": "◀ Back",
+    "tr": "◀ Geri"
+  },
+  "btn_forward": {
+    "en": "Forward ▶",
+    "tr": "İleri ▶"
+  },
+  "btn_pdf": {
+    "en": "📄 Download Report (PDF)",
+    "tr": "📄 Raporu İndir (PDF)"
+  },
+  "moves": {
+    "en": "Played Moves",
+    "tr": "Oynanan Hamleler"
+  },
+  "engine_depth": {
+    "en": "Search Depth:",
+    "tr": "Arama Derinliği:"
+  },
+  "btn_auto_sim": {
+    "en": "▶ Autonomous Simulation (Live Demo)",
+    "tr": "▶ Otonom Simülasyon (Canlı Demo)"
+  },
+  "btn_stop_sim": {
+    "en": "⏹ Stop Simulation",
+    "tr": "⏹ Simülasyonu Durdur"
+  },
+  "manage_scenarios_btn": {
+    "en": "⚙️ FEN & Scenario Management (Add / Save / Delete)",
+    "tr": "⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)"
+  },
+  "opt_custom_scenarios": {
+    "en": "📂 Saved Scenarios / FEN",
+    "tr": "📂 Kayıtlı Senaryolar / FEN"
+  },
+  "btn_flip": {
+    "en": "🔄 Flip",
+    "tr": "🔄 Ters Çevir"
+  },
+  "btn_mate_search": {
+    "en": "♚ Search Mate (Mansuba Solver)",
+    "tr": "♚ Mat Ara (Mansube Çözücü)"
+  },
+  "mate_moves_label": {
+    "en": "Mate in N moves:",
+    "tr": "Mat Hamle Sayısı (N):"
+  },
+  "mate_for_side": {
+    "en": "#{n} - mate in {n}",
+    "tr": "#{n} - {n} hamlede mat"
+  },
+  "mate_against_side": {
+    "en": "#-{n} - getting mated in {n}",
+    "tr": "#-{n} - {n} hamlede mat oluyor"
+  },
+  "mate_not_found": {
+    "en": "No mate found within {n} moves (CP: {cp})",
+    "tr": "{n} hamle içinde mat bulunamadı (CP: {cp})"
+  },
+  "shatranj_legend": {
+    "en": "Shatranj pieces: F = Ferz (1 square diagonal), A = Alfil (jumps 2 squares diagonally). No castling, no pawn double-step.",
+    "tr": "Şatranç taşları: F = Ferz (1 kare çapraz), A = Alfil (2 kare çapraz zıplar). Rok ve piyonun çift adımı yoktur."
+  },
+  "rep_mate": {
+    "en": "mate_score",
+    "tr": "mat_skoru"
+  },
+  "rep_mode": {
+    "en": "search_mode",
+    "tr": "arama_modu"
+  },
+  "scen_page_title": {
+    "en": "Scenario & FEN Management",
+    "tr": "Senaryo & FEN Yönetimi"
+  },
+  "scen_head_title": {
+    "en": "Scenario & FEN Management Panel",
+    "tr": "Senaryo & FEN Yönetim Paneli"
+  },
+  "btn_back_to_board": {
+    "en": "⬅ Back to Main Board",
+    "tr": "⬅ Ana Tahtaya Dön"
+  },
+  "add_scen_title": {
+    "en": "Add & Save Scenario / FEN",
+    "tr": "Yeni Senaryo / FEN Ekle & Kaydet"
+  },
+  "add_scen_desc": {
+    "en": "Copy and paste your FEN string directly below to save it into your scenario pool.",
+    "tr": "FEN dizilimini doğrudan kopyala-yapıştır yaparak senaryo havuzuna kaydedebilirsiniz."
+  },
+  "lbl_scen_name": {
+    "en": "Scenario / Network Name:",
+    "tr": "Senaryo / Ağ Adı:"
+  },
+  "ph_scen_name": {
+    "en": "e.g., Sensor Bottleneck 1",
+    "tr": "Örn: Sensör Darboğazı 1"
+  },
+  "lbl_fen": {
+    "en": "FEN Layout (Copy-Paste):",
+    "tr": "FEN Dizilimi (Kopyala-Yapıştır):"
+  },
+  "btn_paste_fen": {
+    "en": "📋 Paste from Clipboard",
+    "tr": "📋 Panodan Yapıştır"
+  },
+  "toast_pasted": {
+    "en": "✓ FEN pasted from clipboard!",
+    "tr": "✓ FEN panodan yapıştırıldı!"
+  },
+  "ph_fen": {
+    "en": "e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "tr": "Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  },
+  "lbl_variant_type": {
+    "en": "Variant Type:",
+    "tr": "Varyant Türü:"
+  },
+  "opt_v_chess": {
+    "en": "Standard Chess",
+    "tr": "Klasik Satranç"
+  },
+  "opt_v_nizami": {
+    "en": "Shatranj (Ferz/Alfil Rules)",
+    "tr": "Şatranç (Ferz/Alfil Kuralları)"
+  },
+  "opt_v_capablanca": {
+    "en": "Capablanca Chess (10x8)",
+    "tr": "Capablanca Satrancı (10x8)"
+  },
+  "opt_v_crazyhouse": {
+    "en": "Crazyhouse (Node Injection)",
+    "tr": "Crazyhouse (Düğüm Enjeksiyonu)"
+  },
+  "opt_v_xiangqi": {
+    "en": "Xiangqi - Chinese Chess (10x9)",
+    "tr": "Xiangqi - Çin Satrancı (10x9)"
+  },
+  "opt_v_custom": {
+    "en": "Custom Topology",
+    "tr": "Özel Topoloji"
+  },
+  "lbl_grid_dim": {
+    "en": "Grid Size (Rank × File):",
+    "tr": "Izgara Boyutu (Satır × Sütun):"
+  },
+  "lbl_notes": {
+    "en": "Description / Notes (Optional):",
+    "tr": "Açıklama / Notlar (Opsiyonel):"
+  },
+  "ph_notes": {
+    "en": "e.g., 2 isolated sensor nodes, high-priority routing",
+    "tr": "Örn: 2 sensör izole durumda, yüksek öncelikli yönlendirme"
+  },
+  "btn_save_scen": {
+    "en": "💾 Save Scenario",
+    "tr": "💾 Senaryoyu Kaydet"
+  },
+  "btn_clear_form": {
+    "en": "🧹 Clear",
+    "tr": "🧹 Temizle"
+  },
+  "saved_pool_title": {
+    "en": "Saved Scenarios & FEN Pool",
+    "tr": "Kayıtlı Senaryolar & FEN Havuzu"
+  },
+  "saved_pool_desc": {
+    "en": "Saved scenarios will immediately appear in the variant dropdown on the main board.",
+    "tr": "Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde doğrudan listelenir."
+  },
+  "search_placeholder": {
+    "en": "🔍 Search scenarios...",
+    "tr": "🔍 Senaryo ara..."
+  },
+  "toast_saved": {
+    "en": "✓ Scenario successfully saved!",
+    "tr": "✓ Senaryo başarıyla kaydedildi!"
+  },
+  "toast_file_loaded": {
+    "en": "✓ File loaded into form!",
+    "tr": "✓ Dosya bilgileri forma aktarıldı!"
+  },
+  "toast_deleted": {
+    "en": "✓ Scenario deleted.",
+    "tr": "✓ Senaryo silindi."
+  },
+  "confirm_delete": {
+    "en": "Are you sure you want to delete this scenario?",
+    "tr": "Bu senaryoyu silmek istediğinize emin misiniz?"
+  },
+  "btn_play_on_board": {
+    "en": "▶ Launch on Board",
+    "tr": "▶ Tahtada Başlat"
+  },
+  "btn_copy_fen": {
+    "en": "📋 Copy",
+    "tr": "📋 Kopyala"
+  },
+  "copied_fen": {
+    "en": "Copied!",
+    "tr": "Kopyalandı!"
+  },
+  "empty_pool": {
+    "en": "No custom scenarios saved yet. Use the panel on the left to add one.",
+    "tr": "Henüz kayıtlı özel senaryo bulunmuyor. Soldaki panelden yeni bir senaryo ekleyebilirsiniz."
+  },
+  "err_no_name": {
+    "en": "Please provide a scenario name.",
+    "tr": "Lütfen senaryoya bir ad verin."
+  },
+  "err_no_fen": {
+    "en": "Please provide a valid FEN string.",
+    "tr": "Lütfen geçerli bir FEN dizilimi girin."
+  }
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="scen_page_title">WSN Scenario & FEN Management</title>
+    <title data-i18n="scen_page_title">Scenario & FEN Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cascadia+Code&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -238,10 +238,10 @@
     <div class="header">
         <div class="header-title">
             <span>🛰️</span>
-            <span data-i18n="scen_head_title">WSN Scenario & FEN Management Panel</span>
+            <span data-i18n="scen_head_title">Scenario & FEN Management Panel</span>
         </div>
         <div class="header-actions">
-            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">TR</button>
+            <button class="lang-btn" id="lang-btn" onclick="toggleLanguage()">TR</button>
             <a href="index.html" class="btn btn-primary" data-i18n="btn_back_to_board">
                 ⬅ Back to Main Board
             </a>
@@ -256,7 +256,6 @@
             <h2>➕ <span data-i18n="add_scen_title">Add & Save Scenario / FEN</span></h2>
             <p class="panel-desc" data-i18n="add_scen_desc">Copy and paste your FEN string directly below to save it into your scenario pool.</p>
 
-            <!-- Manual Form -->
             <div class="form-group">
                 <label data-i18n="lbl_scen_name">Scenario / Network Name:</label>
                 <input type="text" id="scen-name" class="form-control" placeholder="e.g., Sensor Bottleneck 1">
@@ -265,7 +264,7 @@
             <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                     <label style="margin-bottom: 0;" data-i18n="lbl_fen">FEN Layout (Copy-Paste):</label>
-                    <button type="button" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;" onclick="panodanYapistir()" data-i18n="btn_paste_fen">📋 Paste from Clipboard</button>
+                    <button type="button" class="btn btn-secondary" style="padding: 3px 10px; font-size: 11px;" onclick="pasteFenFromClipboard()" data-i18n="btn_paste_fen">📋 Paste from Clipboard</button>
                 </div>
                 <textarea id="scen-fen" class="form-control" rows="3" placeholder="e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
             </div>
@@ -273,13 +272,13 @@
             <div class="row-2">
                 <div class="form-group">
                     <label data-i18n="lbl_variant_type">Variant Type:</label>
-                    <select id="scen-variant" class="form-control" onchange="varyantDegisti()">
-                        <option value="chess" data-i18n="opt_v_chess">Standard Chess (chess)</option>
-                        <option value="nizami" data-i18n="opt_v_nizami">Shatranj (Ferz/Alfil rules)</option>
+                    <select id="scen-variant" class="form-control" onchange="handleVariantTypeChange()">
+                        <option value="chess" data-i18n="opt_v_chess">Standard Chess</option>
+                        <option value="shatranj" data-i18n="opt_v_nizami">Shatranj (Ferz/Alfil Rules)</option>
                         <option value="capablanca" data-i18n="opt_v_capablanca">Capablanca Chess (10x8)</option>
                         <option value="crazyhouse" data-i18n="opt_v_crazyhouse">Crazyhouse (Node Injection)</option>
-                        <option value="xiangqi" data-i18n="opt_v_xiangqi">Xiangqi (Chinese Chess 10x9)</option>
-                        <option value="custom" data-i18n="opt_v_custom">Custom Topology (Custom)</option>
+                        <option value="xiangqi" data-i18n="opt_v_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
+                        <option value="custom" data-i18n="opt_v_custom">Custom Topology</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -298,10 +297,10 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 16px;">
-                <button class="btn btn-success" style="flex: 2;" onclick="senaryoKaydet()" data-i18n="btn_save_scen">
+                <button class="btn btn-success" style="flex: 2;" onclick="saveScenario()" data-i18n="btn_save_scen">
                     💾 Save Scenario
                 </button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="formTemizle()" data-i18n="btn_clear_form">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="clearScenarioForm()" data-i18n="btn_clear_form">
                     🧹 Clear
                 </button>
             </div>
@@ -315,7 +314,7 @@
             <p class="panel-desc" data-i18n="saved_pool_desc">Saved scenarios will immediately appear in the variant dropdown on the main board.</p>
 
             <div class="form-group">
-                <input type="text" id="search-input" class="form-control" oninput="senaryolariListele()" placeholder="🔍 Search scenarios...">
+                <input type="text" id="search-input" class="form-control" oninput="renderScenarioList()" placeholder="🔍 Search scenarios...">
             </div>
 
             <div id="scenarios-list" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
@@ -329,185 +328,123 @@
     <div id="toast"></div>
 
     <script>
-        let mevcutDil = localStorage.getItem("wsn_dil") || "en";
-        const I18N = {
-            tr: {
-                scen_page_title: "WSN Senaryo & FEN Yönetimi",
-                scen_head_title: "WSN Senaryo & FEN Yönetim Paneli",
-                btn_back_to_board: "⬅ Ana Tahtaya Dön",
-                add_scen_title: "Yeni Senaryo / FEN Ekle & Kaydet",
-                add_scen_desc: "FEN dizilimini doğrudan kopyala-yapıştır (copy-paste) yaparak senaryo havuzuna kaydedebilirsiniz.",
-                lbl_scen_name: "Senaryo / Ağ Adı:",
-                ph_scen_name: "Örn: Sensör Darboğazı 1",
-                lbl_fen: "FEN Dizilimi (Copy-Paste):",
-                btn_paste_fen: "📋 Panodan Yapıştır",
-                toast_pasted: "✓ FEN panodan yapıştırıldı!",
-                ph_fen: "Örn: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                lbl_variant_type: "Varyant Türü:",
-                opt_v_chess: "Klasik Satranç (chess)",
-                opt_v_nizami: "Shatranj (Şatranç - Ferz/Alfil kuralları)",
-                opt_v_capablanca: "Capablanca Satrancı (10x8)",
-                opt_v_crazyhouse: "Crazyhouse (Düğüm Enjeksiyonu)",
-                opt_v_xiangqi: "Xiangqi (Çin Satrancı 10x9)",
-                opt_v_custom: "Özel Topoloji (Custom)",
-                lbl_grid_dim: "Izgara Boyutu (Satır × Sütun):",
-                lbl_notes: "Açıklama / Notlar (Opsiyonel):",
-                ph_notes: "Örn: 2 sensör izole durumda, yüksek öncelikli yönlendirme",
-                btn_save_scen: "💾 Senaryoyu Kaydet",
-                btn_clear_form: "🧹 Temizle",
-                saved_pool_title: "Kayıtlı Senaryolar & FEN Havuzu",
-                saved_pool_desc: "Kaydettiğiniz senaryolar ana sayfadaki varyant açılır menüsünde doğrudan listelenir.",
-                search_placeholder: "🔍 Senaryo ara...",
-                toast_saved: "✓ Senaryo başarıyla kaydedildi!",
-                toast_file_loaded: "✓ Dosya bilgileri forma aktarıldı!",
-                toast_deleted: "✓ Senaryo silindi.",
-                confirm_delete: "Bu senaryoyu silmek istediğinize emin misiniz?",
-                btn_play_on_board: "▶ Tahtada Başlat",
-                btn_copy_fen: "📋 Kopyala",
-                copied_fen: "Kopyalandı!",
-                empty_pool: "Henüz kayıtlı özel senaryo bulunmuyor. Soldaki panelden yeni bir senaryo ekleyebilirsiniz.",
-                err_no_name: "Lütfen senaryoya bir ad verin.",
-                err_no_fen: "Lütfen geçerli bir FEN dizilimi girin."
-            },
-            en: {
-                scen_page_title: "WSN Scenario & FEN Management",
-                scen_head_title: "WSN Scenario & FEN Management Panel",
-                btn_back_to_board: "⬅ Back to Main Board",
-                add_scen_title: "Add & Save Scenario / FEN",
-                add_scen_desc: "Copy and paste your FEN string directly below to save it into your scenario pool.",
-                lbl_scen_name: "Scenario / Network Name:",
-                ph_scen_name: "e.g., Sensor Bottleneck 1",
-                lbl_fen: "FEN Layout (Copy-Paste):",
-                btn_paste_fen: "📋 Paste from Clipboard",
-                toast_pasted: "✓ FEN pasted from clipboard!",
-                ph_fen: "e.g., rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                lbl_variant_type: "Variant Type:",
-                opt_v_chess: "Standard Chess (chess)",
-                opt_v_nizami: "Shatranj (Ferz/Alfil rules)",
-                opt_v_capablanca: "Capablanca Chess (10x8)",
-                opt_v_crazyhouse: "Crazyhouse (Node Injection)",
-                opt_v_xiangqi: "Xiangqi (Chinese Chess 10x9)",
-                opt_v_custom: "Custom Topology (Custom)",
-                lbl_grid_dim: "Grid Size (Rank × File):",
-                lbl_notes: "Description / Notes (Optional):",
-                ph_notes: "e.g., 2 isolated sensor nodes, high-priority routing",
-                btn_save_scen: "💾 Save Scenario",
-                btn_clear_form: "🧹 Clear",
-                saved_pool_title: "Saved Scenarios & FEN Pool",
-                saved_pool_desc: "Saved scenarios will immediately appear in the variant dropdown on the main board.",
-                search_placeholder: "🔍 Search scenarios...",
-                toast_saved: "✓ Scenario successfully saved!",
-                toast_file_loaded: "✓ File loaded into form!",
-                toast_deleted: "✓ Scenario deleted.",
-                confirm_delete: "Are you sure you want to delete this scenario?",
-                btn_play_on_board: "▶ Launch on Board",
-                btn_copy_fen: "📋 Copy",
-                copied_fen: "Copied!",
-                empty_pool: "No custom scenarios saved yet. Use the panel on the left to add one.",
-                err_no_name: "Please provide a scenario name.",
-                err_no_fen: "Please provide a valid FEN string."
-            }
-        };
+        let currentLang = localStorage.getItem("app_lang") || "en";
+        let langCatalog = {};
 
-        function t(k) {
-            return (I18N[mevcutDil] && I18N[mevcutDil][k]) || k;
+        async function loadLanguageCatalog() {
+            try {
+                const resp = await fetch("lang/lang.json");
+                if (!resp.ok) throw new Error("Failed to load lang/lang.json");
+                langCatalog = await resp.json();
+                applyTranslations();
+            } catch (err) {
+                console.error("Language catalog load error:", err);
+            }
         }
 
-        function dilUygula() {
-            document.documentElement.lang = mevcutDil;
+        function t(key) {
+            const entry = langCatalog[key];
+            if (entry && typeof entry === "object") {
+                return entry[currentLang] || entry["en"] || key;
+            }
+            return key;
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
             document.querySelectorAll("[data-i18n]").forEach(el => {
-                const k = el.getAttribute("data-i18n");
-                if (I18N[mevcutDil] && I18N[mevcutDil][k]) {
+                const key = el.getAttribute("data-i18n");
+                const translated = t(key);
+                if (translated && translated !== key) {
                     if (el.tagName === "TITLE") {
-                        document.title = I18N[mevcutDil][k];
+                        document.title = translated;
                     } else {
-                        el.textContent = I18N[mevcutDil][k];
+                        el.textContent = translated;
                     }
                 }
             });
-            document.getElementById("lang-btn").textContent = mevcutDil === "tr" ? "EN" : "TR";
+            document.getElementById("lang-btn").textContent = currentLang === "tr" ? "EN" : "TR";
             document.getElementById("scen-name").placeholder = t("ph_scen_name");
             document.getElementById("scen-fen").placeholder = t("ph_fen");
             document.getElementById("scen-notes").placeholder = t("ph_notes");
             document.getElementById("search-input").placeholder = t("search_placeholder");
-            senaryolariListele();
+            renderScenarioList();
         }
 
-        function dilDegistir() {
-            mevcutDil = mevcutDil === "tr" ? "en" : "tr";
-            localStorage.setItem("wsn_dil", mevcutDil);
-            dilUygula();
+        function toggleLanguage() {
+            currentLang = currentLang === "tr" ? "en" : "tr";
+            localStorage.setItem("app_lang", currentLang);
+            applyTranslations();
         }
 
         const SEED_SCENARIOS = [
             {
                 id: "custom_seed_1",
-                ad: "Critical Node Analysis (Endgame Test)",
-                ad_tr: "Kritik Ağ Düğümü (Oyun Sonu Testi)",
-                ad_en: "Critical Node Analysis (Endgame Test)",
+                name: "Critical Node Analysis (Endgame Test)",
+                name_tr: "Kritik Ağ Düğümü (Oyun Sonu Testi)",
+                name_en: "Critical Node Analysis (Endgame Test)",
                 fen: "8/8/4k3/8/8/3K4/4P3/8 w - - 0 1",
-                varyant: "chess",
+                variant: "chess",
                 maxRank: 8,
                 maxFile: 8,
-                notlar: "Single-relay bottleneck optimization test.",
-                notlar_tr: "Tek piyon geçişli kritik düğüm optimizasyon testi.",
-                notlar_en: "Single-relay bottleneck optimization test.",
-                tarih: "2026-10-20"
+                notes: "Single-relay bottleneck optimization test.",
+                notes_tr: "Tek piyon geçişli kritik düğüm optimizasyon testi.",
+                notes_en: "Single-relay bottleneck optimization test.",
+                date: "2026-10-20"
             },
             {
                 id: "custom_seed_2",
-                ad: "Extended Network Topology (Capablanca)",
-                ad_tr: "Genişletilmiş Ağ Topolojisi (Capablanca)",
-                ad_en: "Extended Network Topology (Capablanca)",
+                name: "Extended Network Topology (Capablanca)",
+                name_tr: "Genişletilmiş Ağ Topolojisi (Capablanca)",
+                name_en: "Extended Network Topology (Capablanca)",
                 fen: "rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1",
-                varyant: "capablanca",
+                variant: "capablanca",
                 maxRank: 8,
                 maxFile: 10,
-                notlar: "10x8 extended node layout (Archbishop & Chancellor nodes).",
-                notlar_tr: "10x8 genişletilmiş düğüm dağılımı (Archbishop & Chancellor düğümleri).",
-                notlar_en: "10x8 extended node layout (Archbishop & Chancellor nodes).",
-                tarih: "2026-10-20"
+                notes: "10x8 extended node layout (Archbishop & Chancellor nodes).",
+                notes_tr: "10x8 genişletilmiş düğüm dağılımı (Archbishop & Chancellor düğümleri).",
+                notes_en: "10x8 extended node layout (Archbishop & Chancellor nodes).",
+                date: "2026-10-20"
             }
         ];
 
-        function varsayilanSenaryolariYukle() {
-            let saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "null");
+        function initializeDefaultScenarios() {
+            let saved = JSON.parse(localStorage.getItem("saved_scenarios") || "null");
             if (!saved || saved.length === 0) {
-                localStorage.setItem("wsn_saved_scenarios", JSON.stringify(SEED_SCENARIOS));
+                localStorage.setItem("saved_scenarios", JSON.stringify(SEED_SCENARIOS));
             } else {
-                // Upgrade any older seed entries so they have bilingual fields
                 let changed = false;
                 saved = saved.map(item => {
                     const seedMatch = SEED_SCENARIOS.find(s => s.id === item.id);
-                    if (seedMatch && (!item.ad_en || !item.notlar_en)) {
+                    if (seedMatch && (!item.name_en || !item.notes_en)) {
                         changed = true;
                         return { ...item, ...seedMatch };
                     }
                     return item;
                 });
                 if (changed) {
-                    localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+                    localStorage.setItem("saved_scenarios", JSON.stringify(saved));
                 }
             }
         }
 
-        function varyantDegisti() {
+        function handleVariantTypeChange() {
             const val = document.getElementById("scen-variant").value;
-            const rank = document.getElementById("scen-rank");
-            const file = document.getElementById("scen-file");
+            const rankInput = document.getElementById("scen-rank");
+            const fileInput = document.getElementById("scen-file");
             if (val === "capablanca") {
-                rank.value = 8;
-                file.value = 10;
+                rankInput.value = 8;
+                fileInput.value = 10;
             } else if (val === "xiangqi") {
-                rank.value = 10;
-                file.value = 9;
+                rankInput.value = 10;
+                fileInput.value = 9;
             } else {
-                rank.value = 8;
-                file.value = 8;
+                rankInput.value = 8;
+                fileInput.value = 8;
             }
         }
 
-        async function panodanYapistir() {
+        async function pasteFenFromClipboard() {
             try {
                 const text = await navigator.clipboard.readText();
                 if (text && text.trim()) {
@@ -526,7 +463,7 @@
             setTimeout(() => { toast.style.display = "none"; }, 3000);
         }
 
-        function formTemizle() {
+        function clearScenarioForm() {
             document.getElementById("scen-name").value = "";
             document.getElementById("scen-fen").value = "";
             document.getElementById("scen-notes").value = "";
@@ -535,15 +472,15 @@
             document.getElementById("scen-file").value = "8";
         }
 
-        function senaryoKaydet() {
-            const ad = document.getElementById("scen-name").value.trim();
+        function saveScenario() {
+            const name = document.getElementById("scen-name").value.trim();
             const fen = document.getElementById("scen-fen").value.trim();
-            const varyant = document.getElementById("scen-variant").value;
+            const variant = document.getElementById("scen-variant").value;
             const rank = parseInt(document.getElementById("scen-rank").value) || 8;
             const file = parseInt(document.getElementById("scen-file").value) || 8;
-            const notlar = document.getElementById("scen-notes").value.trim();
+            const notes = document.getElementById("scen-notes").value.trim();
 
-            if (!ad) {
+            if (!name) {
                 alert(t("err_no_name"));
                 return;
             }
@@ -552,72 +489,88 @@
                 return;
             }
 
-            const yeniSenaryo = {
+            const newScenario = {
                 id: "custom_" + Date.now(),
-                ad: ad,
-                ad_tr: ad,
-                ad_en: ad,
+                name: name,
+                name_tr: name,
+                name_en: name,
                 fen: fen,
-                varyant: varyant,
+                variant: variant,
                 maxRank: rank,
                 maxFile: file,
-                notlar: notlar,
-                notlar_tr: notlar,
-                notlar_en: notlar,
-                tarih: new Date().toLocaleDateString()
+                notes: notes,
+                notes_tr: notes,
+                notes_en: notes,
+                date: new Date().toLocaleDateString()
             };
 
-            const saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
-            saved.unshift(yeniSenaryo);
-            localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+            const saved = JSON.parse(localStorage.getItem("saved_scenarios") || "[]");
+            saved.unshift(newScenario);
+            localStorage.setItem("saved_scenarios", JSON.stringify(saved));
 
             showToast(t("toast_saved"));
-            formTemizle();
-            senaryolariListele();
+            clearScenarioForm();
+            renderScenarioList();
         }
 
-        function senaryoSil(id) {
+        function deleteScenario(id) {
             if (!confirm(t("confirm_delete"))) return;
-            let saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
+            let saved = JSON.parse(localStorage.getItem("saved_scenarios") || "[]");
             saved = saved.filter(s => s.id !== id);
-            localStorage.setItem("wsn_saved_scenarios", JSON.stringify(saved));
+            localStorage.setItem("saved_scenarios", JSON.stringify(saved));
             showToast(t("toast_deleted"));
-            senaryolariListele();
+            renderScenarioList();
         }
 
-        function tahtadaBaslat(id) {
-            localStorage.setItem("wsn_active_scenario", id);
+        function launchScenarioOnBoard(id) {
+            localStorage.setItem("active_scenario", id);
             window.location.href = "index.html";
         }
 
-        function fenKopyala(fen, btn) {
+        function copyFenToClipboard(fen, btn) {
             navigator.clipboard.writeText(fen).then(() => {
-                const old = btn.textContent;
+                const previousLabel = btn.textContent;
                 btn.textContent = t("copied_fen");
-                setTimeout(() => { btn.textContent = old; }, 1500);
+                setTimeout(() => { btn.textContent = previousLabel; }, 1500);
             });
         }
 
-        function getScenTitle(s) {
-            return mevcutDil === "tr" ? (s.ad_tr || s.ad) : (s.ad_en || s.ad);
+        function getScenarioTitle(scenario) {
+            return currentLang === "tr" ? (scenario.name_tr || scenario.name) : (scenario.name_en || scenario.name);
         }
 
-        function getScenNotes(s) {
-            return mevcutDil === "tr" ? (s.notlar_tr !== undefined ? s.notlar_tr : s.notlar) : (s.notlar_en !== undefined ? s.notlar_en : s.notlar);
+        function getScenarioNotes(scenario) {
+            return currentLang === "tr"
+                ? (scenario.notes_tr !== undefined ? scenario.notes_tr : scenario.notes)
+                : (scenario.notes_en !== undefined ? scenario.notes_en : scenario.notes);
         }
 
-        function senaryolariListele() {
+        function formatVariantBadgeLabel(rawVariant) {
+            const key = String(rawVariant || "").toLowerCase().trim();
+            const isTR = currentLang === "tr";
+            const map = {
+                chess: isTR ? "Klasik Satranç" : "Standard Chess",
+                shatranj: isTR ? "Şatranç (Nizami)" : "Shatranj",
+                capablanca: "Capablanca",
+                crazyhouse: "Crazyhouse",
+                xiangqi: "Xiangqi",
+                custom: isTR ? "Özel Topoloji" : "Custom Topology"
+            };
+            return map[key] || rawVariant;
+        }
+
+        function renderScenarioList() {
             const container = document.getElementById("scenarios-list");
-            const filter = (document.getElementById("search-input").value || "").toLowerCase();
-            const saved = JSON.parse(localStorage.getItem("wsn_saved_scenarios") || "[]");
-            
+            const filterQuery = (document.getElementById("search-input").value || "").toLowerCase();
+            const saved = JSON.parse(localStorage.getItem("saved_scenarios") || "[]");
+
             document.getElementById("scen-count").textContent = saved.length;
 
-            const filtered = saved.filter(s => {
-                const title = getScenTitle(s).toLowerCase();
-                const notes = (getScenNotes(s) || "").toLowerCase();
-                const fen = (s.fen || "").toLowerCase();
-                return title.includes(filter) || fen.includes(filter) || notes.includes(filter);
+            const filtered = saved.filter(item => {
+                const title = getScenarioTitle(item).toLowerCase();
+                const notes = (getScenarioNotes(item) || "").toLowerCase();
+                const fen = (item.fen || "").toLowerCase();
+                return title.includes(filterQuery) || fen.includes(filterQuery) || notes.includes(filterQuery);
             });
 
             if (filtered.length === 0) {
@@ -625,26 +578,27 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(s => {
-                const title = getScenTitle(s);
-                const notes = getScenNotes(s);
+            container.innerHTML = filtered.map(item => {
+                const title = getScenarioTitle(item);
+                const notes = getScenarioNotes(item);
+                const variantLabel = formatVariantBadgeLabel(item.variant);
                 return `
                 <div class="scen-card">
                     <div class="scen-header">
                         <div class="scen-title">
                             ${title}
-                            <span class="badge">${s.maxRank}×${s.maxFile}</span>
-                            <span class="badge" style="background:#ff980022; color:#ff9800; border-color:#ff980044;">${s.varyant}</span>
+                            <span class="badge">${item.maxRank}×${item.maxFile}</span>
+                            <span class="badge" style="background:#ff980022; color:#ff9800; border-color:#ff980044;">${variantLabel}</span>
                         </div>
                     </div>
-                    <div class="scen-fen">${s.fen}</div>
+                    <div class="scen-fen">${item.fen}</div>
                     ${notes ? `<div class="scen-notes">💬 ${notes}</div>` : ''}
                     <div class="scen-footer">
-                        <div class="scen-date">📅 ${s.tarih || "-"}</div>
+                        <div class="scen-date">📅 ${item.date || "-"}</div>
                         <div class="scen-actions">
-                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="fenKopyala('${s.fen}', this)">${t("btn_copy_fen")}</button>
-                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="senaryoSil('${s.id}')">🗑️</button>
-                            <button class="btn btn-success" style="padding: 5px 12px; font-size: 11px;" onclick="tahtadaBaslat('${s.id}')">${t("btn_play_on_board")}</button>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="copyFenToClipboard('${item.fen}', this)">${t("btn_copy_fen")}</button>
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="deleteScenario('${item.id}')">🗑️</button>
+                            <button class="btn btn-success" style="padding: 5px 12px; font-size: 11px;" onclick="launchScenarioOnBoard('${item.id}')">${t("btn_play_on_board")}</button>
                         </div>
                     </div>
                 </div>
@@ -652,14 +606,14 @@
         }
 
         // Initialize
-        varsayilanSenaryolariYukle();
-        dilUygula();
+        initializeDefaultScenarios();
+        loadLanguageCatalog();
         window.addEventListener("storage", (e) => {
-            if (e.key === "wsn_dil" && e.newValue && e.newValue !== mevcutDil) {
-                mevcutDil = e.newValue;
-                dilUygula();
-            } else if (e.key === "wsn_saved_scenarios") {
-                senaryolariListele();
+            if (e.key === "app_lang" && e.newValue && e.newValue !== currentLang) {
+                currentLang = e.newValue;
+                applyTranslations();
+            } else if (e.key === "saved_scenarios") {
+                renderScenarioList();
             }
         });
     </script>

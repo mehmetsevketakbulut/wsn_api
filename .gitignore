@@ -1,4 +1,4 @@
-# Windows exe (sadece lokal geliştirme için)
+# Local Windows binary
 *.exe
 
 # Python
@@ -7,8 +7,15 @@ __pycache__/
 venv/
 .env
 
-# Test dosyaları
+# Presentations, local media & scratch scripts
+*.pptx
+*.pdf
+images/
+scratch/
+Yeni klasör/
 test_*.py
+test_live.html
+test_payload.json
 
 # OS
 .DS_Store

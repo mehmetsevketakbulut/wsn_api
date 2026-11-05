@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="page_title">WSN Otonom Karar & Filtreleme Paneli</title>
+    <title data-i18n="page_title">Autonomous Decision & Filtering Panel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -95,16 +95,16 @@
             margin-bottom: 16px;
         }
 
-        /* --- VERI KUTUSU --- */
-        .veri-kutusu {
+        /* --- INFO BOX --- */
+        .info-box {
             background: #0d0d25;
             margin: 10px 0;
             padding: 14px;
             border-radius: 10px;
             border-left: 4px solid #00d2ff;
         }
-        .veri-kutusu .label { font-size: 12px; color: #888; margin-bottom: 4px; }
-        .veri-kutusu .deger {
+        .info-box .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .info-box .value {
             font-size: 18px;
             font-weight: bold;
             color: #fff;
@@ -128,27 +128,6 @@
         .btn-primary:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; }
         .btn-accent { background: #ff4081; color: white; }
         .btn-accent:hover { background: #e63973; transform: translateY(-1px); }
-
-        /* --- FILE UPLOAD --- */
-        .file-upload-area {
-            border: 2px dashed #00d2ff44;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            margin-bottom: 12px;
-        }
-        .file-upload-area:hover { border-color: #00d2ff; background: #00d2ff08; }
-        .file-upload-area input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .file-upload-area .upload-icon { font-size: 28px; margin-bottom: 6px; }
-        .file-upload-area .upload-text { font-size: 13px; color: #888; }
 
         /* --- BADGE --- */
         .badge {
@@ -176,8 +155,8 @@
         .param-table td:first-child { color: #888; width: 45%; }
         .param-table td:last-child { color: #fff; font-weight: 500; }
 
-        /* --- WSN GRID --- */
-        #wsn-grid {
+        /* --- BOARD GRID --- */
+        #board-grid {
             display: grid;
             gap: 2px;
             margin-top: 14px;
@@ -186,7 +165,7 @@
             padding: 6px;
             border-radius: 8px;
         }
-        .kare {
+        .square {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -199,15 +178,15 @@
             user-select: none;
             position: relative;
         }
-        .kare.acik { background-color: #cfd8dc; }
-        .kare.koyu { background-color: #78909c; }
-        .kare.secili {
+        .square.light { background-color: #cfd8dc; }
+        .square.dark { background-color: #78909c; }
+        .square.selected {
             background-color: #2196F3 !important;
             box-shadow: inset 0 0 10px #ffffffaa;
             border-radius: 4px;
         }
-        
-        /* Satranç Koordinatları (a-b-c, 1-2-3) */
+
+        /* Board Coordinates (a-h, 1-8) */
         .coord-rank {
             position: absolute;
             top: 2px;
@@ -224,17 +203,17 @@
             font-weight: bold;
             pointer-events: none;
         }
-        .kare.acik .coord-rank, .kare.acik .coord-file { color: #78909c; }
-        .kare.koyu .coord-rank, .kare.koyu .coord-file { color: #cfd8dc; }
+        .square.light .coord-rank, .square.light .coord-file { color: #78909c; }
+        .square.dark .coord-rank, .square.dark .coord-file { color: #cfd8dc; }
 
-        .tas-val {
-            font-size: 2.2em; /* Taşları büyüt */
+        .piece-val {
+            font-size: 2.2em;
             line-height: 1;
         }
 
-        .tas-W { color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2; }
-        .tas-B { color: #1a1a1a; text-shadow: 1px 1px 2px #ffffff88; z-index: 2; }
-        .tas-etiket {
+        .piece-W { color: #fff; text-shadow: 1px 1px 2px #000; z-index: 2; }
+        .piece-B { color: #1a1a1a; text-shadow: 1px 1px 2px #ffffff88; z-index: 2; }
+        .piece-badge {
             font-size: 0.32em;
             font-weight: 800;
             color: #ff9800;
@@ -278,24 +257,24 @@
             line-height: 1.6;
         }
 
-        /* --- ROTA VURGULAMA (BESTMOVE HIGHLIGHT) --- */
-        .kare.rota-kalkis {
+        /* --- ROUTE HIGHLIGHT --- */
+        .square.route-from {
             background: #4CAF50 !important;
             box-shadow: 0 0 12px #4CAF50aa, inset 0 0 6px #ffffff44;
-            animation: rotaPulse 1.2s ease-in-out infinite;
+            animation: routePulse 1.2s ease-in-out infinite;
             border-radius: 4px;
         }
-        .kare.rota-varis {
+        .square.route-to {
             background: #FFD700 !important;
             box-shadow: 0 0 14px #FFD700aa, inset 0 0 6px #ffffff44;
-            animation: rotaPulse 1.2s ease-in-out infinite 0.3s;
+            animation: routePulse 1.2s ease-in-out infinite 0.3s;
             border-radius: 4px;
         }
-        @keyframes rotaPulse {
+        @keyframes routePulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.08); }
         }
-        .rota-ok {
+        .route-arrow {
             font-size: 10px;
             color: #4CAF50;
             margin-top: 6px;
@@ -303,7 +282,7 @@
             letter-spacing: 1px;
         }
 
-        /* --- RAPOR BUTONU --- */
+        /* --- REPORT BUTTON --- */
         .btn-report {
             background: linear-gradient(135deg, #9c27b0, #7b1fa2);
             color: white;
@@ -336,38 +315,38 @@
             transition: all 0.2s ease;
             text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
-        #btn-basa-don {
+        #btn-start {
             background: linear-gradient(135deg, #ff6d00, #ff9100);
             box-shadow: 0 2px 8px rgba(255, 109, 0, 0.4);
         }
-        #btn-basa-don:hover:not(:disabled) {
+        #btn-start:hover:not(:disabled) {
             background: linear-gradient(135deg, #ff7d1a, #ffa726);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(255, 109, 0, 0.6);
         }
-        #btn-geri {
+        #btn-back {
             background: linear-gradient(135deg, #1976d2, #2196f3);
             box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
         }
-        #btn-geri:hover:not(:disabled) {
+        #btn-back:hover:not(:disabled) {
             background: linear-gradient(135deg, #2185d0, #42a5f5);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.6);
         }
-        #btn-ileri {
+        #btn-forward {
             background: linear-gradient(135deg, #2e7d32, #43a047);
             box-shadow: 0 2px 8px rgba(67, 160, 71, 0.4);
         }
-        #btn-ileri:hover:not(:disabled) {
+        #btn-forward:hover:not(:disabled) {
             background: linear-gradient(135deg, #388e3c, #4caf50);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(67, 160, 71, 0.6);
         }
-        #btn-ters-cevir {
+        #btn-flip {
             background: linear-gradient(135deg, #8e24aa, #ab47bc);
             box-shadow: 0 2px 8px rgba(142, 36, 170, 0.4);
         }
-        #btn-ters-cevir:hover:not(:disabled) {
+        #btn-flip:hover:not(:disabled) {
             background: linear-gradient(135deg, #9c27b0, #ba68c8);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(142, 36, 170, 0.6);
@@ -388,218 +367,275 @@
 
     <!-- === HEADER === -->
     <div class="header">
-        <h1 data-i18n="header_title">🛰️ WSN Otonom Karar Sistemi</h1>
+        <h1 data-i18n="header_title">🛰️ Autonomous Decision System</h1>
         <div class="header-controls">
             <div class="health-dot checking" id="health-dot" title=""></div>
-            <span class="health-label" id="health-label" data-i18n="health_checking">Sunucu kontrol ediliyor...</span>
-            <button class="btn btn-primary" id="btn-tetikle" onclick="veriCek()" data-i18n="trigger_engine" style="padding: 4px 10px; margin-right: 10px; font-size: 12px; height: 30px;">Motoru Tetikle</button>
-            <button class="lang-btn" id="lang-btn" onclick="dilDegistir()">EN</button>
+            <span class="health-label" id="health-label" data-i18n="health_checking">Checking server...</span>
+            <button class="btn btn-primary" id="btn-trigger" onclick="runEngineAnalysis()" data-i18n="trigger_engine" style="padding: 4px 10px; margin-right: 10px; font-size: 12px; height: 30px;">Trigger Engine</button>
+            <button class="lang-btn" id="lang-btn" onclick="toggleLanguage()">TR</button>
         </div>
     </div>
 
     <div class="container">
 
-        <!-- ======================== PANEL 1: TOPOLOJİ ======================== -->
+        <!-- ======================== PANEL 1: TOPOLOGY ======================== -->
         <div class="panel">
-            <h2 data-i18n="panel1_title">1. WSN Topoloji Görselleştirici</h2>
-            <p class="panel-desc" data-i18n="panel1_desc">Varyant veya kayıtlı FEN senaryolarını seçin, topoloji ekrana yansısın.</p>
+            <h2 data-i18n="panel1_title">1. Topology Visualizer</h2>
+            <p class="panel-desc" data-i18n="panel1_desc">Select variant or custom FEN scenarios to visualize topology.</p>
 
             <div style="margin-top: 10px; margin-bottom: 12px;">
-                <label style="font-size: 13px; color: #ccc;" data-i18n="select_variant">Varyant Seç:</label>
-                <select id="variant-dropdown" onchange="varyantDropdownDegisti()" style="width: 100%; background: #0d0d25; color: #fff; border: 1px solid #ffffff20; padding: 8px; border-radius: 6px; margin-top: 4px;">
-                                        <option value="klasik" data-i18n="opt_classic">Standard Chess</option>
-                    <option value="nizami" data-i18n="opt_nizami">Shatranj</option>
+                <label style="font-size: 13px; color: #ccc;" data-i18n="select_variant">Select Variant:</label>
+                <select id="variant-dropdown" onchange="handleVariantDropdownChange()" style="width: 100%; background: #0d0d25; color: #fff; border: 1px solid #ffffff20; padding: 8px; border-radius: 6px; margin-top: 4px;">
+                    <option value="standard" data-i18n="opt_classic">Standard Chess</option>
+                    <option value="shatranj" data-i18n="opt_nizami">Shatranj</option>
                     <option value="capablanca" data-i18n="opt_capablanca">Capablanca Chess (10x8)</option>
                     <option value="crazyhouse" data-i18n="opt_crazyhouse">Crazyhouse (Node Injection)</option>
                     <option value="xiangqi" data-i18n="opt_xiangqi">Xiangqi - Chinese Chess (10x9)</option>
                 </select>
-                <a href="senaryolar.html" target="_blank" rel="noopener noreferrer" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
-                    ⚙️ FEN & Senaryo Yönetimi (Ekle / Kaydet / Sil)
+                <a href="scenarios.html" target="_blank" rel="noopener noreferrer" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; margin-top: 8px; background: linear-gradient(135deg, #1976D2, #0D47A1); color: #fff; font-size: 12px; font-weight: bold; padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3); transition: all 0.2s;" data-i18n="manage_scenarios_btn">
+                    ⚙️ FEN & Scenario Management (Add / Save / Delete)
                 </a>
             </div>
 
             <!-- Variant Badge -->
             <div style="margin-bottom: 12px;">
-                <span class="badge badge-warning" id="variant-badge" data-i18n="variant_not_loaded">Yüklenmedi</span>
+                <span class="badge badge-warning" id="variant-badge" data-i18n="variant_not_loaded">Not Loaded</span>
             </div>
 
             <!-- FEN -->
-            <div class="veri-kutusu">
+            <div class="info-box">
                 <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span data-i18n="detected_fen">Algılanan FEN:</span>
-                    <button class="btn" onclick="apiFenCek()" style="padding: 4px 8px; font-size: 11px; background-color: #2196F3;" data-i18n="btn_fetch_api">🌐 Fetch Sensor Data from External API</button>
+                    <span data-i18n="detected_fen">Detected FEN:</span>
+                    <button class="btn" onclick="fetchExternalPuzzle()" style="padding: 4px 8px; font-size: 11px; background-color: #2196F3;" data-i18n="btn_fetch_api">🌐 Fetch Sensor Data from External API</button>
                 </div>
-                <div class="fen-text" id="fen-metni" data-i18n="fen_none">Yok</div>
+                <div class="fen-text" id="fen-display" data-i18n="fen_none">None</div>
             </div>
 
             <!-- Variant Params -->
             <div id="variant-params" style="display:none;">
-                <h3 style="color:#00d2ff; font-size:14px; margin-top:14px;" data-i18n="variant_params_title">Varyant Parametreleri</h3>
+                <h3 style="color:#00d2ff; font-size:14px; margin-top:14px;" data-i18n="variant_params_title">Variant Parameters</h3>
                 <table class="param-table" id="param-table"></table>
             </div>
 
-            <!-- WSN Grid -->
-            <div id="wsn-grid"></div>
+            <!-- Board Grid -->
+            <div id="board-grid"></div>
 
-            <!-- Oyun Geçmişi Navigasyon -->
+            <!-- Game History Navigation -->
             <div id="game-nav" style="display: flex; gap: 4px; margin-top: 8px;">
-                <button class="nav-btn" id="btn-basa-don" onclick="basaDon()" data-i18n="btn_start">|◀ Başa Dön</button>
-                <button class="nav-btn" id="btn-geri" onclick="geriAl()" data-i18n="btn_back">◀ Geri</button>
-                <button class="nav-btn" id="btn-ileri" onclick="ileriAl()" data-i18n="btn_forward">İleri ▶</button>
-                <button class="nav-btn" id="btn-ters-cevir" onclick="tahtayiTersCevir()" data-i18n="btn_flip">🔄 Ters Çevir</button>
+                <button class="nav-btn" id="btn-start" onclick="resetToStart()" data-i18n="btn_start">|◀ Start</button>
+                <button class="nav-btn" id="btn-back" onclick="stepBackward()" data-i18n="btn_back">◀ Back</button>
+                <button class="nav-btn" id="btn-forward" onclick="stepForward()" data-i18n="btn_forward">Forward ▶</button>
+                <button class="nav-btn" id="btn-flip" onclick="flipBoard()" data-i18n="btn_flip">🔄 Flip</button>
             </div>
         </div>
 
-        <!-- ======================== PANEL 2: MOTOR ======================== -->
+        <!-- ======================== PANEL 2: ENGINE ======================== -->
         <div class="panel">
-            <h2 data-i18n="panel2_title">2. Karar Motoru Çıktısı</h2>
+            <h2 data-i18n="panel2_title">2. Decision Engine Output</h2>
 
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="bestmove_label">API'den Gelen En İyi Rota</div>
-                <div class="deger" id="bestmove" data-i18n="waiting">Bekleniyor...</div>
-            </div>
-            
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="full_solution_label">Tam Çözüm Yolu (PV)</div>
-                <div class="fen-text" id="full-solution" data-i18n="waiting" style="color: #4CAF50;">Bekleniyor...</div>
+            <div class="info-box">
+                <div class="label" data-i18n="bestmove_label">Optimal Route from Engine (Best Move)</div>
+                <div class="value" id="bestmove" data-i18n="waiting">Waiting...</div>
             </div>
 
-            <div class="veri-kutusu">
-                <div class="label" data-i18n="cp_label">Ham CP (Santipawn) Skoru</div>
-                <div class="deger" id="cp" data-i18n="waiting">Bekleniyor...</div>
+            <div class="info-box">
+                <div class="label" data-i18n="full_solution_label">Full Solution (PV)</div>
+                <div class="fen-text" id="full-solution" data-i18n="waiting" style="color: #4CAF50;">Waiting...</div>
             </div>
 
-            <!-- Motor Info -->
-            <div class="veri-kutusu" style="border-left-color: #9c27b0;">
-                <div class="label" data-i18n="variant_status">Varyant Durumu</div>
-                <div class="deger" id="motor-varyant" style="font-size:14px; color:#ff9800;">—</div>
+            <div class="info-box">
+                <div class="label" data-i18n="cp_label">Raw CP (Centipawn) Score</div>
+                <div class="value" id="cp" data-i18n="waiting">Waiting...</div>
+            </div>
+
+            <!-- Engine Info -->
+            <div class="info-box" style="border-left-color: #9c27b0;">
+                <div class="label" data-i18n="variant_status">Variant Status</div>
+                <div class="value" id="engine-variant" style="font-size:14px; color:#ff9800;">—</div>
             </div>
 
             <!-- Depth Slider -->
-            <div class="veri-kutusu" style="border-left-color: #2196F3; margin-bottom: 15px;">
+            <div class="info-box" style="border-left-color: #2196F3; margin-bottom: 15px;">
                 <div class="label" style="display: flex; justify-content: space-between;">
-                    <span data-i18n="engine_depth">Arama Derinliği:</span>
+                    <span data-i18n="engine_depth">Search Depth:</span>
                     <span id="depth-val" style="color: white; font-weight: bold;">12</span>
                 </div>
                 <input type="range" id="engine-depth" min="1" max="25" value="12" style="width: 100%; margin-top: 8px;" oninput="document.getElementById('depth-val').textContent = this.value">
             </div>
-            
+
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="veriCek('next')" data-i18n="btn_next_move">En İyi Sonraki Hamle</button>
-                <button class="btn btn-accent" style="flex: 1; background: #ff9800;" onclick="veriCek('full')" data-i18n="btn_full_solution">Tüm Çözümü Göster</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="runEngineAnalysis('next')" data-i18n="btn_next_move">Best Next Move</button>
+                <button class="btn btn-accent" style="flex: 1; background: #ff9800;" onclick="runEngineAnalysis('full')" data-i18n="btn_full_solution">Full Solution</button>
             </div>
 
-            <!-- Mat Arama (Mansube / Problem Çözücü) -->
+            <!-- Mate Search (Mansuba Solver) -->
             <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 10px;">
                 <div style="flex: 0 0 38%;">
-                    <label for="mate-moves" style="font-size: 11px; color: #aaa;" data-i18n="mate_moves_label">Mat Hamle Sayısı (N):</label>
+                    <label for="mate-moves" style="font-size: 11px; color: #aaa;" data-i18n="mate_moves_label">Mate in N moves:</label>
                     <input type="number" id="mate-moves" min="1" max="30" value="8" style="margin-top: 2px; padding: 8px 10px;">
                 </div>
-                <button class="btn" style="flex: 1; margin-top: 0; background: linear-gradient(135deg, #c62828, #8e24aa); color: #fff;" onclick="veriCek('mate')" data-i18n="btn_mate_search">♚ Mat Ara (Mansube Çözücü)</button>
+                <button class="btn" style="flex: 1; margin-top: 0; background: linear-gradient(135deg, #c62828, #8e24aa); color: #fff;" onclick="runEngineAnalysis('mate')" data-i18n="btn_mate_search">♚ Search Mate (Mansuba Solver)</button>
             </div>
 
-            <button class="btn" id="btn-oto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="otonomSimulasyonToggle()" data-i18n="btn_auto_sim">▶ Otonom Simülasyon (Canlı Demo)</button>
+            <button class="btn" id="btn-auto-sim" style="background: linear-gradient(135deg, #00c853, #64dd17); color: #000; font-weight: bold; margin-top: 0; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,200,83,0.3);" onclick="toggleAutoSimulation()" data-i18n="btn_auto_sim">▶ Autonomous Simulation (Live Demo)</button>
 
             <div id="report-buttons" style="display: none; gap: 8px; margin-top: 10px; width: 100%;">
-                <button class="btn-report visible" id="btn-rapor" onclick="raporIndir()" style="flex:1; width:50%; margin:0; display:block;" data-i18n="btn_download_report">📄 Download Report (JSON)</button>
-                <button class="btn-report visible" id="btn-rapor-pdf" onclick="pdfRaporIndir()" style="flex:1; width:50%; margin:0; display:block; background: linear-gradient(135deg, #f44336, #d32f2f);" data-i18n="btn_pdf">📄 Download Report (PDF)</button>
+                <button class="btn-report visible" id="btn-report-json" onclick="downloadJsonReport()" style="flex:1; width:50%; margin:0; display:block;" data-i18n="btn_download_report">📄 Download Report (JSON)</button>
+                <button class="btn-report visible" id="btn-report-pdf" onclick="downloadPdfReport()" style="flex:1; width:50%; margin:0; display:block; background: linear-gradient(135deg, #f44336, #d32f2f);" data-i18n="btn_pdf">📄 Download Report (PDF)</button>
             </div>
         </div>
 
-        <!-- ======================== PANEL 3: FİLTRE ======================== -->
+        <!-- ======================== PANEL 3: FILTER ======================== -->
         <div class="panel" style="border: 1px solid #ff408133;">
-            <h2 style="color: #ff4081;" data-i18n="panel3_title">3. Özel CP Filtreleme Testi</h2>
-            <p class="panel-desc" data-i18n="panel3_desc">Gelen CP skorunu filtreleme mantığıyla test et.</p>
+            <h2 style="color: #ff4081;" data-i18n="panel3_title">3. Custom CP Filter Test</h2>
+            <p class="panel-desc" data-i18n="panel3_desc">Test the incoming CP score with your custom filter logic.</p>
 
-            <label style="font-size: 13px; color: #ccc;" data-i18n="threshold_label">Minimum Kabul Edilebilir CP Eşiği:</label>
-            <input type="number" id="cp-esik" value="50">
+            <label style="font-size: 13px; color: #ccc;" data-i18n="threshold_label">Minimum Acceptable CP Threshold:</label>
+            <input type="number" id="cp-threshold" value="50">
 
-            <button class="btn btn-accent" onclick="filtreTesti()" data-i18n="apply_filter">Filtreyi Uygula</button>
+            <button class="btn btn-accent" onclick="applyCpFilter()" data-i18n="apply_filter">Apply Filter</button>
 
-            <div class="veri-kutusu" style="border-left-color: #ff4081; margin-top: 16px;">
-                <div class="label" data-i18n="filter_result_label">Filtre Sonucu (Karar):</div>
-                <div class="deger" id="filtre-sonuc" style="color: #ffeb3b; font-size: 15px;" data-i18n="test_waiting">Test Bekleniyor...</div>
+            <div class="info-box" style="border-left-color: #ff4081; margin-top: 16px;">
+                <div class="label" data-i18n="filter_result_label">Filter Result (Decision):</div>
+                <div class="value" id="filter-result" style="color: #ffeb3b; font-size: 15px;" data-i18n="test_waiting">Awaiting Test...</div>
             </div>
         </div>
     </div>
 
 <script>
-// API BASE URL - Dynamic for Vercel Serverless / Render fallback
-const API_BASE = window.location.hostname.includes("vercel.app") 
-    ? window.location.origin 
-    : "https://wsn-api.onrender.com";
+// API BASE URL - Uses current origin when hosted or https://oldchess.vercel.app as remote default
+const API_BASE = (window.location.protocol.startsWith("http"))
+    ? window.location.origin
+    : "https://oldchess.vercel.app";
 
 // =========================================================================
-// i18n SİSTEMİ — JSON dil dosyaları ile
+// UNIFIED i18n SYSTEM — Single lang/lang.json catalog
 // =========================================================================
-let mevcutDil = localStorage.getItem("wsn_dil") || "en";
-let dilVerisi = {};
+let currentLang = localStorage.getItem("app_lang") || "en";
+let langCatalog = {};
 
-async function dilYukle(dil) {
+async function loadLanguageCatalog(lang = currentLang) {
     try {
-        const resp = await fetch(`lang/${dil}.json`);
-        if (!resp.ok) throw new Error("Dil dosyası bulunamadı");
-        dilVerisi = await resp.json();
-        mevcutDil = dil;
-        localStorage.setItem("wsn_dil", dil);
-        document.documentElement.lang = dil;
-        dilUygula();
+        if (Object.keys(langCatalog).length === 0) {
+            const resp = await fetch("lang/lang.json");
+            if (!resp.ok) throw new Error("Language file lang/lang.json not found");
+            langCatalog = await resp.json();
+        }
+        currentLang = lang;
+        localStorage.setItem("app_lang", lang);
+        document.documentElement.lang = lang;
+        applyTranslations();
     } catch (err) {
-        console.error("Dil yükleme hatası:", err);
+        console.error("Language loading error:", err);
     }
 }
 
-function dilUygula() {
-    // data-i18n attribute'ı olan tüm elementleri güncelle
+function t(key, variables = {}) {
+    const entry = langCatalog[key];
+    let text = (entry && typeof entry === "object")
+        ? (entry[currentLang] || entry["en"] || key)
+        : key;
+    for (const [varName, varVal] of Object.entries(variables)) {
+        text = text.replace(`{${varName}}`, varVal);
+    }
+    return text;
+}
+
+function formatVariantDisplayName(rawVariant) {
+    if (!rawVariant) return "—";
+    const key = String(rawVariant).toLowerCase().trim();
+    const isTR = currentLang === "tr";
+    const map = {
+        chess: isTR ? "Klasik Satranç" : "Standard Chess",
+        standard: isTR ? "Klasik Satranç" : "Standard Chess",
+        chess_scenario: isTR ? "Klasik Satranç" : "Standard Chess",
+        shatranj: isTR ? "Şatranç (Nizami)" : "Shatranj",
+        shatranj_nizami: isTR ? "Şatranç (Nizami)" : "Shatranj",
+        shatranj_scenario: isTR ? "Şatranç (Nizami)" : "Shatranj",
+        capablanca: isTR ? "Capablanca Satrancı (10x8)" : "Capablanca Chess (10x8)",
+        capablanca_scenario: isTR ? "Capablanca Satrancı (10x8)" : "Capablanca Chess (10x8)",
+        crazyhouse: isTR ? "Crazyhouse (Düğüm Enjeksiyonu)" : "Crazyhouse (Node Injection)",
+        crazyhouse_scenario: isTR ? "Crazyhouse (Düğüm Enjeksiyonu)" : "Crazyhouse (Node Injection)",
+        xiangqi: isTR ? "Xiangqi - Çin Satrancı (10x9)" : "Xiangqi - Chinese Chess (10x9)",
+        xiangqi_scenario: isTR ? "Xiangqi - Çin Satrancı (10x9)" : "Xiangqi - Chinese Chess (10x9)",
+        custom: isTR ? "Özel Topoloji" : "Custom Topology",
+        custom_topology: isTR ? "Özel Topoloji" : "Custom Topology"
+    };
+    return map[key] || rawVariant;
+}
+
+function formatMoveHistoryForReport(moves) {
+    if (!moves || moves.length === 0) return "";
+    const isTR = currentLang === "tr";
+    const navMap = {
+        "[Start]": isTR ? "[Başa Dön]" : "[Start]",
+        "[Başa Dön]": isTR ? "[Başa Dön]" : "[Start]",
+        "[Back]": isTR ? "[Geri]" : "[Back]",
+        "[Geri]": isTR ? "[Geri]" : "[Back]",
+        "[Forward]": isTR ? "[İleri]" : "[Forward]",
+        "[İleri]": isTR ? "[İleri]" : "[Forward]",
+        "[Flip]": isTR ? "[Ters Çevir]" : "[Flip]",
+        "[Ters Çevir]": isTR ? "[Ters Çevir]" : "[Flip]"
+    };
+    return moves.map(m => navMap[m] || m).join(", ");
+}
+
+function applyTranslations() {
     document.querySelectorAll("[data-i18n]").forEach(el => {
-        const anahtar = el.getAttribute("data-i18n");
-        if (dilVerisi[anahtar]) {
+        const key = el.getAttribute("data-i18n");
+        const translated = t(key);
+        if (translated && translated !== key) {
             if (el.tagName === "INPUT" && el.type !== "number") {
-                el.placeholder = dilVerisi[anahtar];
+                el.placeholder = translated;
             } else if (el.tagName === "TITLE") {
-                document.title = dilVerisi[anahtar];
+                document.title = translated;
             } else {
-                el.textContent = dilVerisi[anahtar];
+                el.textContent = translated;
             }
         }
     });
-    // Dil butonu
-    document.getElementById("lang-btn").textContent = dilVerisi["lang_switch"] || (mevcutDil === "tr" ? "EN" : "TR");
-    
-    // Simülasyon butonu metnini koru
-    const btnSim = document.getElementById("btn-oto-sim");
+
+    document.getElementById("lang-btn").textContent = t("lang_switch") || (currentLang === "tr" ? "EN" : "TR");
+
+    const btnSim = document.getElementById("btn-auto-sim");
     if (btnSim) {
-        btnSim.textContent = (typeof simAktif !== 'undefined' && simAktif) ? t("btn_stop_sim") : t("btn_auto_sim");
+        btnSim.textContent = (typeof isSimRunning !== "undefined" && isSimRunning)
+            ? t("btn_stop_sim")
+            : t("btn_auto_sim");
     }
 
-    // Kayıtlı senaryolar listesini aktif dile göre yenile
-    if (typeof kayitliSenaryolariDropdownaYukle === 'function') {
-        kayitliSenaryolariDropdownaYukle();
+    if (typeof loadSavedScenariosIntoDropdown === "function") {
+        loadSavedScenariosIntoDropdown();
     }
 
-    // Aktif varyant varsa paneli yeniden çiz (badge + tablo dinamik t() çağrıları)
-    if (typeof aktifVariant !== 'undefined' && aktifVariant) {
-        varyantPanelGuncelle(aktifVariant);
+    if (typeof activeVariant !== "undefined" && activeVariant) {
+        updateVariantPanel(activeVariant);
+    }
+
+    if (typeof lastEngineResponse !== "undefined" && lastEngineResponse) {
+        const cpEl = document.getElementById("cp");
+        if (cpEl && !cpEl.hasAttribute("data-i18n")) {
+            cpEl.textContent = formatScoreLabel(lastEngineResponse);
+        }
+        if (typeof lastReportData !== "undefined" && lastReportData) {
+            lastReportData.score_label = String(formatScoreLabel(lastEngineResponse));
+        }
+    }
+
+    if (typeof filterApplied !== "undefined" && filterApplied) {
+        applyCpFilter();
     }
 }
 
-function dilDegistir() {
-    const yeniDil = mevcutDil === "tr" ? "en" : "tr";
-    dilYukle(yeniDil);
-}
-
-function t(anahtar, degiskenler = {}) {
-    let metin = dilVerisi[anahtar] || anahtar;
-    for (const [k, v] of Object.entries(degiskenler)) {
-        metin = metin.replace(`{${k}}`, v);
-    }
-    return metin;
+function toggleLanguage() {
+    const nextLang = currentLang === "tr" ? "en" : "tr";
+    loadLanguageCatalog(nextLang);
 }
 
 // =========================================================================
 // HEALTH CHECK
 // =========================================================================
-async function healthCheck() {
+async function checkServerHealth() {
     const dot = document.getElementById("health-dot");
     const label = document.getElementById("health-label");
     dot.className = "health-dot checking";
@@ -607,32 +643,17 @@ async function healthCheck() {
 
     try {
         const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 8000);
+        const timerId = setTimeout(() => controller.abort(), 8000);
         const resp = await fetch(`${API_BASE}/api/health`, { signal: controller.signal });
-        clearTimeout(tid);
+        clearTimeout(timerId);
         if (resp.ok) {
             dot.className = "health-dot ok";
             label.setAttribute("data-i18n", "health_ok");
             label.textContent = t("health_ok");
             return;
         }
-    } catch (e) {
-        console.warn("Health check primary failed, trying fallback...", e);
-    }
-
-    try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 8000);
-        const resp = await fetch("https://wsn-api.onrender.com/api/health", { signal: controller.signal });
-        clearTimeout(tid);
-        if (resp.ok) {
-            dot.className = "health-dot ok";
-            label.setAttribute("data-i18n", "health_ok");
-            label.textContent = t("health_ok");
-            return;
-        }
-    } catch (e) {
-        console.warn("Health check fallback failed", e);
+    } catch (err) {
+        console.warn("Health check failed:", err);
     }
 
     dot.className = "health-dot fail";
@@ -641,19 +662,19 @@ async function healthCheck() {
 }
 
 // =========================================================================
-// VARIANTS.INI PARSER VE TAHTA ÇİZİMİ
+// VARIANTS.INI PARSER & BOARD CONFIGURATION
 // =========================================================================
-let aktifVariant = null;    // Parse edilmiş varyant verisi
-let aktifIniIcerik = null;  // Ham .ini içeriği (motora gönderilecek)
-let aktifFen = "";
-let gridSatir = 8;
-let gridSutun = 8;
+let activeVariant = null;
+let activeIniContent = null;
+let activeFen = "";
+let gridRanks = 8;
+let gridFiles = 8;
 
-function iniParse(icerik) {
-    const satirlar = icerik.split('\n');
-    const sonuc = {
-        varyantAdi: "",
-        ustVaryant: "",
+function parseVariantIni(iniContent) {
+    const lines = iniContent.split("\n");
+    const parsed = {
+        variantName: "",
+        parentVariant: "",
         maxRank: 8,
         maxFile: 8,
         cylinder: false,
@@ -663,666 +684,622 @@ function iniParse(icerik) {
         promotionRegionWhite: "",
         promotionRegionBlack: "",
         promotionPieceTypes: "",
-        tumParametreler: {}
+        allParams: {}
     };
 
-    for (let satir of satirlar) {
-        satir = satir.trim();
+    for (let rawLine of lines) {
+        const line = rawLine.trim();
 
-        if (satir.startsWith('[') && satir.includes(':')) {
-            const ic = satir.split('[')[1].split(']')[0];
-            sonuc.varyantAdi = ic.split(':')[0].trim();
-            sonuc.ustVaryant = (ic.split(':')[1] || '').trim();
+        if (line.startsWith("[") && line.includes(":")) {
+            const inner = line.split("[")[1].split("]")[0];
+            parsed.variantName = inner.split(":")[0].trim();
+            parsed.parentVariant = (inner.split(":")[1] || "").trim();
             continue;
         }
 
-        if (satir.startsWith('#') || !satir.includes('=')) continue;
+        if (line.startsWith("#") || !line.includes("=")) continue;
 
-        const esitIdx = satir.indexOf('=');
-        const anahtar = satir.substring(0, esitIdx).trim();
-        let deger = satir.substring(esitIdx + 1).trim();
+        const eqIdx = line.indexOf("=");
+        const key = line.substring(0, eqIdx).trim();
+        let value = line.substring(eqIdx + 1).trim();
 
-        if (deger.includes('#')) {
-            deger = deger.split('#')[0].trim();
+        if (value.includes("#")) {
+            value = value.split("#")[0].trim();
         }
 
-        sonuc.tumParametreler[anahtar] = deger;
+        parsed.allParams[key] = value;
 
-        switch (anahtar) {
-            case 'maxRank': sonuc.maxRank = parseInt(deger) || 8; break;
-            case 'maxFile': sonuc.maxFile = parseInt(deger) || 8; break;
-            case 'cylinder': sonuc.cylinder = deger === 'true'; break;
-            case 'drop': sonuc.drop = deger === 'true'; break;
-            case 'startFen': sonuc.startFen = deger; break;
-            case 'promotionRegionWhite': sonuc.promotionRegionWhite = deger; break;
-            case 'promotionRegionBlack': sonuc.promotionRegionBlack = deger; break;
-            case 'promotionPieceTypes': sonuc.promotionPieceTypes = deger; break;
+        switch (key) {
+            case "maxRank": parsed.maxRank = parseInt(value) || 8; break;
+            case "maxFile": parsed.maxFile = parseInt(value) || 8; break;
+            case "cylinder": parsed.cylinder = value === "true"; break;
+            case "drop": parsed.drop = value === "true"; break;
+            case "startFen": parsed.startFen = value; break;
+            case "promotionRegionWhite": parsed.promotionRegionWhite = value; break;
+            case "promotionRegionBlack": parsed.promotionRegionBlack = value; break;
+            case "promotionPieceTypes": parsed.promotionPieceTypes = value; break;
         }
 
-        if (anahtar.startsWith('customPiece')) {
-            sonuc.customPieces.push(deger);
+        if (key.startsWith("customPiece")) {
+            parsed.customPieces.push(value);
         }
     }
 
-    return sonuc;
+    return parsed;
 }
 
-function varyantPanelGuncelle(varyant) {
-    const params = document.getElementById("variant-params");
-    const tablo = document.getElementById("param-table");
-    const badge = document.getElementById("variant-badge");
-    const motorVaryant = document.getElementById("motor-varyant");
+function isShatranjMode() {
+    return !!(
+        activeVariant &&
+        (activeVariant.parentVariant === "shatranj" || activeVariant.variantName === "shatranj")
+    );
+}
 
-    params.style.display = "block";
+function updateVariantPanel(variant) {
+    const paramsContainer = document.getElementById("variant-params");
+    const table = document.getElementById("param-table");
+    const badge = document.getElementById("variant-badge");
+    const engineVariantEl = document.getElementById("engine-variant");
+    const displayVariantName = formatVariantDisplayName(variant.variantName);
+
+    paramsContainer.style.display = "block";
     badge.className = "badge badge-success";
-    badge.textContent = `✓ ${t("active_variant_badge")}: ${varyant.varyantAdi}`;
+    badge.textContent = `✓ ${t("active_variant_badge")}: ${displayVariantName}`;
     badge.removeAttribute("data-i18n");
 
-    motorVaryant.textContent = varyant.varyantAdi || "—";
-    motorVaryant.style.color = "#4CAF50";
+    if (typeof lastReportData !== "undefined" && lastReportData && lastReportData.latency_ms !== undefined) {
+        engineVariantEl.textContent = `${formatVariantDisplayName(lastReportData.variant)} (${lastReportData.latency_ms}ms)`;
+    } else {
+        engineVariantEl.textContent = displayVariantName;
+    }
+    engineVariantEl.style.color = "#4CAF50";
 
-    tablo.innerHTML = `
-        <tr><td data-i18n="variant_name">${t("variant_name")}</td><td>${varyant.varyantAdi}</td></tr>
-        <tr><td data-i18n="grid_size">${t("grid_size")}</td><td>${varyant.maxRank} × ${varyant.maxFile}</td></tr>
-        <tr><td data-i18n="topology">${t("topology")}</td><td>${varyant.cylinder ? t("topology_closed") : t("topology_open")}</td></tr>
-        <tr><td data-i18n="node_injection">${t("node_injection")}</td><td>${varyant.drop ? t("enabled") : t("disabled")}</td></tr>
-        <tr><td data-i18n="custom_pieces">${t("custom_pieces")}</td><td>${varyant.customPieces.length} ${t("unit_count")}</td></tr>
-        ${varyant.promotionRegionWhite ? `<tr><td data-i18n="promotion_zone">${t("promotion_zone")}</td><td>${varyant.promotionRegionWhite}</td></tr>` : ''}
-        ${satrancModuMu() ? `<tr><td colspan="2" style="color:#ff9800; font-size:12px; width:auto;">♟ ${t("shatranj_legend")}</td></tr>` : ''}
+    table.innerHTML = `
+        <tr><td data-i18n="variant_name">${t("variant_name")}</td><td>${displayVariantName}</td></tr>
+        <tr><td data-i18n="grid_size">${t("grid_size")}</td><td>${variant.maxRank} × ${variant.maxFile}</td></tr>
+        <tr><td data-i18n="topology">${t("topology")}</td><td>${variant.cylinder ? t("topology_closed") : t("topology_open")}</td></tr>
+        <tr><td data-i18n="node_injection">${t("node_injection")}</td><td>${variant.drop ? t("enabled") : t("disabled")}</td></tr>
+        <tr><td data-i18n="custom_pieces">${t("custom_pieces")}</td><td>${variant.customPieces.length} ${t("unit_count")}</td></tr>
+        ${variant.promotionRegionWhite ? `<tr><td data-i18n="promotion_zone">${t("promotion_zone")}</td><td>${variant.promotionRegionWhite}</td></tr>` : ''}
+        ${isShatranjMode() ? `<tr><td colspan="2" style="color:#ff9800; font-size:12px; width:auto;">♟ ${t("shatranj_legend")}</td></tr>` : ''}
     `;
 }
 
 // =========================================================================
-// OYUN DURUMU (STATE) VE GEÇMİŞ
+// GAME STATE & MOVE HISTORY NAVIGATION
 // =========================================================================
-let seciliKareId = null;
-let siraKimde = 'w'; // 'w' = Kullanıcı(Beyaz), 'b' = Motor(Siyah)
+let selectedSquareId = null;
+let activeTurn = "w"; // 'w' = White, 'b' = Black
+let fenHistory = [];
+let moveHistoryList = [];
+let historyIndex = -1;
 
-let fenGecmisi = [];
-let hamleGecmisiListesi = [];
-let gecmisIndeks = -1;
-
-function navButonlariGuncelle() {
-    const btnBasaDon = document.getElementById("btn-basa-don");
-    const btnGeri = document.getElementById("btn-geri");
-    const btnIleri = document.getElementById("btn-ileri");
-    if (btnBasaDon) btnBasaDon.disabled = (gecmisIndeks <= 0);
-    if (btnGeri) btnGeri.disabled = (gecmisIndeks <= 0);
-    if (btnIleri) btnIleri.disabled = (gecmisIndeks >= fenGecmisi.length - 1);
+function updateNavButtons() {
+    const btnStart = document.getElementById("btn-start");
+    const btnBack = document.getElementById("btn-back");
+    const btnForward = document.getElementById("btn-forward");
+    if (btnStart) btnStart.disabled = (historyIndex <= 0);
+    if (btnBack) btnBack.disabled = (historyIndex <= 0);
+    if (btnForward) btnForward.disabled = (historyIndex >= fenHistory.length - 1);
 }
 
-function gecmiseHamleEkle(yeniFen, hamleStr) {
-    if (gecmisIndeks < fenGecmisi.length - 1) {
-        fenGecmisi = fenGecmisi.slice(0, gecmisIndeks + 1);
-        hamleGecmisiListesi = hamleGecmisiListesi.slice(0, gecmisIndeks);
+function recordMoveToHistory(newFen, moveStr) {
+    if (historyIndex < fenHistory.length - 1) {
+        fenHistory = fenHistory.slice(0, historyIndex + 1);
+        moveHistoryList = moveHistoryList.slice(0, historyIndex);
     }
-    fenGecmisi.push(yeniFen);
-    hamleGecmisiListesi.push(hamleStr);
-    gecmisIndeks++;
+    fenHistory.push(newFen);
+    moveHistoryList.push(moveStr);
+    historyIndex++;
     document.getElementById("game-nav").style.display = "flex";
-    navButonlariGuncelle();
+    updateNavButtons();
 }
 
-function navigasyonYukle(indeks) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    gecmisIndeks = indeks;
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    siraKimde = kullaniciRengi;
-    aktifFen = fenSiraGuncelle(fenGecmisi[gecmisIndeks], kullaniciRengi);
-    
-    // Seçim ve vurguları sıfırla
-    seciliKareId = null;
-    document.querySelectorAll(".secili, .rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("secili", "rota-kalkis", "rota-varis");
+function loadHistoryState(index) {
+    if (typeof stopAutoSimulation === "function") stopAutoSimulation();
+    historyIndex = index;
+    const userColor = isBoardFlipped ? "b" : "w";
+    activeTurn = userColor;
+    activeFen = updateFenTurn(fenHistory[historyIndex], userColor);
+
+    selectedSquareId = null;
+    document.querySelectorAll(".selected, .route-from, .route-to").forEach(el => {
+        el.classList.remove("selected", "route-from", "route-to");
     });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+    document.querySelectorAll(".route-arrow").forEach(el => el.remove());
 
-    document.getElementById("fen-metni").textContent = aktifFen;
-    fenCiz(aktifFen, gridSatir, gridSutun);
-    navButonlariGuncelle();
-    
-    // Kullanıcının rengi için yasal hamleleri yenile
-    mevcutYasalHamleler = [];
-    yasalHamleleriGetir();
+    document.getElementById("fen-display").textContent = activeFen;
+    renderFenOnBoard(activeFen, gridRanks, gridFiles);
+    updateNavButtons();
+
+    legalMovesList = [];
+    fetchLegalMoves();
 }
 
-function basaDon() {
-    if (fenGecmisi.length > 0 && gecmisIndeks > 0) {
-        navigasyonYukle(0);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Başa Dön]" : "[Start]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
+function resetToStart() {
+    if (fenHistory.length > 0 && historyIndex > 0) {
+        loadHistoryState(0);
+        moveHistoryList.push(currentLang === "tr" ? "[Başa Dön]" : "[Start]");
+        if (lastReportData) {
+            lastReportData.fen = activeFen;
+            lastReportData.timestamp = new Date();
         }
     }
 }
 
-function geriAl() {
-    if (gecmisIndeks > 0) {
-        navigasyonYukle(gecmisIndeks - 1);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Geri]" : "[Back]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
+function stepBackward() {
+    if (historyIndex > 0) {
+        loadHistoryState(historyIndex - 1);
+        moveHistoryList.push(currentLang === "tr" ? "[Geri]" : "[Back]");
+        if (lastReportData) {
+            lastReportData.fen = activeFen;
+            lastReportData.timestamp = new Date();
         }
     }
 }
 
-function ileriAl() {
-    if (gecmisIndeks < fenGecmisi.length - 1) {
-        navigasyonYukle(gecmisIndeks + 1);
-        hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[İleri]" : "[Forward]");
-        if (sonRaporVerisi) {
-            sonRaporVerisi.fen = aktifFen;
-            sonRaporVerisi.tarih_obj = new Date();
+function stepForward() {
+    if (historyIndex < fenHistory.length - 1) {
+        loadHistoryState(historyIndex + 1);
+        moveHistoryList.push(currentLang === "tr" ? "[İleri]" : "[Forward]");
+        if (lastReportData) {
+            lastReportData.fen = activeFen;
+            lastReportData.timestamp = new Date();
         }
     }
 }
 
 // =========================================================================
-// TAHTA ÇİZİMİ (DİNAMİK GRID) & TERS ÇEVİRME (FLIP BOARD)
+// DYNAMIC GRID RENDERING & BOARD FLIP
 // =========================================================================
-let tahtaTersMi = false;
+let isBoardFlipped = false;
 
-function fenSiraGuncelle(fen, yeniSira) {
+function updateFenTurn(fen, nextTurn) {
     if (!fen) return "";
-    const parcalar = fen.trim().split(/\s+/);
-    if (parcalar.length >= 2) {
-        parcalar[1] = yeniSira;
-        return parcalar.join(" ");
+    const parts = fen.trim().split(/\s+/);
+    if (parts.length >= 2) {
+        parts[1] = nextTurn;
+        return parts.join(" ");
     }
-    return `${fen.trim()} ${yeniSira} - - 0 1`;
+    return `${fen.trim()} ${nextTurn} - - 0 1`;
 }
 
-function tahtayiTersCevir() {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    tahtaTersMi = !tahtaTersMi;
-    tahtaYonuUygula();
+function flipBoard() {
+    if (typeof stopAutoSimulation === "function") stopAutoSimulation();
+    isBoardFlipped = !isBoardFlipped;
+    applyBoardOrientation();
 
-    // Seçili kare varsa temizle
-    seciliKareId = null;
-    document.querySelectorAll(".secili").forEach(el => el.classList.remove("secili"));
+    selectedSquareId = null;
+    document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
 
-    // Tahta ters çevrilince kullanıcı Siyah ('b'), düzken Beyaz ('w') ile oynar
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    siraKimde = kullaniciRengi;
-    if (aktifFen) {
-        aktifFen = fenSiraGuncelle(aktifFen, kullaniciRengi);
-        document.getElementById("fen-metni").textContent = aktifFen;
-        if (gecmisIndeks >= 0 && fenGecmisi[gecmisIndeks]) {
-            fenGecmisi[gecmisIndeks] = aktifFen;
+    const userColor = isBoardFlipped ? "b" : "w";
+    activeTurn = userColor;
+    if (activeFen) {
+        activeFen = updateFenTurn(activeFen, userColor);
+        document.getElementById("fen-display").textContent = activeFen;
+        if (historyIndex >= 0 && fenHistory[historyIndex]) {
+            fenHistory[historyIndex] = activeFen;
         }
     }
-    mevcutYasalHamleler = [];
-    yasalHamleleriGetir();
+    legalMovesList = [];
+    fetchLegalMoves();
 
-    hamleGecmisiListesi.push(mevcutDil === 'tr' ? "[Ters Çevir]" : "[Flip]");
-    if (sonRaporVerisi) {
-        sonRaporVerisi.fen = aktifFen;
-        sonRaporVerisi.tarih_obj = new Date();
+    moveHistoryList.push(currentLang === "tr" ? "[Ters Çevir]" : "[Flip]");
+    if (lastReportData) {
+        lastReportData.fen = activeFen;
+        lastReportData.timestamp = new Date();
     }
 }
 
-function tahtaYonuUygula() {
-    const grid = document.getElementById("wsn-grid");
+function applyBoardOrientation() {
+    const grid = document.getElementById("board-grid");
     if (!grid) return;
-    const kareler = Array.from(grid.querySelectorAll(".kare"));
-    if (kareler.length === 0) return;
+    const squares = Array.from(grid.querySelectorAll(".square"));
+    if (squares.length === 0) return;
 
-    const satir = gridSatir || 8;
-    const sutun = gridSutun || 8;
-    const harfler = "abcdefghijklmnopqrstuvwxyz";
+    const ranks = gridRanks || 8;
+    const files = gridFiles || 8;
+    const fileLetters = "abcdefghijklmnopqrstuvwxyz";
 
-    // Kareleri normal (0..N-1) veya ters (N-1..0) sıraya göre yeniden diz
-    kareler.sort((a, b) => {
-        const [, sa, sta] = a.id.split('-').map(Number);
-        const [, sb, stb] = b.id.split('-').map(Number);
-        const idxA = sa * sutun + sta;
-        const idxB = sb * sutun + stb;
-        return tahtaTersMi ? (idxB - idxA) : (idxA - idxB);
+    squares.sort((a, b) => {
+        const [, ra, ca] = a.id.split("-").map(Number);
+        const [, rb, cb] = b.id.split("-").map(Number);
+        const idxA = ra * files + ca;
+        const idxB = rb * files + cb;
+        return isBoardFlipped ? (idxB - idxA) : (idxA - idxB);
     });
 
-    kareler.forEach(kare => {
-        grid.appendChild(kare);
-        kare.querySelectorAll(".coord-rank, .coord-file").forEach(el => el.remove());
+    squares.forEach(square => {
+        grid.appendChild(square);
+        square.querySelectorAll(".coord-rank, .coord-file").forEach(el => el.remove());
 
-        const [, s, st] = kare.id.split('-').map(Number);
-        const solSutunMu = tahtaTersMi ? (st === sutun - 1) : (st === 0);
-        const altSatirMi = tahtaTersMi ? (s === 0) : (s === satir - 1);
+        const [, r, c] = square.id.split("-").map(Number);
+        const isLeftColumn = isBoardFlipped ? (c === files - 1) : (c === 0);
+        const isBottomRow = isBoardFlipped ? (r === 0) : (r === ranks - 1);
 
-        if (solSutunMu) {
-            const spanR = document.createElement("span");
-            spanR.className = "coord-rank";
-            spanR.innerText = (satir - s);
-            kare.appendChild(spanR);
+        if (isLeftColumn) {
+            const spanRank = document.createElement("span");
+            spanRank.className = "coord-rank";
+            spanRank.innerText = (ranks - r);
+            square.appendChild(spanRank);
         }
-        if (altSatirMi) {
-            const spanF = document.createElement("span");
-            spanF.className = "coord-file";
-            spanF.innerText = harfler[st];
-            kare.appendChild(spanF);
+        if (isBottomRow) {
+            const spanFile = document.createElement("span");
+            spanFile.className = "coord-file";
+            spanFile.innerText = fileLetters[c];
+            square.appendChild(spanFile);
         }
     });
 }
 
-function tahtaOlustur(satir = 8, sutun = 8) {
-    const grid = document.getElementById("wsn-grid");
+function createBoardGrid(ranks = 8, files = 8) {
+    const grid = document.getElementById("board-grid");
     grid.innerHTML = "";
-    grid.style.gridTemplateColumns = `repeat(${sutun}, minmax(28px, 45px))`;
-    grid.style.gridTemplateRows = `repeat(${satir}, minmax(28px, 45px))`;
+    grid.style.gridTemplateColumns = `repeat(${files}, minmax(28px, 45px))`;
+    grid.style.gridTemplateRows = `repeat(${ranks}, minmax(28px, 45px))`;
 
-    const harfler = "abcdefghijklmnopqrstuvwxyz";
-    let acikKare = true;
-    for (let s = 0; s < satir; s++) {
-        for (let st = 0; st < sutun; st++) {
-            const kare = document.createElement("div");
-            kare.className = "kare " + (acikKare ? "acik" : "koyu");
-            kare.id = `kare-${s}-${st}`;
-            kare.addEventListener('click', kareTiklandi);
-            
-            // Satır numarası (Sadece ilk sütunda)
-            if (st === 0) {
-                const spanR = document.createElement("span");
-                spanR.className = "coord-rank";
-                spanR.innerText = (satir - s);
-                kare.appendChild(spanR);
+    const fileLetters = "abcdefghijklmnopqrstuvwxyz";
+    let isLightSquare = true;
+    for (let r = 0; r < ranks; r++) {
+        for (let c = 0; c < files; c++) {
+            const square = document.createElement("div");
+            square.className = "square " + (isLightSquare ? "light" : "dark");
+            square.id = `square-${r}-${c}`;
+            square.addEventListener("click", handleSquareClick);
+
+            if (c === 0) {
+                const spanRank = document.createElement("span");
+                spanRank.className = "coord-rank";
+                spanRank.innerText = (ranks - r);
+                square.appendChild(spanRank);
             }
-            // Sütun harfi (Sadece son satırda)
-            if (s === satir - 1) {
-                const spanF = document.createElement("span");
-                spanF.className = "coord-file";
-                spanF.innerText = harfler[st];
-                kare.appendChild(spanF);
+            if (r === ranks - 1) {
+                const spanFile = document.createElement("span");
+                spanFile.className = "coord-file";
+                spanFile.innerText = fileLetters[c];
+                square.appendChild(spanFile);
             }
-            
-            grid.appendChild(kare);
-            acikKare = !acikKare;
+
+            grid.appendChild(square);
+            isLightSquare = !isLightSquare;
         }
-        if (sutun % 2 === 0) acikKare = !acikKare;
+        if (files % 2 === 0) isLightSquare = !isLightSquare;
     }
 
-    if (tahtaTersMi) {
-        tahtaYonuUygula();
+    if (isBoardFlipped) {
+        applyBoardOrientation();
     }
 }
 
-const P_MAP = {
-    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+const PIECE_ICONS = {
+    "K": "♔", "Q": "♕", "R": "♖", "B": "♗", "N": "♘", "P": "♙",
+    "k": "♚", "q": "♛", "r": "♜", "b": "♝", "n": "♞", "p": "♟"
 };
 
-// Şatranç (Shatranj) modunda mı? Fairy-Stockfish shatranj'da FEN'deki
-// 'Q' = Ferz (1 kare çapraz), 'B' = Alfil (2 kare çapraz zıplar) taşıdır.
-function satrancModuMu() {
-    return !!(aktifVariant && (aktifVariant.ustVaryant === 'shatranj' || aktifVariant.varyantAdi === 'shatranj'));
-}
-
-function tasGoster(tasNode, k) {
-    tasNode.dataset.tas = k;
-    const ikon = P_MAP[k] || k;
-    const ust = k.toUpperCase();
-    if (satrancModuMu() && (ust === 'Q' || ust === 'B')) {
-        const etiket = ust === 'Q' ? 'F' : 'A';
-        const baslik = ust === 'Q' ? 'Ferz' : 'Alfil';
-        tasNode.innerHTML = `${ikon}<sup class="tas-etiket">${etiket}</sup>`;
-        tasNode.title = baslik;
+function renderPieceIcon(pieceNode, pieceChar) {
+    pieceNode.dataset.piece = pieceChar;
+    const icon = PIECE_ICONS[pieceChar] || pieceChar;
+    const upper = pieceChar.toUpperCase();
+    if (isShatranjMode() && (upper === "Q" || upper === "B")) {
+        const badge = upper === "Q" ? "F" : "A";
+        const title = upper === "Q" ? "Ferz" : "Alfil";
+        pieceNode.innerHTML = `${icon}<sup class="piece-badge">${badge}</sup>`;
+        pieceNode.title = title;
     } else {
-        tasNode.textContent = ikon;
-        tasNode.removeAttribute('title');
+        pieceNode.textContent = icon;
+        pieceNode.removeAttribute("title");
     }
 }
 
-function fenCiz(fenMetni, satir = 8, sutun = 8) {
-    tahtaOlustur(satir, sutun);
+function renderFenOnBoard(fenText, ranks = 8, files = 8) {
+    createBoardGrid(ranks, files);
 
-    let sadeceDizilim = fenMetni.split(" ")[0];
-    if (sadeceDizilim.includes('[')) {
-        sadeceDizilim = sadeceDizilim.split('[')[0];
+    let boardLayout = fenText.split(" ")[0];
+    if (boardLayout.includes("[")) {
+        boardLayout = boardLayout.split("[")[0];
     }
 
-    const fenSatirlari = sadeceDizilim.split("/");
+    const fenRows = boardLayout.split("/");
 
-    for (let i = 0; i < fenSatirlari.length; i++) {
-        if (i >= satir) break;
-        const karakterler = fenSatirlari[i].split('');
-        let sutunIdx = 0;
-        let sayi = "";
+    for (let r = 0; r < fenRows.length; r++) {
+        if (r >= ranks) break;
+        const chars = fenRows[r].split("");
+        let colIdx = 0;
+        let digitBuffer = "";
 
-        for (let j = 0; j < karakterler.length; j++) {
-            const k = karakterler[j];
-            if (!isNaN(k)) {
-                sayi += k;
+        for (let j = 0; j < chars.length; j++) {
+            const ch = chars[j];
+            if (!isNaN(ch)) {
+                digitBuffer += ch;
             } else {
-                if (sayi) {
-                    sutunIdx += parseInt(sayi);
-                    sayi = "";
+                if (digitBuffer) {
+                    colIdx += parseInt(digitBuffer);
+                    digitBuffer = "";
                 }
-                const kare = document.getElementById(`kare-${i}-${sutunIdx}`);
-                if (kare) {
-                    const tasNode = document.createElement("span");
-                    tasNode.className = "tas-val";
-                    tasGoster(tasNode, k); // Gerçek FEN harfini sakla + ikon göster
-                    kare.appendChild(tasNode);
-                    kare.classList.add(k === k.toUpperCase() ? "tas-W" : "tas-B");
+                const square = document.getElementById(`square-${r}-${colIdx}`);
+                if (square) {
+                    const pieceNode = document.createElement("span");
+                    pieceNode.className = "piece-val";
+                    renderPieceIcon(pieceNode, ch);
+                    square.appendChild(pieceNode);
+                    square.classList.add(ch === ch.toUpperCase() ? "piece-W" : "piece-B");
                 }
-                sutunIdx++;
+                colIdx++;
             }
         }
-        if (sayi) sutunIdx += parseInt(sayi);
     }
 }
 
-function karedekiTasiAl(kare) {
-    if (!kare) return "";
-    const tasNode = kare.querySelector(".tas-val");
-    return tasNode ? (tasNode.dataset.tas || "") : "";
+function getPieceAtSquare(square) {
+    if (!square) return "";
+    const pieceNode = square.querySelector(".piece-val");
+    return pieceNode ? (pieceNode.dataset.piece || "") : "";
 }
 
-function kareyeTasKoy(kare, tas) {
-    let tasNode = kare.querySelector(".tas-val");
-    if (!tasNode && tas) {
-        tasNode = document.createElement("span");
-        tasNode.className = "tas-val";
-        kare.appendChild(tasNode);
+function setPieceAtSquare(square, pieceChar) {
+    let pieceNode = square.querySelector(".piece-val");
+    if (!pieceNode && pieceChar) {
+        pieceNode = document.createElement("span");
+        pieceNode.className = "piece-val";
+        square.appendChild(pieceNode);
     }
-    if (tasNode) {
-        if (tas) {
-            tasGoster(tasNode, tas);
+    if (pieceNode) {
+        if (pieceChar) {
+            renderPieceIcon(pieceNode, pieceChar);
         } else {
-            tasNode.remove();
+            pieceNode.remove();
         }
     }
 }
 
-function tahtaToFen(sira = 'w') {
-    const satir = aktifVariant ? aktifVariant.maxRank : 8;
-    const sutun = aktifVariant ? aktifVariant.maxFile : 8;
-    let fenSatirlari = [];
+function boardToFen(turnColor = "w") {
+    const ranks = activeVariant ? activeVariant.maxRank : 8;
+    const files = activeVariant ? activeVariant.maxFile : 8;
+    const fenRows = [];
 
-    for (let i = 0; i < satir; i++) {
-        let bosSayaci = 0;
-        let satirString = "";
-        for (let j = 0; j < sutun; j++) {
-            const kare = document.getElementById(`kare-${i}-${j}`);
-            const tas = karedekiTasiAl(kare);
-            
-            if (tas) {
-                if (bosSayaci > 0) {
-                    satirString += bosSayaci;
-                    bosSayaci = 0;
+    for (let r = 0; r < ranks; r++) {
+        let emptyCount = 0;
+        let rowStr = "";
+        for (let c = 0; c < files; c++) {
+            const square = document.getElementById(`square-${r}-${c}`);
+            const piece = getPieceAtSquare(square);
+
+            if (piece) {
+                if (emptyCount > 0) {
+                    rowStr += emptyCount;
+                    emptyCount = 0;
                 }
-                satirString += tas;
+                rowStr += piece;
             } else {
-                bosSayaci++;
+                emptyCount++;
             }
         }
-        if (bosSayaci > 0) {
-            satirString += bosSayaci;
+        if (emptyCount > 0) {
+            rowStr += emptyCount;
         }
-        fenSatirlari.push(satirString);
+        fenRows.push(rowStr);
     }
-    
-    const boardPart = fenSatirlari.join("/");
-    return `${boardPart} ${sira} - - 0 1`;
+
+    return `${fenRows.join("/")} ${turnColor} - - 0 1`;
 }
 
-let mevcutYasalHamleler = [];
+// =========================================================================
+// LEGAL MOVES & INTERACTIVE BOARD PLAY
+// =========================================================================
+let legalMovesList = [];
 
-function koordinatToHamle(kalkisId, varisId) {
-    const sutunHarfleri = "abcdefghij";
-    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
-    
-    const kParts = kalkisId.split('-');
-    const vParts = varisId.split('-');
-    
-    const kRow = parseInt(kParts[1]), kCol = parseInt(kParts[2]);
-    const vRow = parseInt(vParts[1]), vCol = parseInt(vParts[2]);
-    
-    const kStr = sutunHarfleri[kCol] + (toplam - kRow);
-    const vStr = sutunHarfleri[vCol] + (toplam - vRow);
-    
-    return kStr + vStr;
+function coordsToUciMove(fromSquareId, toSquareId) {
+    const fileLetters = "abcdefghij";
+    const totalRanks = activeVariant ? activeVariant.maxRank : 8;
+
+    const fromParts = fromSquareId.split("-");
+    const toParts = toSquareId.split("-");
+
+    const fromRow = parseInt(fromParts[1]), fromCol = parseInt(fromParts[2]);
+    const toRow = parseInt(toParts[1]), toCol = parseInt(toParts[2]);
+
+    const fromStr = fileLetters[fromCol] + (totalRanks - fromRow);
+    const toStr = fileLetters[toCol] + (totalRanks - toRow);
+
+    return fromStr + toStr;
 }
 
-async function yasalHamleleriGetir() {
-    mevcutYasalHamleler = [];
+async function fetchLegalMoves() {
+    legalMovesList = [];
     const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+    if (activeFen) payload.fen = activeFen;
+    if (activeVariant && activeVariant.variantName) payload.variant_name = activeVariant.variantName;
+    if (activeIniContent) payload.variants_ini = activeIniContent;
 
-    const endpoints = [
-        `${API_BASE}/api/legalmoves`,
-        "https://wsn-api.onrender.com/api/legalmoves"
-    ];
+    try {
+        const controller = new AbortController();
+        const timerId = setTimeout(() => controller.abort(), 60000);
+        const resp = await fetch(`${API_BASE}/api/legalmoves`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
+        clearTimeout(timerId);
 
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data.legal_moves) {
-                    mevcutYasalHamleler = data.legal_moves;
-                    break;
-                }
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.legal_moves) {
+                legalMovesList = data.legal_moves;
             }
-        } catch (e) {
-            // Sessizce geç
         }
+    } catch (err) {
+        // Ignore network error during background legal move fetch
     }
 }
 
-function kareTiklandi(event) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    const motorRengi = tahtaTersMi ? 'w' : 'b';
-    if (siraKimde !== kullaniciRengi) return; // Sadece kullanıcının kendi renginin sırasıysa oynayabilir
+function handleSquareClick(event) {
+    if (typeof stopAutoSimulation === "function") stopAutoSimulation();
+    const userColor = isBoardFlipped ? "b" : "w";
+    const engineColor = isBoardFlipped ? "w" : "b";
+    if (activeTurn !== userColor) return;
 
-    const kare = event.currentTarget;
-    const tas = karedekiTasiAl(kare);
-    const isOwnPiece = tas && (kullaniciRengi === 'w' ? (tas === tas.toUpperCase()) : (tas === tas.toLowerCase()));
+    const square = event.currentTarget;
+    const piece = getPieceAtSquare(square);
+    const isOwnPiece = piece && (userColor === "w" ? (piece === piece.toUpperCase()) : (piece === piece.toLowerCase()));
 
-    if (seciliKareId) {
-        const seciliKare = document.getElementById(seciliKareId);
-        
-        // Aynı kareye tıklandıysa seçimi kaldır
-        if (seciliKareId === kare.id) {
-            seciliKare.classList.remove("secili");
-            seciliKareId = null;
+    if (selectedSquareId) {
+        const selectedSquare = document.getElementById(selectedSquareId);
+
+        if (selectedSquareId === square.id) {
+            selectedSquare.classList.remove("selected");
+            selectedSquareId = null;
             return;
         }
-        
-        // Başka bir kendi taşına tıklandıysa seçimi ona geçir
+
         if (isOwnPiece) {
-            seciliKare.classList.remove("secili");
-            kare.classList.add("secili");
-            seciliKareId = kare.id;
+            selectedSquare.classList.remove("selected");
+            square.classList.add("selected");
+            selectedSquareId = square.id;
             return;
         }
-        
-        // Yasal hamle kontrolü (eğer yasalHamleler listesi doluysa)
-        const denenenHamle = koordinatToHamle(seciliKareId, kare.id);
-        let promosyonlu = null;
-        
-        if (mevcutYasalHamleler && mevcutYasalHamleler.length > 0) {
-            promosyonlu = mevcutYasalHamleler.find(h => h.startsWith(denenenHamle));
-            if (!promosyonlu) {
-                // Yasal olmayan hamle denendi
-                kare.style.backgroundColor = "#ff5252";
-                setTimeout(() => {
-                    kare.style.backgroundColor = "";
-                }, 300);
-                seciliKare.classList.remove("secili");
-                seciliKareId = null;
+
+        const candidateMove = coordsToUciMove(selectedSquareId, square.id);
+        let matchedLegalMove = null;
+
+        if (legalMovesList && legalMovesList.length > 0) {
+            matchedLegalMove = legalMovesList.find(m => m.startsWith(candidateMove));
+            if (!matchedLegalMove) {
+                square.style.backgroundColor = "#ff5252";
+                setTimeout(() => { square.style.backgroundColor = ""; }, 300);
+                selectedSquare.classList.remove("selected");
+                selectedSquareId = null;
                 return;
             }
         }
-        
-        // Hamleyi Uygula (seciliKare -> kare)
-        let movingTas = karedekiTasiAl(seciliKare);
-        if (promosyonlu && promosyonlu.length === 5 && !isNaN(promosyonlu[3])) {
-            const promoChar = promosyonlu[4];
-            if (promoChar) movingTas = (kullaniciRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
+
+        let movingPiece = getPieceAtSquare(selectedSquare);
+        if (matchedLegalMove && matchedLegalMove.length === 5 && !isNaN(matchedLegalMove[3])) {
+            const promoChar = matchedLegalMove[4];
+            if (promoChar) movingPiece = (userColor === "w") ? promoChar.toUpperCase() : promoChar.toLowerCase();
         }
-        kareyeTasKoy(kare, movingTas);
-        
-        // Sadece taş rengi sınıflarını taşı (acik/koyu arka planı bozma)
-        kare.classList.remove("tas-W", "tas-B");
-        if (seciliKare.classList.contains("tas-W")) kare.classList.add("tas-W");
-        if (seciliKare.classList.contains("tas-B")) kare.classList.add("tas-B");
-        kare.classList.remove("secili");
-        
-        // Rota vurgusunu temizle (kullanıcı hamlesi de belli olsun)
-        document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-            el.classList.remove("rota-kalkis", "rota-varis");
+        setPieceAtSquare(square, movingPiece);
+
+        square.classList.remove("piece-W", "piece-B");
+        if (selectedSquare.classList.contains("piece-W")) square.classList.add("piece-W");
+        if (selectedSquare.classList.contains("piece-B")) square.classList.add("piece-B");
+        square.classList.remove("selected");
+
+        document.querySelectorAll(".route-from, .route-to").forEach(el => {
+            el.classList.remove("route-from", "route-to");
         });
-        kare.classList.add("rota-varis");
-        seciliKare.classList.add("rota-kalkis");
+        square.classList.add("route-to");
+        selectedSquare.classList.add("route-from");
 
-        const secilenHamleStr = promosyonlu || koordinatToHamle(seciliKareId, kare.id);
+        const executedMoveStr = matchedLegalMove || candidateMove;
 
-        kareyeTasKoy(seciliKare, "");
-        seciliKare.classList.remove("tas-W", "tas-B", "secili");
+        setPieceAtSquare(selectedSquare, "");
+        selectedSquare.classList.remove("piece-W", "piece-B", "selected");
 
-        seciliKareId = null;
-        siraKimde = motorRengi;
-        
-        // Yeni FEN üret ve motora gönder
-        aktifFen = tahtaToFen(motorRengi);
-        document.getElementById("fen-metni").textContent = aktifFen;
-        
-        // Hamleyi geçmişe ekle
-        gecmiseHamleEkle(aktifFen, secilenHamleStr);
-        
-        // Otomatik motoru tetikle
-        veriCek();
+        selectedSquareId = null;
+        activeTurn = engineColor;
 
-    } else {
-        // Seçili taş yoksa ve tıklanan kendi taşıysa seç
-        if (isOwnPiece) {
-            kare.classList.add("secili");
-            seciliKareId = kare.id;
-        }
+        activeFen = boardToFen(engineColor);
+        document.getElementById("fen-display").textContent = activeFen;
+
+        recordMoveToHistory(activeFen, executedMoveStr);
+        runEngineAnalysis();
+    } else if (isOwnPiece) {
+        square.classList.add("selected");
+        selectedSquareId = square.id;
     }
 }
 
-function varyantUygula(icerik) {
-    if (typeof otonomSimulasyonDurdur === 'function') otonomSimulasyonDurdur();
-    aktifIniIcerik = icerik;
-    const varyant = iniParse(aktifIniIcerik);
-    if (!varyant) return;
-    aktifVariant = varyant;
+function applyVariantConfig(iniContent) {
+    if (typeof stopAutoSimulation === "function") stopAutoSimulation();
+    activeIniContent = iniContent;
+    const variant = parseVariantIni(activeIniContent);
+    if (!variant) return;
+    activeVariant = variant;
 
-    gridSatir = varyant.maxRank || 8;
-    gridSutun = varyant.maxFile || 8;
+    gridRanks = variant.maxRank || 8;
+    gridFiles = variant.maxFile || 8;
 
-    if (varyant.startFen) {
-        const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-        siraKimde = kullaniciRengi;
-        aktifFen = fenSiraGuncelle(varyant.startFen, kullaniciRengi);
-        
-        // Geçmişi sıfırla
-        fenGecmisi = [aktifFen];
-        hamleGecmisiListesi = [];
-        gecmisIndeks = 0;
+    if (variant.startFen) {
+        const userColor = isBoardFlipped ? "b" : "w";
+        activeTurn = userColor;
+        activeFen = updateFenTurn(variant.startFen, userColor);
+
+        fenHistory = [activeFen];
+        moveHistoryList = [];
+        historyIndex = 0;
         const nav = document.getElementById("game-nav");
-        if(nav) nav.style.display = "flex";
-        navButonlariGuncelle();
-        document.getElementById("fen-metni").innerText = aktifFen;
-        document.getElementById("fen-metni").removeAttribute("data-i18n");
-        fenCiz(aktifFen, gridSatir, gridSutun);
-        mevcutYasalHamleler = [];
-        yasalHamleleriGetir();
+        if (nav) nav.style.display = "flex";
+        updateNavButtons();
+        document.getElementById("fen-display").innerText = activeFen;
+        document.getElementById("fen-display").removeAttribute("data-i18n");
+        renderFenOnBoard(activeFen, gridRanks, gridFiles);
+        legalMovesList = [];
+        fetchLegalMoves();
     } else {
-        document.getElementById("fen-metni").innerText = t("startfen_not_found");
+        document.getElementById("fen-display").innerText = t("startfen_not_found");
     }
 
-    varyantPanelGuncelle(varyant);
+    updateVariantPanel(variant);
 }
 
-// INI dosyası yükleme eventi (sayfada varsa)
-const iniUploadEl = document.getElementById('iniUpload');
-if (iniUploadEl) {
-    iniUploadEl.addEventListener('change', function(e) {
-    const dosya = e.target.files[0];
-    if (!dosya) return;
-
-    const okuyucu = new FileReader();
-    okuyucu.onload = function(e) {
-        varyantUygula(e.target.result);
-    };
-    okuyucu.readAsText(dosya);
-    });
-}
-
-function varyantDropdownDegisti() {
-    const val = document.getElementById('variant-dropdown').value;
-    if (val === 'klasik') {
-        const ini = `[chess]\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8`;
-        varyantUygula(ini);
-    } else if (val === 'nizami') {
-        const ini = `[shatranj_nizami:shatranj]\n# Shatranj - Nizami position (9th century)\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
-        varyantUygula(ini);
-    } else if (val === 'capablanca') {
+function handleVariantDropdownChange() {
+    const selectedValue = document.getElementById("variant-dropdown").value;
+    if (selectedValue === "standard") {
+        const ini = `[chess:chess]\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8`;
+        applyVariantConfig(ini);
+    } else if (selectedValue === "shatranj") {
+        const ini = `[shatranj_nizami:shatranj]\n# Shatranj - Historical 9th-century position\nstartFen = 6k1/5R2/7R/4N1Q1/8/1qn5/r2r4/2K5 w - - 0 1\nmaxRank = 8\nmaxFile = 8`;
+        applyVariantConfig(ini);
+    } else if (selectedValue === "capablanca") {
         const ini = `[capablanca:capablanca]\n# Capablanca Chess - 10x8 Extended Grid\nstartFen = rnabqkbcnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNABQKBCNR w KQkq - 0 1\nmaxRank = 8\nmaxFile = 10`;
-        varyantUygula(ini);
-    } else if (val === 'crazyhouse') {
+        applyVariantConfig(ini);
+    } else if (selectedValue === "crazyhouse") {
         const ini = `[crazyhouse:crazyhouse]\n# Crazyhouse - Captured pieces can be dropped back\nstartFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1\nmaxRank = 8\nmaxFile = 8\ndrop = true`;
-        varyantUygula(ini);
-    } else if (val === 'xiangqi') {
+        applyVariantConfig(ini);
+    } else if (selectedValue === "xiangqi") {
         const ini = `[xiangqi:xiangqi]\n# Xiangqi - Chinese Chess 10x9\nstartFen = rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1\nmaxRank = 10\nmaxFile = 9`;
-        varyantUygula(ini);
-    } else if (val && val.startsWith('custom_')) {
-        const saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
-        const scen = saved.find(s => s.id === val);
-        if (scen) {
-            // Senaryo türünü Fairy-Stockfish'in yerleşik ana varyantına eşle.
-            // ÖNEMLİ: Bölüm başlığı mutlaka "[ad:ana_varyant]" formatında olmalı;
-            // aksi halde UCI_Variant gönderilmez ve motor MODERN SATRANÇ kurallarıyla oynar.
-            const ANA_VARYANT = {
-                chess: 'chess', klasik: 'chess', custom: 'chess',
-                nizami: 'shatranj', shatranj: 'shatranj',
-                capablanca: 'capablanca', crazyhouse: 'crazyhouse', xiangqi: 'xiangqi'
+        applyVariantConfig(ini);
+    } else if (selectedValue && selectedValue.startsWith("custom_")) {
+        const saved = JSON.parse(localStorage.getItem("saved_scenarios") || "[]");
+        const scenario = saved.find(s => s.id === selectedValue);
+        if (scenario) {
+            const PARENT_VARIANT_MAP = {
+                chess: "chess", standard: "chess", custom: "chess",
+                shatranj: "shatranj", capablanca: "capablanca",
+                crazyhouse: "crazyhouse", xiangqi: "xiangqi"
             };
-            const ana = ANA_VARYANT[(scen.varyant || 'chess').toLowerCase()] || 'chess';
-            const bolumAdi = `${ana}_senaryo`;
-            let ini = `[${bolumAdi}:${ana}]\nstartFen = ${scen.fen}\nmaxRank = ${scen.maxRank || 8}\nmaxFile = ${scen.maxFile || 8}`;
-            if (scen.drop) ini += `\ndrop = true`;
-            varyantUygula(ini);
+            const rawVar = (scenario.variant || "chess").toLowerCase();
+            const parentVariant = PARENT_VARIANT_MAP[rawVar] || "chess";
+            const sectionName = `${parentVariant}_scenario`;
+            let ini = `[${sectionName}:${parentVariant}]\nstartFen = ${scenario.fen}\nmaxRank = ${scenario.maxRank || 8}\nmaxFile = ${scenario.maxFile || 8}`;
+            if (scenario.drop) ini += `\ndrop = true`;
+            applyVariantConfig(ini);
         }
     }
 }
 
-function kayitliSenaryolariDropdownaYukle() {
-    const select = document.getElementById('variant-dropdown');
+function loadSavedScenariosIntoDropdown() {
+    const select = document.getElementById("variant-dropdown");
     if (!select) return;
 
     const currentVal = select.value;
-    const existingGroup = document.getElementById('optgroup-custom-scenarios');
+    const existingGroup = document.getElementById("optgroup-custom-scenarios");
     if (existingGroup) existingGroup.remove();
 
-    let saved = JSON.parse(localStorage.getItem('wsn_saved_scenarios') || '[]');
+    const saved = JSON.parse(localStorage.getItem("saved_scenarios") || "[]");
     if (saved.length > 0) {
-        const optgroup = document.createElement('optgroup');
-        optgroup.id = 'optgroup-custom-scenarios';
-        optgroup.label = t('opt_custom_scenarios');
+        const optgroup = document.createElement("optgroup");
+        optgroup.id = "optgroup-custom-scenarios";
+        optgroup.label = t("opt_custom_scenarios");
 
-        saved.forEach(scen => {
-            if (scen.id === 'custom_seed_1' && !scen.ad_en) scen.ad_en = 'Critical Node Analysis (Endgame Test)';
-            if (scen.id === 'custom_seed_2' && !scen.ad_en) scen.ad_en = 'Extended Network Topology (Capablanca)';
-            const opt = document.createElement('option');
-            opt.value = scen.id;
-            const title = (mevcutDil === 'tr') ? (scen.ad_tr || scen.ad) : (scen.ad_en || scen.ad);
-            opt.textContent = `${title} (${scen.maxRank || 8}x${scen.maxFile || 8})`;
+        saved.forEach(scenario => {
+            const opt = document.createElement("option");
+            opt.value = scenario.id;
+            const title = (currentLang === "tr")
+                ? (scenario.name_tr || scenario.name)
+                : (scenario.name_en || scenario.name);
+            opt.textContent = `${title} (${scenario.maxRank || 8}x${scenario.maxFile || 8})`;
             optgroup.appendChild(opt);
         });
         select.appendChild(optgroup);
@@ -1331,170 +1308,163 @@ function kayitliSenaryolariDropdownaYukle() {
 }
 
 // =========================================================================
-// DIŞ API'DEN FEN ÇEKME (EXTERNAL API INTEGRATION)
+// EXTERNAL API PUZZLE INTEGRATION
 // =========================================================================
-async function apiFenCek() {
+async function fetchExternalPuzzle() {
     try {
         const url = `${API_BASE}/api/external/random-puzzle`;
-            
-        document.getElementById("fen-metni").textContent = t("waiting") || "Veri çekiliyor...";
-        
+        document.getElementById("fen-display").textContent = t("waiting") || "Loading...";
+
         const response = await fetch(url);
         const data = await response.json();
-        
+
         if (data.success && data.fen) {
-            document.getElementById("variant-dropdown").value = "klasik";
-            const ini = `[chess]\nstartFen = ${data.fen}\nmaxRank = 8\nmaxFile = 8`;
-            varyantUygula(ini);
-            veriCek('full'); 
+            document.getElementById("variant-dropdown").value = "standard";
+            const ini = `[chess:chess]\nstartFen = ${data.fen}\nmaxRank = 8\nmaxFile = 8`;
+            applyVariantConfig(ini);
+            runEngineAnalysis("full");
         } else {
-            alert(t("error") || "API Hatası: Veri çekilemedi.");
-            document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
+            alert(t("error") || "Failed to fetch external sensor data.");
+            document.getElementById("fen-display").textContent = activeFen || t("fen_none");
         }
     } catch (err) {
         console.error("API Fetch Error:", err);
-        alert(t("connection_error") || "Connection Error! Backend may be offline.");
-        document.getElementById("fen-metni").textContent = aktifFen || t("fen_none");
+        alert(t("connection_error") || "Connection Error!");
+        document.getElementById("fen-display").textContent = activeFen || t("fen_none");
     }
 }
 
 // =========================================================================
-// API VERİ ÇEKME — Varyant entegreli
+// ENGINE DECISION ANALYSIS
 // =========================================================================
-let sonCpSkoru = 0;
+let lastCpScore = 0;
+let lastReportData = null;
+let lastEngineResponse = null;
+let filterApplied = false;
 
-// Motor skorunu ekranda gösterilecek metne çevirir (CP veya Mat)
-function skorMetni(data) {
-    if (data.mat_skoru !== null && data.mat_skoru !== undefined) {
-        const n = Math.abs(data.mat_skoru);
-        return data.mat_skoru > 0 ? t("mate_for_side", { n }) : t("mate_against_side", { n });
+function formatScoreLabel(data) {
+    if (data.mate_score !== null && data.mate_score !== undefined) {
+        const n = Math.abs(data.mate_score);
+        return data.mate_score > 0 ? t("mate_for_side", { n }) : t("mate_against_side", { n });
     }
-    if (data.arama_modu === 'mate' && data.mat_hamle) {
-        return t("mate_not_found", { n: data.mat_hamle, cp: data.cp_skoru !== null ? data.cp_skoru : 0 });
+    if (data.search_mode === "mate" && data.mate_moves) {
+        return t("mate_not_found", { n: data.mate_moves, cp: data.cp_score !== null ? data.cp_score : 0 });
     }
-    return data.cp_skoru !== null && data.cp_skoru !== undefined ? data.cp_skoru : "0";
+    return data.cp_score !== null && data.cp_score !== undefined ? data.cp_score : "0";
 }
 
-// Filtre karşılaştırması için mat skorunu CP eşdeğerine çevirir
-// (mat bulmak her CP eşiğinden üstün, mat olmak her eşiğin altındadır)
-function skorEsdegerCp(data) {
-    if (data.mat_skoru !== null && data.mat_skoru !== undefined) {
-        return data.mat_skoru > 0 ? (100000 - data.mat_skoru) : (-100000 - data.mat_skoru);
+function getEquivalentCpScore(data) {
+    if (data.mate_score !== null && data.mate_score !== undefined) {
+        return data.mate_score > 0 ? (100000 - data.mate_score) : (-100000 - data.mate_score);
     }
-    return data.cp_skoru || 0;
+    return data.cp_score || 0;
 }
 
-async function veriCek(type = 'next') {
-    const btnTetikle = document.getElementById("btn-tetikle");
+async function runEngineAnalysis(mode = "next") {
+    const btnTrigger = document.getElementById("btn-trigger");
     const bestmoveEl = document.getElementById("bestmove");
     const fullSolEl = document.getElementById("full-solution");
     const cpEl = document.getElementById("cp");
-    const filtreEl = document.getElementById("filtre-sonuc");
+    const filterEl = document.getElementById("filter-result");
 
-    if (btnTetikle) btnTetikle.disabled = true;
-    
+    if (btnTrigger) btnTrigger.disabled = true;
+    filterApplied = false;
+
     bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
     bestmoveEl.removeAttribute("data-i18n");
     cpEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
     cpEl.removeAttribute("data-i18n");
-    filtreEl.textContent = t("data_waiting");
-    filtreEl.removeAttribute("data-i18n");
+    filterEl.setAttribute("data-i18n", "data_waiting");
+    filterEl.textContent = t("data_waiting");
+    filterEl.style.color = "#ffeb3b";
 
-    if (fullSolEl && (type === 'full' || type === 'mate')) {
+    if (fullSolEl && (mode === "full" || mode === "mate")) {
         fullSolEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
         fullSolEl.removeAttribute("data-i18n");
     }
 
     const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+    if (activeFen) payload.fen = activeFen;
+    if (activeVariant && activeVariant.variantName) payload.variant_name = activeVariant.variantName;
+    if (activeIniContent) payload.variants_ini = activeIniContent;
     const engineDepthEl = document.getElementById("engine-depth");
-    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
-    if (type === 'mate') {
-        payload.mod = 'mate';
-        const matEl = document.getElementById("mate-moves");
-        payload.mat_hamle = matEl ? (parseInt(matEl.value) || 8) : 8;
+    if (engineDepthEl) payload.depth = engineDepthEl.value;
+    if (mode === "mate") {
+        payload.mode = "mate";
+        const mateInputEl = document.getElementById("mate-moves");
+        payload.mate_moves = mateInputEl ? (parseInt(mateInputEl.value) || 8) : 8;
     }
 
-    const endpoints = [
-        `${API_BASE}/api/karar`,
-        "https://wsn-api.onrender.com/api/karar"
-    ];
+    let isSuccess = false;
 
-    let basarili = false;
+    try {
+        const controller = new AbortController();
+        const timerId = setTimeout(() => controller.abort(), 60000);
 
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000); // 60 saniye (Render uyanması için)
+        const resp = await fetch(`${API_BASE}/api/decision`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
+        clearTimeout(timerId);
 
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
+        if (!resp.ok) throw new Error("Server status " + resp.status);
 
-            if (!resp.ok) throw new Error("Server status " + resp.status);
+        const data = await resp.json();
 
-            const data = await resp.json();
+        if (data.error) {
+            bestmoveEl.textContent = `${t("error")}: ${data.error}`;
+            cpEl.textContent = t("error");
+            if (fullSolEl) fullSolEl.textContent = t("error");
+        } else {
+            lastEngineResponse = data;
+            bestmoveEl.textContent = data.bestmove || t("error");
 
-            if (data.hata) {
-                bestmoveEl.textContent = `${t("error")}: ${data.hata}`;
-                cpEl.textContent = t("error");
-                if (fullSolEl) fullSolEl.textContent = t("error");
-            } else {
-                bestmoveEl.textContent = data.bestmove || t("error");
-                
-                if (fullSolEl && data.full_solution) {
-                    fullSolEl.textContent = data.full_solution;
-                } else if (fullSolEl) {
-                    fullSolEl.textContent = "-";
-                }
-
-                cpEl.textContent = skorMetni(data);
-                sonCpSkoru = skorEsdegerCp(data);
-
-                const motorVaryant = document.getElementById("motor-varyant");
-                motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
-
-                // Rota vurgulama sadece 'next' için
-                if (data.bestmove && type === 'next') {
-                    rotaVurgula(data.bestmove);
-                }
-
-                // Rapor verilerini sakla (Tüm veriler ham halde saklanır, indirme anında dile göre şekillenir)
-                sonRaporVerisi = {
-                    tarih_obj: new Date(),
-                    varyant: data.varyant || "standart",
-                    fen: data.fen || "startpos",
-                    bestmove: data.bestmove,
-                    full_solution: data.full_solution,
-                    cp_skoru: data.cp_skoru,
-                    mat_skoru: data.mat_skoru,
-                    skor_metni: String(skorMetni(data)),
-                    arama_modu: data.arama_modu || 'depth',
-                    gecikme_ms: data.gecikme_ms,
-                    motor: data.motor,
-                    derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
-                    aktif_varyant_obj: aktifVariant,
-                    filtre_esik: parseInt(document.getElementById("cp-esik").value),
-                    filtre_onay: skorEsdegerCp(data) >= parseInt(document.getElementById("cp-esik").value)
-                };
-                const reportBtns = document.getElementById("report-buttons");
-                if(reportBtns) reportBtns.style.display = "flex";
+            if (fullSolEl && data.full_solution) {
+                fullSolEl.textContent = data.full_solution;
+            } else if (fullSolEl) {
+                fullSolEl.textContent = "-";
             }
 
-            basarili = true;
-            break;
-        } catch (err) {
-            console.warn(`Fetch error for ${url}:`, err);
+            cpEl.textContent = formatScoreLabel(data);
+            lastCpScore = getEquivalentCpScore(data);
+
+            const rawVar = data.variant || (activeVariant && activeVariant.variantName) || "chess";
+            const engineVariantEl = document.getElementById("engine-variant");
+            engineVariantEl.textContent = `${formatVariantDisplayName(rawVar)} (${data.latency_ms}ms)`;
+
+            if (data.bestmove && mode === "next") {
+                highlightRouteOnBoard(data.bestmove);
+            }
+
+            lastReportData = {
+                timestamp: new Date(),
+                variant: rawVar,
+                fen: data.fen || "startpos",
+                bestmove: data.bestmove,
+                full_solution: data.full_solution,
+                cp_score: data.cp_score,
+                mate_score: data.mate_score,
+                score_label: String(formatScoreLabel(data)),
+                search_mode: data.search_mode || "depth",
+                latency_ms: data.latency_ms,
+                engine: data.engine,
+                depth: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
+                active_variant_obj: activeVariant,
+                filter_threshold: parseInt(document.getElementById("cp-threshold").value),
+                filter_approved: getEquivalentCpScore(data) >= parseInt(document.getElementById("cp-threshold").value)
+            };
+            const reportBtns = document.getElementById("report-buttons");
+            if (reportBtns) reportBtns.style.display = "flex";
         }
+
+        isSuccess = true;
+    } catch (err) {
+        console.warn("Engine analysis fetch error:", err);
     }
 
-    if (!basarili) {
+    if (!isSuccess) {
         bestmoveEl.setAttribute("data-i18n", "connection_error_timeout");
         bestmoveEl.textContent = t("connection_error_timeout");
         if (fullSolEl) {
@@ -1505,179 +1475,158 @@ async function veriCek(type = 'next') {
         cpEl.textContent = t("error");
     }
 
-    if (btnTetikle) btnTetikle.disabled = false;
+    if (btnTrigger) btnTrigger.disabled = false;
 }
 
 // =========================================================================
-// CP FİLTRELEME TEST
+// CP THRESHOLD FILTERING
 // =========================================================================
-function filtreTesti() {
-    const esik = parseInt(document.getElementById("cp-esik").value);
-    const sonucKutusu = document.getElementById("filtre-sonuc");
+function applyCpFilter() {
+    const threshold = parseInt(document.getElementById("cp-threshold").value);
+    const resultEl = document.getElementById("filter-result");
 
-    if (sonCpSkoru === 0 || isNaN(sonCpSkoru)) {
-        sonucKutusu.textContent = t("need_cp_first");
-        sonucKutusu.style.color = "#ffeb3b";
+    if (lastCpScore === 0 || isNaN(lastCpScore)) {
+        filterApplied = false;
+        resultEl.setAttribute("data-i18n", "need_cp_first");
+        resultEl.textContent = t("need_cp_first");
+        resultEl.style.color = "#ffeb3b";
         return;
     }
 
-    if (sonCpSkoru >= esik) {
-        sonucKutusu.textContent = t("filter_success", { cp: sonCpSkoru, threshold: esik });
-        sonucKutusu.style.color = "#4CAF50";
+    filterApplied = true;
+    resultEl.removeAttribute("data-i18n");
+    if (lastCpScore >= threshold) {
+        resultEl.textContent = t("filter_success", { cp: lastCpScore, threshold });
+        resultEl.style.color = "#4CAF50";
     } else {
-        sonucKutusu.textContent = t("filter_rejected", { cp: sonCpSkoru, threshold: esik });
-        sonucKutusu.style.color = "#f44336";
+        resultEl.textContent = t("filter_rejected", { cp: lastCpScore, threshold });
+        resultEl.style.color = "#f44336";
     }
 }
 
 // =========================================================================
-// ROTA VURGULAMA (BESTMOVE HIGHLIGHT)
+// ROUTE HIGHLIGHTING & ENGINE MOVE EXECUTION
 // =========================================================================
-let sonRaporVerisi = null;
+function uciMoveToCoords(uciMove) {
+    if (!uciMove || uciMove.length < 4) return null;
 
-function hamleToKoordinat(hamle) {
-    // UCI notasyonu: "g4g7" -> kalkış (g,4) hedef (g,7)
-    // Sütun: a=0, b=1, ... j=9
-    // Satır: 1=son satır, ... 10=ilk satır (FEN'de ters)
-    if (!hamle || hamle.length < 4) return null;
+    const fileLetters = "abcdefghij";
+    const fromCol = fileLetters.indexOf(uciMove[0]);
+    const toCol = fileLetters.indexOf(uciMove[2]);
 
-    const sutunHarfleri = "abcdefghij";
-    const kalkisSutun = sutunHarfleri.indexOf(hamle[0]);
-    const varisSutun = sutunHarfleri.indexOf(hamle[hamle.length === 4 ? 2 : 2]);
-
-    // Satır numarasını parse et (1 veya 2 haneli olabilir: a1 veya a10)
-    let kalkisSatirStr, varisSatirStr;
-    if (hamle.length === 5) {
-        // Ör: "a10b5" veya "a1b10" — burada uzunluğa göre ayır
-        // En yaygın: ilk 2 karakter kalkış (harf+sayı), son 2 karakter varış
-        kalkisSatirStr = hamle.substring(1, 2);
-        varisSatirStr = hamle.substring(3, 5);
-        if (isNaN(parseInt(varisSatirStr))) {
-            kalkisSatirStr = hamle.substring(1, 3);
-            varisSatirStr = hamle.substring(4, 5);
+    let fromRankStr, toRankStr;
+    if (uciMove.length === 5) {
+        fromRankStr = uciMove.substring(1, 2);
+        toRankStr = uciMove.substring(3, 5);
+        if (isNaN(parseInt(toRankStr))) {
+            fromRankStr = uciMove.substring(1, 3);
+            toRankStr = uciMove.substring(4, 5);
         }
-    } else if (hamle.length === 4) {
-        kalkisSatirStr = hamle[1];
-        varisSatirStr = hamle[3];
+    } else if (uciMove.length === 4) {
+        fromRankStr = uciMove[1];
+        toRankStr = uciMove[3];
     } else {
-        // 6 karakter: a10b10
-        kalkisSatirStr = hamle.substring(1, 3);
-        varisSatirStr = hamle.substring(4, 6);
+        fromRankStr = uciMove.substring(1, 3);
+        toRankStr = uciMove.substring(4, 6);
     }
 
-    const toplam = aktifVariant ? aktifVariant.maxRank : 8;
-    const kalkisSatir = toplam - parseInt(kalkisSatirStr);
-    const varisSatir = toplam - parseInt(varisSatirStr);
+    const totalRanks = activeVariant ? activeVariant.maxRank : 8;
+    const fromRow = totalRanks - parseInt(fromRankStr);
+    const toRow = totalRanks - parseInt(toRankStr);
 
     return {
-        kalkis: { satir: kalkisSatir, sutun: kalkisSutun },
-        varis: { satir: varisSatir, sutun: varisSutun }
+        from: { row: fromRow, col: fromCol },
+        to: { row: toRow, col: toCol }
     };
 }
 
-function rotaVurgula(bestmove) {
-    // Önceki vurguları temizle
-    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("rota-kalkis", "rota-varis");
+function executeCastlingIfNeeded(movingPiece, coords, pieceColorClass) {
+    if ((movingPiece === "k" || movingPiece === "K") && Math.abs(coords.to.col - coords.from.col) === 2) {
+        const row = coords.from.row;
+        const rookFromCol = coords.to.col > coords.from.col ? 7 : 0;
+        const rookToCol = coords.to.col > coords.from.col ? 5 : 3;
+        const rookFrom = document.getElementById(`square-${row}-${rookFromCol}`);
+        const rookTo = document.getElementById(`square-${row}-${rookToCol}`);
+        if (rookFrom && rookTo) {
+            const rookPiece = getPieceAtSquare(rookFrom);
+            setPieceAtSquare(rookTo, rookPiece);
+            rookTo.classList.remove("piece-W", "piece-B");
+            if (rookFrom.classList.contains(pieceColorClass)) rookTo.classList.add(pieceColorClass);
+            setPieceAtSquare(rookFrom, "");
+            rookFrom.classList.remove("piece-W", "piece-B");
+        }
+    }
+}
+
+function highlightRouteOnBoard(bestmove) {
+    document.querySelectorAll(".route-from, .route-to").forEach(el => {
+        el.classList.remove("route-from", "route-to");
     });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+    document.querySelectorAll(".route-arrow").forEach(el => el.remove());
 
-    const koordinatlar = hamleToKoordinat(bestmove);
-    if (!koordinatlar) return;
+    const coords = uciMoveToCoords(bestmove);
+    if (!coords) return;
 
-    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
-    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
+    const fromSquare = document.getElementById(`square-${coords.from.row}-${coords.from.col}`);
+    const toSquare = document.getElementById(`square-${coords.to.row}-${coords.to.col}`);
 
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    const motorRengi = tahtaTersMi ? 'w' : 'b';
+    const userColor = isBoardFlipped ? "b" : "w";
+    const engineColor = isBoardFlipped ? "w" : "b";
 
-    if (kalkisKare && varisKare) {
-        if (siraKimde === motorRengi) {
-            // Motorun hamlesini (tahta düzken Siyah, tersken Beyaz) uygula
-            let movingTas = karedekiTasiAl(kalkisKare);
+    if (fromSquare && toSquare) {
+        if (activeTurn === engineColor) {
+            let movingPiece = getPieceAtSquare(fromSquare);
             if (bestmove.length === 5 && !isNaN(bestmove[3])) {
                 const promoChar = bestmove[4];
-                if (promoChar) movingTas = (motorRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
+                if (promoChar) movingPiece = (engineColor === "w") ? promoChar.toUpperCase() : promoChar.toLowerCase();
             }
 
-            // Rok desteği (King 2 kare yana giderse)
-            if ((movingTas === 'k' || movingTas === 'K') && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
-                const row = koordinatlar.kalkis.satir;
-                const rookClass = (motorRengi === 'w') ? "tas-W" : "tas-B";
-                if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
-                    const rookFrom = document.getElementById(`kare-${row}-7`);
-                    const rookTo = document.getElementById(`kare-${row}-5`);
-                    if (rookFrom && rookTo) {
-                        const rTas = karedekiTasiAl(rookFrom);
-                        kareyeTasKoy(rookTo, rTas);
-                        rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
-                        kareyeTasKoy(rookFrom, "");
-                        rookFrom.classList.remove("tas-W", "tas-B");
-                    }
-                } else {
-                    const rookFrom = document.getElementById(`kare-${row}-0`);
-                    const rookTo = document.getElementById(`kare-${row}-3`);
-                    if (rookFrom && rookTo) {
-                        const rTas = karedekiTasiAl(rookFrom);
-                        kareyeTasKoy(rookTo, rTas);
-                        rookTo.classList.remove("tas-W", "tas-B");
-                        if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
-                        kareyeTasKoy(rookFrom, "");
-                        rookFrom.classList.remove("tas-W", "tas-B");
-                    }
-                }
-            }
+            executeCastlingIfNeeded(movingPiece, coords, engineColor === "w" ? "piece-W" : "piece-B");
 
-            kareyeTasKoy(varisKare, movingTas);
-            
-            varisKare.classList.remove("tas-W", "tas-B");
-            if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
-            if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
-            
-            kareyeTasKoy(kalkisKare, "");
-            kalkisKare.classList.remove("tas-W", "tas-B");
+            setPieceAtSquare(toSquare, movingPiece);
+            toSquare.classList.remove("piece-W", "piece-B");
+            if (fromSquare.classList.contains("piece-W")) toSquare.classList.add("piece-W");
+            if (fromSquare.classList.contains("piece-B")) toSquare.classList.add("piece-B");
+
+            setPieceAtSquare(fromSquare, "");
+            fromSquare.classList.remove("piece-W", "piece-B");
         }
 
-        kalkisKare.classList.add("rota-kalkis");
-        varisKare.classList.add("rota-varis");
-        
-        if (siraKimde === motorRengi) {
-            // Hamle yapıldıysa sırayı kullanıcıya geçir ve FEN'i güncelle
-            aktifFen = tahtaToFen(kullaniciRengi);
-            document.getElementById("fen-metni").textContent = aktifFen;
-            siraKimde = kullaniciRengi;
-            
-            // Hamleyi geçmişe ekle
-            gecmiseHamleEkle(aktifFen, bestmove);
-            
-            mevcutYasalHamleler = [];
-            yasalHamleleriGetir(); // Kullanıcının yasal hamlelerini hazırla
+        fromSquare.classList.add("route-from");
+        toSquare.classList.add("route-to");
+
+        if (activeTurn === engineColor) {
+            activeFen = boardToFen(userColor);
+            document.getElementById("fen-display").textContent = activeFen;
+            activeTurn = userColor;
+
+            recordMoveToHistory(activeFen, bestmove);
+            legalMovesList = [];
+            fetchLegalMoves();
         }
     }
 
-    // Bestmove alanına rota yönü göster
     const bestmoveEl = document.getElementById("bestmove");
     if (bestmoveEl) {
         const from = bestmove.substring(0, bestmove.length / 2);
         const to = bestmove.substring(bestmove.length / 2);
-        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
+        bestmoveEl.innerHTML = `${bestmove} <span class="route-arrow">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
     }
 }
 
 // =========================================================================
-// OTONOM SİMÜLASYON (CANLI DEMO) MODU
+// AUTONOMOUS SIMULATION (LIVE DEMO) MODE
 // =========================================================================
-let simAktif = false;
-let simTimer = null;
+let isSimRunning = false;
+let simTimerId = null;
 
-function otonomSimulasyonDurdur() {
-    simAktif = false;
-    if (simTimer) {
-        clearTimeout(simTimer);
-        simTimer = null;
+function stopAutoSimulation() {
+    isSimRunning = false;
+    if (simTimerId) {
+        clearTimeout(simTimerId);
+        simTimerId = null;
     }
-    const btn = document.getElementById("btn-oto-sim");
+    const btn = document.getElementById("btn-auto-sim");
     if (btn) {
         btn.textContent = t("btn_auto_sim");
         btn.style.background = "linear-gradient(135deg, #00c853, #64dd17)";
@@ -1686,14 +1635,14 @@ function otonomSimulasyonDurdur() {
     }
 }
 
-async function otonomSimulasyonToggle() {
-    if (simAktif) {
-        otonomSimulasyonDurdur();
+async function toggleAutoSimulation() {
+    if (isSimRunning) {
+        stopAutoSimulation();
         return;
     }
 
-    simAktif = true;
-    const btn = document.getElementById("btn-oto-sim");
+    isSimRunning = true;
+    const btn = document.getElementById("btn-auto-sim");
     if (btn) {
         btn.textContent = t("btn_stop_sim");
         btn.style.background = "linear-gradient(135deg, #d50000, #ff1744)";
@@ -1701,224 +1650,192 @@ async function otonomSimulasyonToggle() {
         btn.style.boxShadow = "0 4px 12px rgba(255,23,68,0.4)";
     }
 
-    otonomSimulasyonDongusu();
+    runAutoSimulationStep();
 }
 
-async function hamleHesapla() {
+async function requestEngineMove() {
     const payload = {};
-    if (aktifFen) payload.fen = aktifFen;
-    if (aktifVariant && aktifVariant.varyantAdi) payload.varyant_adi = aktifVariant.varyantAdi;
-    if (aktifIniIcerik) payload.variants_ini = aktifIniIcerik;
+    if (activeFen) payload.fen = activeFen;
+    if (activeVariant && activeVariant.variantName) payload.variant_name = activeVariant.variantName;
+    if (activeIniContent) payload.variants_ini = activeIniContent;
     const engineDepthEl = document.getElementById("engine-depth");
-    if (engineDepthEl) payload.derinlik = engineDepthEl.value;
+    if (engineDepthEl) payload.depth = engineDepthEl.value;
 
-    const endpoints = [
-        `${API_BASE}/api/karar`,
-        "https://wsn-api.onrender.com/api/karar"
-    ];
-
-    for (const url of endpoints) {
-        try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 60000);
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-            clearTimeout(tid);
-            if (resp.ok) {
-                return await resp.json();
-            }
-        } catch (err) {
-            console.warn(`hamleHesapla fetch error for ${url}:`, err);
+    try {
+        const controller = new AbortController();
+        const timerId = setTimeout(() => controller.abort(), 60000);
+        const resp = await fetch(`${API_BASE}/api/decision`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
+        clearTimeout(timerId);
+        if (resp.ok) {
+            return await resp.json();
         }
+    } catch (err) {
+        console.warn("requestEngineMove fetch error:", err);
     }
     return null;
 }
 
-function beyazHamlesiniTahtadaOyna(bestmove) {
+function applyUserSideMoveOnBoard(bestmove) {
     if (!bestmove || bestmove.length < 4) return false;
 
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    const motorRengi = tahtaTersMi ? 'w' : 'b';
+    const userColor = isBoardFlipped ? "b" : "w";
+    const engineColor = isBoardFlipped ? "w" : "b";
 
-    const koordinatlar = hamleToKoordinat(bestmove);
-    if (!koordinatlar) return false;
+    const coords = uciMoveToCoords(bestmove);
+    if (!coords) return false;
 
-    const kalkisKare = document.getElementById(`kare-${koordinatlar.kalkis.satir}-${koordinatlar.kalkis.sutun}`);
-    const varisKare = document.getElementById(`kare-${koordinatlar.varis.satir}-${koordinatlar.varis.sutun}`);
-    if (!kalkisKare || !varisKare) return false;
+    const fromSquare = document.getElementById(`square-${coords.from.row}-${coords.from.col}`);
+    const toSquare = document.getElementById(`square-${coords.to.row}-${coords.to.col}`);
+    if (!fromSquare || !toSquare) return false;
 
-    let movingTas = karedekiTasiAl(kalkisKare);
+    let movingPiece = getPieceAtSquare(fromSquare);
     if (bestmove.length === 5 && !isNaN(bestmove[3])) {
         const promoChar = bestmove[4];
-        if (promoChar) movingTas = (kullaniciRengi === 'w') ? promoChar.toUpperCase() : promoChar.toLowerCase();
+        if (promoChar) movingPiece = (userColor === "w") ? promoChar.toUpperCase() : promoChar.toLowerCase();
     }
 
-    // Rok desteği (King 2 kare yana giderse)
-    if ((movingTas === 'K' || movingTas === 'k') && Math.abs(koordinatlar.varis.sutun - koordinatlar.kalkis.sutun) === 2) {
-        const row = koordinatlar.kalkis.satir;
-        const rookClass = (kullaniciRengi === 'w') ? "tas-W" : "tas-B";
-        if (koordinatlar.varis.sutun > koordinatlar.kalkis.sutun) {
-            const rookFrom = document.getElementById(`kare-${row}-7`);
-            const rookTo = document.getElementById(`kare-${row}-5`);
-            if (rookFrom && rookTo) {
-                const rTas = karedekiTasiAl(rookFrom);
-                kareyeTasKoy(rookTo, rTas);
-                rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
-                kareyeTasKoy(rookFrom, "");
-                rookFrom.classList.remove("tas-W", "tas-B");
-            }
-        } else {
-            const rookFrom = document.getElementById(`kare-${row}-0`);
-            const rookTo = document.getElementById(`kare-${row}-3`);
-            if (rookFrom && rookTo) {
-                const rTas = karedekiTasiAl(rookFrom);
-                kareyeTasKoy(rookTo, rTas);
-                rookTo.classList.remove("tas-W", "tas-B");
-                if (rookFrom.classList.contains(rookClass)) rookTo.classList.add(rookClass);
-                kareyeTasKoy(rookFrom, "");
-                rookFrom.classList.remove("tas-W", "tas-B");
-            }
-        }
-    }
+    executeCastlingIfNeeded(movingPiece, coords, userColor === "w" ? "piece-W" : "piece-B");
 
-    kareyeTasKoy(varisKare, movingTas);
-    varisKare.classList.remove("tas-W", "tas-B");
-    if (kalkisKare.classList.contains("tas-W")) varisKare.classList.add("tas-W");
-    if (kalkisKare.classList.contains("tas-B")) varisKare.classList.add("tas-B");
-    
-    kareyeTasKoy(kalkisKare, "");
-    kalkisKare.classList.remove("tas-W", "tas-B", "secili");
+    setPieceAtSquare(toSquare, movingPiece);
+    toSquare.classList.remove("piece-W", "piece-B");
+    if (fromSquare.classList.contains("piece-W")) toSquare.classList.add("piece-W");
+    if (fromSquare.classList.contains("piece-B")) toSquare.classList.add("piece-B");
 
-    document.querySelectorAll(".rota-kalkis, .rota-varis").forEach(el => {
-        el.classList.remove("rota-kalkis", "rota-varis");
+    setPieceAtSquare(fromSquare, "");
+    fromSquare.classList.remove("piece-W", "piece-B", "selected");
+
+    document.querySelectorAll(".route-from, .route-to").forEach(el => {
+        el.classList.remove("route-from", "route-to");
     });
-    document.querySelectorAll(".rota-ok").forEach(el => el.remove());
+    document.querySelectorAll(".route-arrow").forEach(el => el.remove());
 
-    kalkisKare.classList.add("rota-kalkis");
-    varisKare.classList.add("rota-varis");
+    fromSquare.classList.add("route-from");
+    toSquare.classList.add("route-to");
 
-    siraKimde = motorRengi;
-    aktifFen = tahtaToFen(motorRengi);
-    document.getElementById("fen-metni").textContent = aktifFen;
+    activeTurn = engineColor;
+    activeFen = boardToFen(engineColor);
+    document.getElementById("fen-display").textContent = activeFen;
 
-    gecmiseHamleEkle(aktifFen, bestmove);
+    recordMoveToHistory(activeFen, bestmove);
 
     const bestmoveEl = document.getElementById("bestmove");
     if (bestmoveEl) {
         const from = bestmove.substring(0, bestmove.length / 2);
         const to = bestmove.substring(bestmove.length / 2);
-        bestmoveEl.innerHTML = `${bestmove} <span class="rota-ok">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
+        bestmoveEl.innerHTML = `${bestmove} <span class="route-arrow">[ 🟢 ${from} ➜ 🟡 ${to} ]</span>`;
     }
 
     return true;
 }
 
-async function otonomSimulasyonDongusu() {
-    if (!simAktif) return;
+async function runAutoSimulationStep() {
+    if (!isSimRunning) return;
 
-    const kullaniciRengi = tahtaTersMi ? 'b' : 'w';
-    const motorRengi = tahtaTersMi ? 'w' : 'b';
+    const userColor = isBoardFlipped ? "b" : "w";
+    const engineColor = isBoardFlipped ? "w" : "b";
 
-    if (siraKimde === kullaniciRengi) {
+    if (activeTurn === userColor) {
         const bestmoveEl = document.getElementById("bestmove");
         if (bestmoveEl) bestmoveEl.innerHTML = `<span class="spinner"></span>${t("calculating")}`;
 
-        const data = await hamleHesapla();
-        if (!simAktif) return;
+        const data = await requestEngineMove();
+        if (!isSimRunning) return;
 
         if (!data || !data.bestmove || data.bestmove === "(none)" || data.bestmove === "0000") {
-            otonomSimulasyonDurdur();
+            stopAutoSimulation();
             return;
         }
 
+        lastEngineResponse = data;
         const cpEl = document.getElementById("cp");
-        if (cpEl) cpEl.textContent = skorMetni(data);
-        sonCpSkoru = skorEsdegerCp(data);
+        if (cpEl) cpEl.textContent = formatScoreLabel(data);
+        lastCpScore = getEquivalentCpScore(data);
         const fullSolEl = document.getElementById("full-solution");
         if (fullSolEl && data.full_solution) fullSolEl.textContent = data.full_solution;
-        const motorVaryant = document.getElementById("motor-varyant");
-        if (motorVaryant) motorVaryant.textContent = `${data.varyant || "standart"} (${data.gecikme_ms}ms)`;
+        const rawVar = data.variant || (activeVariant && activeVariant.variantName) || "chess";
+        const engineVariantEl = document.getElementById("engine-variant");
+        if (engineVariantEl) engineVariantEl.textContent = `${formatVariantDisplayName(rawVar)} (${data.latency_ms}ms)`;
 
         const engineDepthEl = document.getElementById("engine-depth");
-        sonRaporVerisi = {
-            tarih_obj: new Date(),
-            varyant: data.varyant || "standart",
+        lastReportData = {
+            timestamp: new Date(),
+            variant: rawVar,
             fen: data.fen || "startpos",
             bestmove: data.bestmove,
             full_solution: data.full_solution,
-            cp_skoru: data.cp_skoru,
-            mat_skoru: data.mat_skoru,
-            skor_metni: String(skorMetni(data)),
-            arama_modu: data.arama_modu || 'depth',
-            gecikme_ms: data.gecikme_ms,
-            motor: data.motor,
-            derinlik: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
-            aktif_varyant_obj: aktifVariant,
-            filtre_esik: parseInt(document.getElementById("cp-esik").value),
-            filtre_onay: skorEsdegerCp(data) >= parseInt(document.getElementById("cp-esik").value)
+            cp_score: data.cp_score,
+            mate_score: data.mate_score,
+            score_label: String(formatScoreLabel(data)),
+            search_mode: data.search_mode || "depth",
+            latency_ms: data.latency_ms,
+            engine: data.engine,
+            depth: engineDepthEl ? parseInt(engineDepthEl.value) : 12,
+            active_variant_obj: activeVariant,
+            filter_threshold: parseInt(document.getElementById("cp-threshold").value),
+            filter_approved: getEquivalentCpScore(data) >= parseInt(document.getElementById("cp-threshold").value)
         };
         const reportBtns = document.getElementById("report-buttons");
         if (reportBtns) reportBtns.style.display = "flex";
 
-        const oynandi = beyazHamlesiniTahtadaOyna(data.bestmove);
-        if (!oynandi) {
-            otonomSimulasyonDurdur();
+        const applied = applyUserSideMoveOnBoard(data.bestmove);
+        if (!applied) {
+            stopAutoSimulation();
             return;
         }
 
-        simTimer = setTimeout(() => {
-            otonomSimulasyonDongusu();
+        simTimerId = setTimeout(() => {
+            runAutoSimulationStep();
         }, 900);
+    } else if (activeTurn === engineColor) {
+        await runEngineAnalysis("next");
+        if (!isSimRunning) return;
 
-    } else if (siraKimde === motorRengi) {
-        await veriCek('next');
-        if (!simAktif) return;
-
-        if (!sonRaporVerisi || !sonRaporVerisi.bestmove || sonRaporVerisi.bestmove === "(none)" || sonRaporVerisi.bestmove === "0000") {
-            otonomSimulasyonDurdur();
+        if (!lastReportData || !lastReportData.bestmove || lastReportData.bestmove === "(none)" || lastReportData.bestmove === "0000") {
+            stopAutoSimulation();
             return;
         }
 
-        simTimer = setTimeout(() => {
-            otonomSimulasyonDongusu();
+        simTimerId = setTimeout(() => {
+            runAutoSimulationStep();
         }, 900);
     }
 }
 
 // =========================================================================
-// RAPOR İNDİRME (KARAR RAPORU EXPORT)
+// DECISION REPORT EXPORT (JSON & PDF)
 // =========================================================================
-function raporIndir() {
-    if (!sonRaporVerisi) return;
+function formatReportTimestamp(dateObj) {
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const dd = String(dateObj.getDate()).padStart(2, "0");
+    const hh = String(dateObj.getHours()).padStart(2, "0");
+    const min = String(dateObj.getMinutes()).padStart(2, "0");
+    return `${yyyy}_${mm}_${dd}_${hh}_${min}`;
+}
 
-    if (typeof aktifFen !== 'undefined' && aktifFen) {
-        sonRaporVerisi.fen = aktifFen;
+function downloadJsonReport() {
+    if (!lastReportData) return;
+
+    if (typeof activeFen !== "undefined" && activeFen) {
+        lastReportData.fen = activeFen;
     }
 
-    // Tarih formatı: yyyy_mm_dd_hh_mm
-    const d = sonRaporVerisi.tarih_obj;
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const dateStr = `${yyyy}_${mm}_${dd}_${hh}_${min}`;
+    const dateStr = formatReportTimestamp(lastReportData.timestamp || new Date());
+    const v = lastReportData.active_variant_obj;
+    const formattedMoves = formatMoveHistoryForReport(moveHistoryList) || t("val_none");
 
-    const v = sonRaporVerisi.aktif_varyant_obj;
-    
-    // JSON anahtarlarını ve değerlerini aktif dile göre oluştur
-    const rapor = {
+    const reportPayload = {
         [t("report_title")]: {
             [t("rep_date")]: dateStr,
             [t("rep_sys")]: {
-                [t("rep_engine")]: sonRaporVerisi.motor,
-                [t("engine_depth")]: sonRaporVerisi.derinlik,
-                [t("rep_var")]: sonRaporVerisi.varyant,
+                [t("rep_engine")]: lastReportData.engine,
+                [t("rep_depth")]: lastReportData.depth,
+                [t("rep_var")]: formatVariantDisplayName(lastReportData.variant),
                 [t("rep_grid")]: v ? `${v.maxRank}x${v.maxFile}` : "8x8",
                 [t("rep_top")]: (v && v.cylinder) ? t("topology_closed") : t("topology_open")
             },
@@ -1928,31 +1845,31 @@ function raporIndir() {
                 [t("rep_promo_zone")]: (v && v.promotionRegionWhite) ? v.promotionRegionWhite : t("val_none")
             },
             [t("rep_analysis")]: {
-                [t("rep_fen")]: sonRaporVerisi.fen,
-                [t("moves")]: hamleGecmisiListesi.join(", ") || t("val_none"),
-                [t("rep_best")]: sonRaporVerisi.bestmove,
-                [t("rep_full_sol")]: sonRaporVerisi.full_solution || "-",
-                [t("rep_cp")]: sonRaporVerisi.cp_skoru,
-                [t("rep_mate")]: (sonRaporVerisi.mat_skoru !== null && sonRaporVerisi.mat_skoru !== undefined) ? sonRaporVerisi.skor_metni : t("val_none"),
-                [t("rep_mode")]: sonRaporVerisi.arama_modu === 'mate' ? "go mate" : "go depth",
-                [t("rep_lat")]: sonRaporVerisi.gecikme_ms
+                [t("rep_fen")]: lastReportData.fen,
+                [t("rep_moves")]: formattedMoves,
+                [t("rep_best")]: lastReportData.bestmove,
+                [t("rep_full_sol")]: lastReportData.full_solution || "-",
+                [t("rep_cp")]: lastReportData.cp_score,
+                [t("rep_mate")]: (lastReportData.mate_score !== null && lastReportData.mate_score !== undefined) ? lastReportData.score_label : t("val_none"),
+                [t("rep_mode")]: lastReportData.search_mode === "mate" ? "go mate" : "go depth",
+                [t("rep_lat")]: lastReportData.latency_ms
             },
             [t("rep_filter")]: {
-                [t("rep_thresh")]: sonRaporVerisi.filtre_esik,
-                [t("rep_dec")]: sonRaporVerisi.filtre_onay ? t("filter_approved") : t("filter_denied"),
-                [t("rep_exp")]: sonRaporVerisi.filtre_onay ? t("report_route_approved") : t("report_route_rejected")
+                [t("rep_thresh")]: lastReportData.filter_threshold,
+                [t("rep_dec")]: lastReportData.filter_approved ? t("filter_approved") : t("filter_denied"),
+                [t("rep_exp")]: lastReportData.filter_approved ? t("report_route_approved") : t("report_route_rejected")
             }
         }
     };
 
-    const blob = new Blob([JSON.stringify(rapor, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(reportPayload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `wsn_decision_report_${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `decision_report_${dateStr}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
 
@@ -1967,36 +1884,33 @@ function toAsciiSafe(str) {
         .replace(/ç/g, "c").replace(/Ç/g, "C");
 }
 
-function pdfRaporIndir() {
-    if (!sonRaporVerisi || !window.jspdf) {
+function downloadPdfReport() {
+    if (!lastReportData || !window.jspdf) {
         alert("PDF / Report data not available.");
         return;
     }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
-    // Aktif FEN ve geçmişi rapora senkronize et
-    if (typeof aktifFen !== 'undefined' && aktifFen) {
-        sonRaporVerisi.fen = aktifFen;
-    }
-    
-    const d = sonRaporVerisi.tarih_obj || new Date();
-    const dateStr = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}_${String(d.getMinutes()).padStart(2, '0')}`;
-    const v = sonRaporVerisi.aktif_varyant_obj;
-    const isTR = mevcutDil === 'tr';
 
-    // ---- BAŞLIK / HEADER ----
+    if (typeof activeFen !== "undefined" && activeFen) {
+        lastReportData.fen = activeFen;
+    }
+
+    const d = lastReportData.timestamp || new Date();
+    const dateStr = formatReportTimestamp(d);
+    const v = lastReportData.active_variant_obj;
+    const isTR = currentLang === "tr";
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(0, 150, 210);
-    doc.text(isTR ? "WSN Otonom Karar Raporu" : "WSN Autonomous Decision Report", 105, 18, { align: "center" });
-    
+    doc.text(isTR ? "Otonom Karar Raporu" : "Autonomous Decision Report", 105, 18, { align: "center" });
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
     doc.text(`${isTR ? "Uretim Tarihi" : "Generated"}: ${d.toLocaleString()}  |  ${isTR ? "Surum" : "Version"}: ${dateStr}`, 105, 25, { align: "center" });
 
-    // Üst çizgi
     doc.setDrawColor(0, 210, 255);
     doc.setLineWidth(0.6);
     doc.line(20, 29, 190, 29);
@@ -2019,19 +1933,19 @@ function pdfRaporIndir() {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
         doc.setTextColor(20, 20, 20);
-        
+
         const safeLabel = toAsciiSafe(label);
         const safeVal = toAsciiSafe(String(value !== undefined && value !== null ? value : "-"));
-        
+
         const labelPrefix = `${safeLabel} : `;
         const prefixWidth = doc.getTextWidth(labelPrefix);
-        
+
         doc.text(labelPrefix, 20, y);
         doc.setFont("helvetica", "normal");
-        
+
         const availableWidth = 170 - prefixWidth;
         const valWidth = doc.getTextWidth(safeVal);
-        
+
         if (valWidth <= availableWidth) {
             doc.text(safeVal, 20 + prefixWidth, y);
             y += 6.5;
@@ -2047,76 +1961,76 @@ function pdfRaporIndir() {
         }
     }
 
-    // ======== 1. BÖLÜM: SİSTEM BİLGİLERİ ========
+    // ======== SECTION 1: SYSTEM INFORMATION ========
     addSection(isTR ? "1. Sistem Bilgileri" : "1. System Information");
-    addLine(isTR ? "Motor" : "Engine", sonRaporVerisi.motor);
-    addLine(isTR ? "Arama Derinligi" : "Search Depth", sonRaporVerisi.derinlik);
-    addLine(isTR ? "Varyant" : "Variant", sonRaporVerisi.varyant);
+    addLine(isTR ? "Motor" : "Engine", lastReportData.engine);
+    addLine(isTR ? "Arama Derinligi" : "Search Depth", lastReportData.depth);
+    addLine(isTR ? "Varyant" : "Variant", formatVariantDisplayName(lastReportData.variant));
     addLine(isTR ? "Izgara Boyutu" : "Grid Size", v ? `${v.maxRank}x${v.maxFile}` : "8x8");
     addLine(isTR ? "Topoloji" : "Topology", (v && v.cylinder) ? (isTR ? "Kapali Devre (Silindirik)" : "Closed (Cylinder)") : (isTR ? "Acik" : "Open (Flat)"));
     addLine(isTR ? "Dugum Enjeksiyonu" : "Node Injection", (v && v.drop) ? (isTR ? "Aktif" : "Enabled") : (isTR ? "Pasif" : "Disabled"));
     y += 4;
 
-    // ======== 2. BÖLÜM: ANALİZ SONUÇLARI ========
+    // ======== SECTION 2: ANALYSIS RESULTS ========
+    const formattedMoves = formatMoveHistoryForReport(moveHistoryList) || "-";
     addSection(isTR ? "2. Analiz Sonuclari" : "2. Analysis Results");
-    addLine("FEN", sonRaporVerisi.fen);
-    addLine(isTR ? "Oynanan Hamleler" : "Moves", hamleGecmisiListesi.length > 0 ? hamleGecmisiListesi.join(", ") : "-");
-    addLine(isTR ? "En Iyi Rota" : "Best Route", sonRaporVerisi.bestmove);
-    addLine(isTR ? "Tam Cozum Yolu (PV)" : "Full Solution (PV)", sonRaporVerisi.full_solution || "-");
-    addLine(isTR ? "CP Skoru" : "CP Score", sonRaporVerisi.cp_skoru);
-    if (sonRaporVerisi.mat_skoru !== null && sonRaporVerisi.mat_skoru !== undefined) {
-        addLine(isTR ? "Mat Skoru" : "Mate Score", sonRaporVerisi.skor_metni);
+    addLine("FEN", lastReportData.fen);
+    addLine(isTR ? "Oynanan Hamleler" : "Moves", formattedMoves);
+    addLine(isTR ? "En Iyi Rota" : "Best Route", lastReportData.bestmove);
+    addLine(isTR ? "Tam Cozum Yolu" : "Full Solution (PV)", lastReportData.full_solution || "-");
+    addLine(isTR ? "CP Skoru" : "CP Score", lastReportData.cp_score);
+    if (lastReportData.mate_score !== null && lastReportData.mate_score !== undefined) {
+        addLine(isTR ? "Mat Skoru" : "Mate Score", lastReportData.score_label);
     }
-    addLine(isTR ? "Arama Modu" : "Search Mode", sonRaporVerisi.arama_modu === 'mate' ? "go mate" : "go depth");
-    addLine(isTR ? "Gecikme Suresi" : "Latency", `${sonRaporVerisi.gecikme_ms} ms`);
+    addLine(isTR ? "Arama Modu" : "Search Mode", lastReportData.search_mode === "mate" ? "go mate" : "go depth");
+    addLine(isTR ? "Gecikme Suresi" : "Latency", `${lastReportData.latency_ms} ms`);
     y += 4;
 
-    // ======== 3. BÖLÜM: FİLTRE KARARI ========
+    // ======== SECTION 3: FILTER DECISION ========
     addSection(isTR ? "3. Filtre Karari" : "3. Filter Decision");
-    addLine(isTR ? "Esik Degeri" : "Threshold", sonRaporVerisi.filtre_esik);
-    const decText = sonRaporVerisi.filtre_onay ? (isTR ? "ONAYLANDI" : "APPROVED") : (isTR ? "REDDEDILDI" : "REJECTED");
+    addLine(isTR ? "Esik Degeri" : "Threshold", lastReportData.filter_threshold);
+    const decText = lastReportData.filter_approved ? (isTR ? "ONAYLANDI" : "APPROVED") : (isTR ? "REDDEDILDI" : "REJECTED");
     addLine(isTR ? "Karar" : "Decision", decText);
 
-    doc.save(`wsn_decision_report_${dateStr}.pdf`);
+    doc.save(`decision_report_${dateStr}.pdf`);
 }
 
 // =========================================================================
-// BAŞLANGIÇ
+// INITIALIZATION
 // =========================================================================
 (async function init() {
-    tahtaOlustur();
-    await dilYukle(mevcutDil);
-    kayitliSenaryolariDropdownaYukle();
+    createBoardGrid();
+    await loadLanguageCatalog(currentLang);
+    loadSavedScenariosIntoDropdown();
 
-    const activeScenId = localStorage.getItem('wsn_active_scenario');
-    if (activeScenId) {
-        localStorage.removeItem('wsn_active_scenario');
-        const select = document.getElementById('variant-dropdown');
+    const activeScenarioId = localStorage.getItem("active_scenario");
+    if (activeScenarioId) {
+        localStorage.removeItem("active_scenario");
+        const select = document.getElementById("variant-dropdown");
         if (select) {
-            select.value = activeScenId;
-            varyantDropdownDegisti();
+            select.value = activeScenarioId;
+            handleVariantDropdownChange();
         }
     } else {
-        document.getElementById('variant-dropdown').value = 'klasik';
-        varyantDropdownDegisti();
+        document.getElementById("variant-dropdown").value = "standard";
+        handleVariantDropdownChange();
     }
 
-    healthCheck();
+    checkServerHealth();
 
-    // Diğer sekmedeki (senaryolar.html) değişiklikleri canlı yakala
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'wsn_saved_scenarios') {
-            kayitliSenaryolariDropdownaYukle();
-        } else if (e.key === 'wsn_active_scenario' && e.newValue) {
-            kayitliSenaryolariDropdownaYukle();
-            const select = document.getElementById('variant-dropdown');
+    window.addEventListener("storage", (e) => {
+        if (e.key === "saved_scenarios") {
+            loadSavedScenariosIntoDropdown();
+        } else if (e.key === "active_scenario" && e.newValue) {
+            loadSavedScenariosIntoDropdown();
+            const select = document.getElementById("variant-dropdown");
             if (select) {
                 select.value = e.newValue;
-                varyantDropdownDegisti();
+                handleVariantDropdownChange();
             }
-            localStorage.removeItem('wsn_active_scenario');
-        } else if (e.key === 'wsn_dil' && e.newValue && e.newValue !== mevcutDil) {
-            dilYukle(e.newValue);
+            localStorage.removeItem("active_scenario");
+        } else if (e.key === "app_lang" && e.newValue && e.newValue !== currentLang) {
+            loadLanguageCatalog(e.newValue);
         }
     });
 })();
